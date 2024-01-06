@@ -16,7 +16,7 @@ set(
 
 set(working_dir "${PROJECT_BINARY_DIR}/docs")
 
-foreach(file IN ITEMS Doxyfile conf.py)
+foreach(file IN ITEMS Doxyfile)
   configure_file("docs/${file}.in" "${working_dir}/${file}" @ONLY)
 endforeach()
 

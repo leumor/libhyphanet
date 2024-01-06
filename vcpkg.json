@@ -9,6 +9,10 @@
     {
       "name": "ms-gsl",
       "version>=": "4.0.0"
+    },
+    {
+      "name": "cryptopp",
+      "version>=": "8.9.0"
     }
   ],
   "default-features": [],

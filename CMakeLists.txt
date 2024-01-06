@@ -61,11 +61,14 @@ target_include_directories(
 
 target_compile_features(libhyphanet_libhyphanet PUBLIC cxx_std_20)
 
-find_package(fmt REQUIRED)
+find_package(fmt CONFIG REQUIRED)
 target_link_libraries(libhyphanet_libhyphanet PRIVATE fmt::fmt)
 
 find_package(Microsoft.GSL CONFIG REQUIRED)
 target_link_libraries(libhyphanet_libhyphanet PRIVATE Microsoft.GSL::GSL)
+
+find_package(cryptopp CONFIG REQUIRED)
+target_link_libraries(libhyphanet_libhyphanet PRIVATE cryptopp::cryptopp)
 
 # ---- Install rules ----
 

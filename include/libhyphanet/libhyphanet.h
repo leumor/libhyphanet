@@ -1,8 +1,8 @@
-#pragma once
-
-#include <string>
+#ifndef LIBHYPHANET_LIBHYPHANET_H
+#define LIBHYPHANET_LIBHYPHANET_H
 
 #include "libhyphanet/libhyphanet_export.h"
+#include <string>
 
 /**
  * A note about the MSVC warning C4251:
@@ -51,20 +51,20 @@
  *
  * Please see the note above for considerations when creating shared libraries.
  */
-class LIBHYPHANET_EXPORT exported_class
-{
+class LIBHYPHANET_EXPORT exported_class {
 public:
-  /**
-   * @brief Initializes the name field to the name of the project
-   */
-  exported_class();
+    /**
+     * @brief Initializes the name field to the name of the project
+     */
+    exported_class();
 
-  /**
-   * @brief Returns a non-owning pointer to the string stored in this class
-   */
-  auto name() const -> char const*;
-
+    /**
+     * @brief Returns a non-owning pointer to the string stored in this class
+     */
+    auto name() const -> char const*;
 private:
-  LIBHYPHANET_SUPPRESS_C4251
-  std::string m_name;
+    LIBHYPHANET_SUPPRESS_C4251
+    std::string m_name;
 };
+
+#endif // __LIBHYPHANET_H__

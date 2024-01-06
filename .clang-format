@@ -62,6 +62,7 @@ IndentWrappedFunctionNames: false
 KeepEmptyLinesAtTheStartOfBlocks: false
 NamespaceIndentation: Inner
 PointerAlignment: Left
+# ReflowComments: true
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
@@ -80,6 +81,7 @@ SpaceInEmptyParentheses: false
 SpacesInCStyleCastParentheses: false
 SpacesInConditionalStatement: false
 SpacesInContainerLiterals: false
+# SpacesInLineCommentPrefix: 1
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
 UseTab: Never
