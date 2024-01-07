@@ -1,6 +1,7 @@
-#ifndef CB0C4773_63F9_4A85_8F51_20734B26AA79
-#define CB0C4773_63F9_4A85_8F51_20734B26AA79
+#ifndef LIBHYPHANET_KEYS_H
+#define LIBHYPHANET_KEYS_H
 
+#include "libhyphanet/support.h"
 #include <cryptopp/dsa.h>
 #include <cryptopp/gfpcrypt.h>
 #include <cstddef>
@@ -8,6 +9,7 @@
 #include <gsl/gsl>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace keys {
@@ -197,13 +199,21 @@ namespace user {
              */
             algo_aes_ctr_256_sha_256 = 3,
         };
-        Key(std::vector<std::byte> pub_key_hash,
-            std::vector<std::byte> crypto_key,
-            Crypto_algorithm crypto_algorithm)
-            : pub_key_hash_(std::move(pub_key_hash)),
-              crypto_key_(std::move(crypto_key)),
-              crypto_algorithm_(crypto_algorithm)
+
+        struct Key_params {
+            std::vector<std::byte> pub_key_hash;
+            std::vector<std::byte> crypto_key;
+            Crypto_algorithm crypto_algorithm{
+                Crypto_algorithm::algo_aes_pcfb_256_sha_256};
+        };
+
+        explicit Key(Key_params key)
+            : pub_key_hash_(std::move(key.pub_key_hash)),
+              crypto_key_(std::move(key.crypto_key)),
+              crypto_algorithm_(key.crypto_algorithm)
         {}
+
+        Key() = default;
         virtual ~Key() = default;
 
         [[nodiscard]] virtual std::string to_uri() const = 0;
@@ -212,9 +222,15 @@ namespace user {
         {
             return pub_key_hash_;
         }
+
         [[nodiscard]] std::vector<std::byte> get_crypto_key() const
         {
             return crypto_key_;
+        }
+
+        [[nodiscard]] Crypto_algorithm get_crypto_algorithm() const
+        {
+            return crypto_algorithm_;
         }
     private:
         /**
@@ -252,7 +268,8 @@ namespace user {
          * @sa [Crypto_algorithm](#Key::Crypto_algorithm)
          *
          */
-        Crypto_algorithm crypto_algorithm_;
+        Crypto_algorithm crypto_algorithm_{
+            Crypto_algorithm::algo_aes_pcfb_256_sha_256};
     };
 
     /**
@@ -285,6 +302,7 @@ namespace user {
      */
     class Insertable {
     public:
+        Insertable() = default;
         explicit Insertable(const CryptoPP::DSA::PrivateKey& priv_key)
             : priv_key_(priv_key)
         {}
@@ -318,16 +336,13 @@ namespace user {
      */
     class Subspace_key : public Key {
     public:
-        Subspace_key(std::string_view docname,
-                     std::vector<std::byte> pub_key_hash,
-                     std::vector<std::byte> crypto_key,
-                     Crypto_algorithm crypto_algorithm)
-            : Key{std::move(pub_key_hash), std::move(crypto_key),
-                  crypto_algorithm},
-              doc_name_(docname)
+        Subspace_key(Key_params key, std::string_view docname)
+            : Key{std::move(key)}, doc_name_(docname)
         {}
 
+        Subspace_key() = default;
         ~Subspace_key() override = 0;
+
         [[nodiscard]] std::string get_docname() const { return doc_name_; }
     private:
         /**
@@ -367,15 +382,30 @@ namespace user {
      * - Site edition number.
      */
     class Usk : public Subspace_key {
+    public:
+        Usk(Key_params key, std::string_view docname,
+            long suggested_edition = -1)
+            : Subspace_key{std::move(key), docname},
+              suggested_edition_(suggested_edition)
+        {}
+
+        Usk() = default;
+        Usk(const Usk& other) = default;
+        Usk(Usk&& other) noexcept = default;
+        Usk& operator=(const Usk& other) = default;
+        Usk& operator=(Usk&& other) noexcept = default;
+        ~Usk() override = default;
+
+        [[nodiscard]] std::string to_uri() const override;
     private:
         /**
          * @brief The character to separate the site name from the edition
          * number in its SSK form.
          *
          * @details
-         * The reason for choosing '-' is that it makes it ludicrously easy to
-         * go from the **USK** form to the **SSK** form, and we don't need to go
-         * vice versa.
+         * The reason for choosing '-' is that it makes it ludicrously easy
+         * to go from the **USK** form to the **SSK** form, and we don't
+         * need to go vice versa.
          */
         static const auto seperator = '-';
 
@@ -409,19 +439,71 @@ namespace user {
         long suggested_edition_{-1};
     };
 
-    class Insertable_usk : public Insertable, public Usk {};
+    class Insertable_usk : public Usk, public Insertable {
+    public:
+        Insertable_usk(Usk usk, const CryptoPP::DSA::PrivateKey& priv_key)
+            : Usk(std::move(usk)), Insertable(priv_key)
+        {}
+    };
 
-    class Chk : public Key, public Client {};
     class Ssk : public Subspace_key, public Client {
+    public:
+        Ssk(Key_params key, std::string_view docname);
+
+        Ssk() = default;
+        Ssk(const Ssk& other) = default;
+        Ssk(Ssk&& other) noexcept = default;
+        Ssk& operator=(const Ssk& other) = default;
+        Ssk& operator=(Ssk&& other) noexcept = default;
+        ~Ssk() override = default;
+
+        [[nodiscard]] std::string to_uri() const override;
+        [[nodiscard]] node::Node_key get_node_key() const override;
     private:
         std::vector<std::byte> encrypted_hashed_docname_;
     };
-    class Insertable_ssk : public Insertable, public Ssk {};
 
-    class Ksk : public Insertable_ssk {};
+    class Insertable_ssk : public Ssk, public Insertable {
+    public:
+        Insertable_ssk() = default;
+        Insertable_ssk(Key_params key, std::string_view docname,
+                       const CryptoPP::DSA::PrivateKey& priv_key)
+            : Ssk{std::move(key), docname}, Insertable(priv_key)
+        {}
+
+        Insertable_ssk(Ssk ssk, const CryptoPP::DSA::PrivateKey& priv_key)
+            : Ssk(std::move(ssk)), Insertable(priv_key)
+        {}
+    };
+
+    class Ksk : public Insertable_ssk {
+    public:
+        Ksk() = default;
+        explicit Ksk(std::string keyword);
+    private:
+        std::string keyword_;
+    };
+
+    class Chk : public Key, public Client {
+    public:
+        Chk(Key_params key, bool control_document,
+            support::compressor::Compress_type compression_algorithm)
+            : Key(std::move(key)), control_document_(control_document),
+              compression_algorithm_(compression_algorithm)
+        {}
+
+        Chk() = default;
+
+        static const short extra_length = 5;
+        static const short crypto_key_length = 32;
+    private:
+        bool control_document_{false};
+        support::compressor::Compress_type compression_algorithm_{
+            support::compressor::Compress_type::gzip};
+    };
 
 } // namespace user
 
 } // namespace keys
 
-#endif /* CB0C4773_63F9_4A85_8F51_20734B26AA79 */
+#endif /* LIBHYPHANET_KEYS_H */

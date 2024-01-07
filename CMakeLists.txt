@@ -18,10 +18,12 @@ include(cmake/variables.cmake)
 add_library(
     libhyphanet_libhyphanet
 
-    source/libhyphanet.cpp
     include/libhyphanet/libhyphanet.h
 
+    source/keys.cpp
     include/libhyphanet/keys.h
+
+    include/libhyphanet/support.h
 )
 add_library(libhyphanet::libhyphanet ALIAS libhyphanet_libhyphanet)
 
