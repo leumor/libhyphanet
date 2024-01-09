@@ -23,6 +23,7 @@ add_library(
     source/keys.cpp
     include/libhyphanet/keys.h
 
+    source/support.cpp
     include/libhyphanet/support.h
 )
 add_library(libhyphanet::libhyphanet ALIAS libhyphanet_libhyphanet)
@@ -71,6 +72,13 @@ target_link_libraries(libhyphanet_libhyphanet PRIVATE Microsoft.GSL::GSL)
 
 find_package(cryptopp CONFIG REQUIRED)
 target_link_libraries(libhyphanet_libhyphanet PRIVATE cryptopp::cryptopp)
+
+find_package(Boost REQUIRED COMPONENTS)
+# target_link_libraries(libhyphanet_libhyphanet PRIVATE Boost::algorithm)
+target_include_directories(libhyphanet_libhyphanet PRIVATE ${Boost_INCLUDE_DIRS})
+
+find_package(ICU REQUIRED COMPONENTS i18n uc)
+target_link_libraries(libhyphanet_libhyphanet PRIVATE ICU::i18n ICU::uc)
 
 # ---- Install rules ----
 

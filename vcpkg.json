@@ -13,6 +13,14 @@
     {
       "name": "cryptopp",
       "version>=": "8.9.0"
+    },
+    {
+      "name": "boost-algorithm",
+      "version>=": "1.83.0"
+    },
+    {
+      "name": "icu",
+      "version>=": "73.1"
     }
   ],
   "default-features": [],
@@ -22,7 +30,7 @@
       "dependencies": [
         {
           "name": "catch2",
-          "version>=": "3.4.0"
+          "version>=": "3.5.0"
         }
       ]
     }

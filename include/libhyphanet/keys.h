@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <gsl/assert>
 #include <gsl/gsl>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -40,12 +41,11 @@ enum class Uri_type {
 
 struct Uri_params {
     Uri_type key_type;
-    std::string_view docname;
-    std::vector<std::string> meta_strings;
-    std::vector<std::byte> routing_key;
-    std::vector<std::byte> crypto_key;
-    std::vector<std::byte> extra;
-    long suggested_edition{-1};
+    std::optional<std::vector<std::byte>> routing_key;
+    std::optional<std::vector<std::byte>> crypto_key;
+    std::optional<std::vector<std::byte>> extra;
+    std::optional<std::string_view> docname;
+    std::optional<std::vector<std::string>> meta_strings;
 };
 
 /**
@@ -55,7 +55,7 @@ struct Uri_params {
  * Hyphanet's URI is defined as:
  *
  * @verbatim
-freenet:[KeyType@]RoutingKey,CryptoKey[,ExtraData][/docname][/suggestedEdition][/metastring]
+[freenet:]KeyType@[RoutingKey,CryptoKey,ExtraData][/][docname][/metastring]
 @endverbatim
  *
  * * `KeyType`: The type of key (e.g. **CHK**, **SSK**). See
@@ -63,10 +63,9 @@ freenet:[KeyType@]RoutingKey,CryptoKey[,ExtraData][/docname][/suggestedEdition][
  * * `RoutingKey`: The routing key. See [routing_key_](#routing_key_).
  * * `CryptoKey`: The cryptographic key. See [crypto_key_](#crypto_key_).
  * * `ExtraData`: Optional base64-encoded data associated with the URI.
- * * `docname`: Only meaningful for **SSKs**. Hashed with PK fingerprint to get
- *              key value. See [docname_](#docname_).
- * * `suggestedEdition`: Only meaningful for **USKs**. See
-[Usk](#user::Usk).
+ * * `docname`: For **SSKs**, it's hashed with PK fingerprint to get
+ *              key value; For **KSKs**, it's KSK's keyword. See
+ *              [docname_](#docname_).
  * * `metastring`: Metadata to pass to processors that act on the retrieved
  *                 document. See [meta_strings_](#meta_strings_).
  *
@@ -91,14 +90,67 @@ public:
      *
      * @param url_params
      */
-    explicit Uri(const Uri_params& url_params);
+    explicit Uri(Uri_params url_params);
+
+    Uri() = default;
+
+    /**
+     * @brief Get the key type from the URI
+     *
+     * @return Uri_type The key type
+     */
+    [[nodiscard]] Uri_type get_key_type() const { return key_type_; }
+
+    /**
+     * @brief Get the routing key from the URI
+     *
+     * @return std::optional<std::vector<std::byte>> The routing key
+     */
+    [[nodiscard]] std::optional<std::vector<std::byte>> get_routing_key() const
+    {
+        return routing_key_;
+    }
+
+    /**
+     * @brief Get the crypto key from the URI
+     *
+     * @return std::optional<std::vector<std::byte>> The crypto key
+     */
+    [[nodiscard]] std::optional<std::vector<std::byte>> get_crypto_key() const
+    {
+        return crypto_key_;
+    }
+
+    /**
+     * @brief Get the extra data from the URI
+     *
+     * @return std::optional<std::vector<std::byte>> The extra data
+     */
+    [[nodiscard]] std::optional<std::vector<std::byte>> get_extra() const
+    {
+        return extra_;
+    }
 
     /**
      * @brief Get the docname from the URI
      *
      * @return std::string The docname
      */
-    [[nodiscard]] std::string get_docname() const { return docname_; }
+    [[nodiscard]] std::optional<std::string> get_docname() const
+    {
+        return docname_;
+    }
+
+    /**
+     * @brief Get the meta strings from the URI
+     *
+     * @return std::optional<std::vector<std::string>> The meta strings
+     */
+    [[nodiscard]] std::optional<std::vector<std::string>>
+    get_meta_strings() const
+    {
+        return meta_strings_;
+    }
 private:
     /**
      * @brief The three-letter abbreviation of the key.
@@ -106,19 +158,50 @@ private:
     Uri_type key_type_{Uri_type::ksk};
 
     /**
-     * @brief The modified Base64 encoded key value.
+     * @brief Routing key
+     *
+     * @details
+     * A **routing key** is a part of a Freenet URI that determines how a file
+     * is stored and retrieved on the Freenet network. Freenet uses a key-based
+     * routing protocol, similar to distributed hash tables, where each node has
+     * a fixed location and routes requests based on the distance between the
+     * key and the node’s location. The **routing key** is used to find the
+     * closest nodes that store the file, but it does not allow decrypting the
+     * file’s contents. To access the file, one also needs the encryption key,
+     * which is [the other part](#crypto_key_) of the Freenet URI.
      */
-    std::vector<std::byte> routing_key_;
+    std::optional<std::vector<std::byte>> routing_key_;
 
     /**
-     * @brief The modified Base64 encoded decryption key.
+     * @brief Crypto key
+     *
+     * @details
+     * A **crypto key** is the part of the Freenet URI that allows decrypting
+     * the file’s contents. It is usually a random string of characters that is
+     * generated when the file is inserted into the network. The **crypto key**
+     * is not used for [routing](#routing_key_), but only for accessing the
+     * file.
      */
-    std::vector<std::byte> crypto_key_;
+    std::optional<std::vector<std::byte>> crypto_key_;
 
     /**
      * @brief Extra data associated with the URI.
+     *
+     * @details
+     * Only [CHKs](#user::Chk), [SSKs](#user::Ssk) and [USKs](#user::Usk) have
+     * extra data. Different key types have different ways of parsing extra
+     * data.
      */
-    std::vector<std::byte> extra_;
+    std::optional<std::vector<std::byte>> extra_;
+
+    /**
+     * @brief Document name
+     *
+     * @details
+     * For **SSKs**, it's hashed with [Public Key fingerprint](#routing_key_) to
+     * get key value; For **KSKs**, it's KSK's keyword.
+     */
+    std::optional<std::string> docname_;
 
     /**
      * @brief The meta-strings, in the order they are given.
@@ -131,18 +214,7 @@ private:
      * manifest, and look up the first meta-string. If this is the final data,
      * we use that (and complain if there are meta-strings left), else we look
      * up the next meta-string in the manifest, and so on. */
-    std::vector<std::string> meta_strings_;
-
-    /**
-     * @brief Only meaningful for **SSKs**, and is hashed with the
-     * PK fingerprint to get the key value.
-     */
-    std::string docname_;
-
-    /**
-     * @brief for **USKs** only. See [Usk](#user::Usk).
-     */
-    long suggested_edition_{-1};
+    std::optional<std::vector<std::string>> meta_strings_;
 };
 
 namespace node {
@@ -217,6 +289,9 @@ namespace user {
         virtual ~Key() = default;
 
         [[nodiscard]] virtual std::string to_uri() const = 0;
+
+        static const short crypto_key_length = 32;
+        static const short extra_length = 5;
     protected:
         [[nodiscard]] std::vector<std::byte> get_routing_key() const
         {
@@ -494,8 +569,7 @@ namespace user {
 
         Chk() = default;
 
-        static const short extra_length = 5;
-        static const short crypto_key_length = 32;
+        static const short routing_key_length = 32;
     private:
         bool control_document_{false};
         support::compressor::Compress_type compression_algorithm_{
