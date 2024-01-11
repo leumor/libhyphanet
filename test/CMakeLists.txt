@@ -17,7 +17,7 @@ include(Catch)
 
 # ---- Tests ----
 
-add_executable(libhyphanet_test source/libhyphanet_test.cpp)
+add_executable(libhyphanet_test source/libhyphanet_test.cpp source/test_support.cpp)
 target_link_libraries(
     libhyphanet_test PRIVATE
     libhyphanet::libhyphanet

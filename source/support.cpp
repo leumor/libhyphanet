@@ -4,7 +4,10 @@
 #include <cstddef>
 #include <gsl/util>
 #include <iterator>
+#include <stdexcept>
 #include <string>
+#include <string_view>
+#include <vector>
 
 namespace support {
 namespace util {
@@ -27,26 +30,6 @@ namespace util {
         return underlying_e == integer_b;
     }
 
-    std::vector<std::byte> str_to_bytes(std::string_view str)
-    {
-        std::vector<std::byte> bytes;
-        bytes.reserve(str.size());
-        std::ranges::transform(str, std::back_inserter(bytes), [](char c) {
-            return gsl::narrow_cast<std::byte>(c);
-        });
-        return bytes;
-    }
-
-    std::string bytes_to_str(const std::vector<std::byte>& bytes)
-    {
-        std::string str;
-        str.reserve(bytes.size());
-        std::ranges::transform(bytes, std::back_inserter(str), [](std::byte b) {
-            return static_cast<char>(b);
-        });
-        return str;
-    }
-
     std::string url_decode(std::string_view str, bool tolerant)
     {
         using namespace exception;
@@ -67,7 +50,7 @@ namespace util {
                 std::array<char, 2> hex_chars{*(++iter), *(++iter)};
                 auto hex_str = std::string{hex_chars.begin(), hex_chars.end()};
                 try {
-                    int hex_val = std::stoi(hex_str, nullptr, 16);
+                    const int hex_val = std::stoi(hex_str, nullptr, 16);
                     if (hex_val == 0) {
                         throw Url_decode_error("Can't decode %00");
                     }
@@ -81,7 +64,7 @@ namespace util {
                 catch (std::invalid_argument const& ex) {
                     // Not encoded?
                     if (tolerant && !has_decoded_something) {
-                        auto buf = str_to_bytes('%' + hex_str);
+                        auto buf = str_to_bytes<char>('%' + hex_str);
                         decoded_bytes.insert(decoded_bytes.end(), buf.begin(),
                                              buf.end());
                         continue;
@@ -96,7 +79,7 @@ namespace util {
             ++iter;
         }
 
-        return bytes_to_str(decoded_bytes);
+        return bytes_to_str<char>(decoded_bytes);
     }
 } // namespace util
 } // namespace support

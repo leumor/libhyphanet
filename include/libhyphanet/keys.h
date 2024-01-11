@@ -15,6 +15,13 @@
 
 namespace keys {
 
+namespace exception {
+    class Malformed_uri : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+} // namespace exception
+
 /**
  * @brief Three-letter abbreviation of the key (currently **USK**, **SSK**,
 * **KSK**, or **CHK**).
@@ -215,6 +222,8 @@ private:
      * we use that (and complain if there are meta-strings left), else we look
      * up the next meta-string in the manifest, and so on. */
     std::optional<std::vector<std::string>> meta_strings_;
+
+    static Uri_type parse_key_type_str(std::string_view str);
 };
 
 namespace node {

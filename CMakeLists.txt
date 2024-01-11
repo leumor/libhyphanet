@@ -20,11 +20,14 @@ add_library(
 
     include/libhyphanet/libhyphanet.h
 
-    source/keys.cpp
     include/libhyphanet/keys.h
+    source/keys.cpp
 
-    source/support.cpp
     include/libhyphanet/support.h
+    source/support.cpp
+
+    include/libhyphanet/support/base64.h
+    source/support/base64.cpp
 )
 add_library(libhyphanet::libhyphanet ALIAS libhyphanet_libhyphanet)
 
