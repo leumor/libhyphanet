@@ -45,7 +45,7 @@ namespace util {
                 catch (std::invalid_argument const& ex) {
                     // Not encoded?
                     if (tolerant && !has_decoded_something) {
-                        auto buf = str_to_bytes<char>('%' + hex_str);
+                        auto buf = str_to_bytes('%' + hex_str);
                         decoded_bytes.insert(decoded_bytes.end(), buf.begin(),
                                              buf.end());
                         continue;
@@ -60,7 +60,7 @@ namespace util {
             ++iter;
         }
 
-        return bytes_to_str<char>(decoded_bytes);
+        return bytes_to_str(decoded_bytes);
     }
 
     std::u8string str_to_u8str(std::string_view str)

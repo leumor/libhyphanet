@@ -45,7 +45,7 @@ std::string encode(const std::vector<std::byte>& bytes, bool equals_pad,
     encoder.IsolatedInitialize(params);
 
     std::string encoded;
-    const std::string decoded = util::bytes_to_str<char>(bytes);
+    const std::string decoded = util::bytes_to_str(bytes);
 
     encoder.Attach(new StringSink(encoded)); // NOLINT
 
@@ -84,7 +84,7 @@ std::vector<std::byte> decode(std::string_view encoded,
                           new Redirector(decoder) // Base64Decoder
     ); // StringSource
 
-    return util::str_to_bytes<char>(decoded);
+    return util::str_to_bytes(decoded);
 }
 
 } // namespace support::base64

@@ -161,7 +161,7 @@ namespace util {
      * @return a vector of bytes representing the string
      */
     template<concepts::CharOrChar8_t T>
-    std::vector<std::byte> str_to_bytes(std::basic_string_view<T> str)
+    std::vector<std::byte> basicstr_to_bytes(std::basic_string_view<T> str)
     {
         std::vector<std::byte> bytes;
         bytes.reserve(str.size());
@@ -169,6 +169,16 @@ namespace util {
             return static_cast<std::byte>(c);
         });
         return bytes;
+    }
+
+    inline std::vector<std::byte> str_to_bytes(std::string_view str)
+    {
+        return basicstr_to_bytes(str);
+    }
+
+    inline std::vector<std::byte> u8str_to_bytes(std::u8string_view str)
+    {
+        return basicstr_to_bytes(str);
     }
 
     /**
@@ -181,14 +191,23 @@ namespace util {
      * @return std::string the converted string
      */
     template<concepts::CharOrChar8_t T>
-    std::basic_string<T> bytes_to_str(const std::vector<std::byte>& bytes)
+    std::basic_string<T> bytes_to_basicstr(const std::vector<std::byte>& bytes)
     {
-        std::string str;
+        std::basic_string<T> str;
         str.reserve(bytes.size());
-        std::ranges::transform(bytes, std::back_inserter(str), [](std::byte b) {
-            return static_cast<char>(b);
-        });
+        std::ranges::transform(bytes, std::back_inserter(str),
+                               [](std::byte b) { return static_cast<T>(b); });
         return str;
+    }
+
+    inline std::string bytes_to_str(const std::vector<std::byte>& bytes)
+    {
+        return bytes_to_basicstr<char>(bytes);
+    }
+
+    inline std::u8string bytes_to_u8str(const std::vector<std::byte>& bytes)
+    {
+        return bytes_to_basicstr<char8_t>(bytes);
     }
 
     std::u8string str_to_u8str(std::string_view str);

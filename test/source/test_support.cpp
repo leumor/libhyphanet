@@ -40,10 +40,41 @@ TEST_CASE("Freenet specified versions of base64", "[library][support]")
     REQUIRE_THAT(encoded, Equals("/+7dzLuqmYh3ZlVEMyIRAA=="));
     REQUIRE(decode_standard(encoded) == decoded);
 
-    const std::u8string u8str{u8"Hello, 世界"};
-    encoded = encode_str_standard<char8_t>(u8str);
-    REQUIRE_THAT(encoded, Equals("SGVsbG8sIOS4lueVjA=="));
+    std::u8string u8str{u8"Hello World! こんにちは 世界"};
+
+    encoded = encode_u8str_standard(u8str);
+    REQUIRE_THAT(encoded,
+                 Equals("SGVsbG8gV29ybGQhIOOBk+OCk+OBq+OBoeOBryDkuJbnlYw="));
     auto decoded_str = decode_str_standard(encoded);
     auto decoded_u8str = str_to_u8str(decoded_str);
+    REQUIRE(decoded_u8str == u8str);
+    decoded_u8str = decode_u8str_standard(encoded);
+    REQUIRE(decoded_u8str == u8str);
+
+    encoded = encode_u8str_freenet(u8str);
+    REQUIRE_THAT(encoded,
+                 Equals("SGVsbG8gV29ybGQhIOOBk~OCk~OBq~OBoeOBryDkuJbnlYw"));
+    decoded_str = decode_str_freenet(encoded);
+    decoded_u8str = str_to_u8str(decoded_str);
+    REQUIRE(decoded_u8str == u8str);
+    decoded_u8str = decode_u8str_freenet(encoded);
+    REQUIRE(decoded_u8str == u8str);
+
+    const std::string str{"Hello, World!"};
+
+    encoded = encode_str_standard(str);
+    REQUIRE_THAT(encoded, Equals("SGVsbG8sIFdvcmxkIQ=="));
+    decoded_str = decode_str_standard(encoded);
+    REQUIRE(decoded_str == str);
+    u8str = str_to_u8str(str);
+    decoded_u8str = decode_u8str_standard(encoded);
+    REQUIRE(decoded_u8str == u8str);
+
+    encoded = encode_str_freenet(str);
+    REQUIRE_THAT(encoded, Equals("SGVsbG8sIFdvcmxkIQ"));
+    decoded_str = decode_str_freenet(encoded);
+    REQUIRE(decoded_str == str);
+    u8str = str_to_u8str(str);
+    decoded_u8str = decode_u8str_freenet(encoded);
     REQUIRE(decoded_u8str == u8str);
 }
