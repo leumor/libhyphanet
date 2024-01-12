@@ -11,25 +11,6 @@
 
 namespace support {
 namespace util {
-    template<typename T>
-    bool in_range(const T& val, const std::ranges::range auto& arr)
-    {
-        auto it = std::ranges::find(arr, val);
-        return it != arr.end();
-    }
-
-    template<typename EnumWithInt>
-    bool compare_byte_enum(std::byte byte_value, EnumWithInt enum_value)
-    {
-        // Convert the enum class item to its underlying type using
-        // std::to_underlying
-        auto underlying_e = static_cast<int>(enum_value);
-        // Convert the std::byte to an integer type using std::to_integer
-        auto integer_b = std::to_integer<int>(byte_value);
-        // Compare the converted values using the == operator
-        return underlying_e == integer_b;
-    }
-
     std::string url_decode(std::string_view str, bool tolerant)
     {
         using namespace exception;
@@ -80,6 +61,26 @@ namespace util {
         }
 
         return bytes_to_str<char>(decoded_bytes);
+    }
+
+    std::u8string str_to_u8str(std::string_view str)
+    {
+        std::u8string u8str;
+        u8str.reserve(str.size());
+        std::ranges::transform(str, std::back_inserter(u8str),
+                               [](char c) { return static_cast<char8_t>(c); });
+
+        return u8str;
+    }
+
+    std::string u8str_to_str(std::u8string_view u8str)
+    {
+        std::string str;
+        str.reserve(u8str.size());
+        std::ranges::transform(u8str, std::back_inserter(str),
+                               [](char8_t c) { return static_cast<char>(c); });
+
+        return str;
     }
 } // namespace util
 } // namespace support

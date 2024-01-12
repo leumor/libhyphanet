@@ -38,7 +38,7 @@ inline std::string encode_standard(const std::vector<std::byte>& bytes)
     return encode(bytes, true, std::nullopt);
 }
 
-template<util::CharOrChar8_t T>
+template<concepts::CharOrChar8_t T>
 std::string encode_str_freenet(std::basic_string_view<T> str, bool equals_pad)
 {
     auto bytes = util::str_to_bytes(str);
@@ -46,7 +46,7 @@ std::string encode_str_freenet(std::basic_string_view<T> str, bool equals_pad)
     return encode(bytes, equals_pad, base64_alphabet_freenet);
 }
 
-template<util::CharOrChar8_t T>
+template<concepts::CharOrChar8_t T>
 std::string encode_str_standard(std::basic_string_view<T> str)
 {
     auto bytes = util::str_to_bytes(str);
@@ -54,8 +54,32 @@ std::string encode_str_standard(std::basic_string_view<T> str)
     return encode(bytes, true, std::nullopt);
 }
 
-std::vector<std::byte> decode(std::string_view str,
-                              std::string alphabet = base64_alphabet_freenet);
+std::vector<std::byte> decode(std::string_view encoded,
+                              std::optional<std::string_view> alphabet);
+
+inline std::vector<std::byte> decode_freenet(std::string_view encoded)
+{
+    return decode(encoded, base64_alphabet_freenet);
+}
+
+inline std::vector<std::byte> decode_standard(std::string_view encoded)
+{
+    return decode(encoded, std::nullopt);
+}
+
+inline std::string decode_str_freenet(std::string_view str)
+{
+    auto decoded = decode_freenet(str);
+
+    return util::bytes_to_str<char>(decoded);
+}
+
+inline std::string decode_str_standard(std::string_view str)
+{
+    auto decoded = decode_standard(str);
+
+    return util::bytes_to_str<char>(decoded);
+}
 
 } // namespace support::base64
 

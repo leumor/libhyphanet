@@ -25,6 +25,45 @@ namespace exception {
     };
 } // namespace exception
 
+namespace concepts {
+
+    /**
+     * @brief checks if the type T is an enumeration and if its underlying type
+     * is int.
+     */
+    template<typename T> concept EnumWithInt
+        = std::is_enum_v<T> && std::same_as<std::underlying_type_t<T>, int>;
+
+    /**
+     * @brief checks if the given type T is either char (underlying type of
+     * std::string) or char8_t (underlying type of std::u8string).
+     */
+    template<typename T> concept CharOrChar8_t
+        = std::is_same_v<T, char> || std::is_same_v<T, char8_t>;
+
+    /**
+     * @brief check if a given type R meets specific requirements to be
+     * considered a range with an underlying type T.
+     *
+     * @tparam T the underlying type required for the range R
+     * @tparam R the Range type
+     */
+    template<typename T, typename R>
+    concept RangeWithUnderlyingType = requires(R range) {
+        typename R::value_type; // The range has a value_type
+        {
+            std::begin(range)
+        }
+        -> std::same_as<typename R::iterator>; // The range has a begin iterator
+        {
+            std::end(range)
+        }
+        -> std::same_as<typename R::iterator>; // The range has an end iterator
+        // The value_type of the range matches T
+        requires std::same_as<typename R::value_type, T>;
+    };
+} // namespace concepts
+
 namespace util {
     // trim from start (in place)
     static inline void ltrim(std::string_view& s,
@@ -73,9 +112,6 @@ namespace util {
         return s;
     }
 
-    template<typename T> concept EnumWithInt
-        = std::is_enum_v<T> && std::same_as<std::underlying_type_t<T>, int>;
-
     /**
      * @brief A template function that compares a std::byte and an enum class
      * item
@@ -86,8 +122,17 @@ namespace util {
      *
      * @return bool true if the two underlying values are equal
      */
-    template<typename EnumWithInt>
-    bool compare_byte_enum(std::byte byte_value, EnumWithInt enum_value);
+    template<concepts::EnumWithInt E>
+    bool compare_byte_enum(std::byte byte_value, E enum_value)
+    {
+        // Convert the enum class item to its underlying type using
+        // std::to_underlying
+        auto underlying_e = static_cast<int>(enum_value);
+        // Convert the std::byte to an integer type using std::to_integer
+        auto integer_b = std::to_integer<int>(byte_value);
+        // Compare the converted values using the == operator
+        return underlying_e == integer_b;
+    }
 
     /**
      * @brief Checks if a value is within the range of a given range.
@@ -97,11 +142,13 @@ namespace util {
      *
      * @return true if the value is within the range, false otherwise
      */
-    template<typename T>
-    bool in_range(const T& val, const std::ranges::range auto& arr);
-
-    template<typename T> concept CharOrChar8_t
-        = std::is_same_v<T, char> || std::is_same_v<T, char8_t>;
+    template<typename T, typename R>
+    requires concepts::RangeWithUnderlyingType<T, R>
+    bool in_range(const T& val, const R& arr)
+    {
+        auto it = std::ranges::find(arr, val);
+        return it != arr.end();
+    }
 
     /**
      * @brief Converts a string to a vector of bytes.
@@ -113,7 +160,7 @@ namespace util {
      *
      * @return a vector of bytes representing the string
      */
-    template<CharOrChar8_t T>
+    template<concepts::CharOrChar8_t T>
     std::vector<std::byte> str_to_bytes(std::basic_string_view<T> str)
     {
         std::vector<std::byte> bytes;
@@ -133,7 +180,7 @@ namespace util {
      * @param bytes the vector of bytes to convert
      * @return std::string the converted string
      */
-    template<CharOrChar8_t T>
+    template<concepts::CharOrChar8_t T>
     std::basic_string<T> bytes_to_str(const std::vector<std::byte>& bytes)
     {
         std::string str;
@@ -144,7 +191,8 @@ namespace util {
         return str;
     }
 
-    std::vector<std::byte> u8str_to_bytes(std::u8string_view str);
+    std::u8string str_to_u8str(std::string_view str);
+    std::string u8str_to_str(std::u8string_view u8str);
 
     /**
      * @brief Decodes an freenet specific URL encoded string
