@@ -14,8 +14,6 @@
 #include <utility>
 #include <vector>
 
-namespace support::base64 {
-
 std::array<CryptoPP::byte, 65> alphabet_str_to_bytes(std::string_view alphabet)
 {
     std::array<CryptoPP::byte, 65> alphabet_bytes{};
@@ -23,6 +21,8 @@ std::array<CryptoPP::byte, 65> alphabet_str_to_bytes(std::string_view alphabet)
 
     return alphabet_bytes;
 }
+
+namespace support::base64 {
 
 std::string encode(const std::vector<std::byte>& bytes, bool equals_pad,
                    std::optional<std::string_view> alphabet)

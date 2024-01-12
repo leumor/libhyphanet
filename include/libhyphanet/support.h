@@ -65,48 +65,90 @@ namespace concepts {
 } // namespace concepts
 
 namespace util {
-    // trim from start (in place)
-    static inline void ltrim(std::string_view& s,
-                             std::string_view chars = " \t\r\v\n")
+    /**
+     * @brief Trims the specified whitespace characters from the beginning of a
+     * string. (in place)
+     *
+     * @param s the string to be trimmed
+     * @param chars the characters to be trimmed (default: " \t\r\v\n")
+     */
+    inline void ltrim(std::string_view& s, std::string_view chars = " \t\r\v\n")
     {
         s.remove_prefix(std::min(s.find_first_not_of(chars), s.size()));
     }
 
-    // trim from end (in place)
-    static inline void rtrim(std::string_view& s,
-                             std::string_view chars = " \t\r\v\n")
+    /**
+     * @brief Trims the specified whitespace characters from the end of a
+     * string. (in place)
+     *
+     * @param s the string to be trimmed
+     * @param chars the characters to be trimmed (default: " \t\r\v\n")
+     */
+    inline void rtrim(std::string_view& s, std::string_view chars = " \t\r\v\n")
     {
         s.remove_suffix(
             std::min(s.size() - s.find_last_not_of(chars) - 1, s.size()));
     }
 
-    // trim from both ends (in place)
-    static inline void trim(std::string_view& s,
-                            std::string_view chars = " \t\r\v\n")
+    /**
+     * @brief Trims leading and trailing whitespace characters from a given
+     * string. (in place)
+     *
+     * @param s the string to be trimmed
+     * @param chars the characters to be trimmed (default: " \t\r\v\n")
+     *
+     * @throws None
+     */
+    inline void trim(std::string_view& s, std::string_view chars = " \t\r\v\n")
     {
         ltrim(s, chars);
         rtrim(s, chars);
     }
 
-    // trim from start (copying)
-    static inline std::string_view
-    ltrim_copy(std::string_view s, std::string_view chars = " \t\r\v\n")
+    /**
+     * @brief Trims the specified whitespace characters from the beginning of a
+     * string.
+     *
+     * @param s the string to be trimmed
+     * @param chars the characters to be trimmed (default: " \t\r\v\n")
+     *
+     * @return a copy of the trimmed string
+     */
+    inline std::string_view ltrim_copy(std::string_view s,
+                                       std::string_view chars = " \t\r\v\n")
     {
         ltrim(s, chars);
         return s;
     }
 
-    // trim from end (copying)
-    static inline std::string_view
-    rtrim_copy(std::string_view s, std::string_view chars = " \t\r\v\n")
+    /**
+     * @brief Trims the specified whitespace characters from the end of a
+     * string.
+     *
+     * @param s the string to be trimmed
+     * @param chars the characters to be trimmed (default: " \t\r\v\n")
+     *
+     * @return a copy of the trimmed string
+     */
+    inline std::string_view rtrim_copy(std::string_view s,
+
+                                       std::string_view chars = " \t\r\v\n")
     {
         rtrim(s, chars);
         return s;
     }
 
-    // trim from both ends (copying)
-    static inline std::string_view
-    trim_copy(std::string_view s, std::string_view chars = " \t\r\v\n")
+    /**
+     * @brief Trims leading and trailing whitespace characters from a given
+     * string.
+     *
+     * @param s the string to be trimmed
+     * @param chars the characters to be trimmed (default: " \t\r\v\n")
+     *
+     * @return a copy of the trimmed string
+     */
+    inline std::string_view trim_copy(std::string_view s,
+                                      std::string_view chars = " \t\r\v\n")
     {
         trim(s, chars);
         return s;
@@ -136,6 +178,9 @@ namespace util {
 
     /**
      * @brief Checks if a value is within the range of a given range.
+     *
+     * @tparam T the type of the value
+     * @tparam R the type of the range
      *
      * @param val the value to check
      * @param arr the range to check against
@@ -171,11 +216,25 @@ namespace util {
         return bytes;
     }
 
+    /**
+     * @brief Converts a string to bytes.
+     *
+     * @param str The string to convert.
+     *
+     * @return A vector of bytes representing the string.
+     */
     inline std::vector<std::byte> str_to_bytes(std::string_view str)
     {
         return basicstr_to_bytes(str);
     }
 
+    /**
+     * @brief Converts a std::u8string to bytes.
+     *
+     * @param str the std::u8string to convert
+     *
+     * @return a vector of bytes representing the std::u8string
+     */
     inline std::vector<std::byte> u8str_to_bytes(std::u8string_view str)
     {
         return basicstr_to_bytes(str);
@@ -200,17 +259,46 @@ namespace util {
         return str;
     }
 
+    /**
+     * @brief Converts bytes to a string.
+     *
+     * @param bytes the vector of bytes to convert
+     *
+     * @return the converted string
+     */
     inline std::string bytes_to_str(const std::vector<std::byte>& bytes)
     {
         return bytes_to_basicstr<char>(bytes);
     }
 
+    /**
+     * @brief Converts bytes to a std::u8string.
+     *
+     * @param bytes the vector of bytes to convert
+     *
+     * @return the converted std::u8string
+     */
     inline std::u8string bytes_to_u8str(const std::vector<std::byte>& bytes)
     {
         return bytes_to_basicstr<char8_t>(bytes);
     }
 
+    /**
+     * @brief Converts a std::string to a std::u8string.
+     *
+     * @param str The input std::string to convert.
+     *
+     * @return The converted std::u8string.
+     */
     std::u8string str_to_u8str(std::string_view str);
+
+    /**
+     * @brief Converts a std::u8string to a std::string.
+     *
+     * @param u8str The std::u8string to be converted.
+     *
+     * @return The converted std::string..
+     */
     std::string u8str_to_str(std::u8string_view u8str);
 
     /**
