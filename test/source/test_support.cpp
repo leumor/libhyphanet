@@ -5,7 +5,6 @@
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <cstddef>
-#include <iostream>
 #include <string>
 #include <vector>
 

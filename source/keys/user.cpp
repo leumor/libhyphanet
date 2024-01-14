@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
+#include <string>
 
 namespace keys::user {
 
@@ -25,17 +26,17 @@ std::unique_ptr<Key> Key::create_from_uri(const Uri& uri)
 
 Key::Key(const Uri& uri)
 {
-    if (auto routing_key = uri.get_routing_key(); !routing_key.empty()) {
-        routing_key_ = std::move(routing_key);
+    if (const auto& routing_key = uri.get_routing_key(); !routing_key.empty()) {
+        routing_key_ = routing_key;
     }
     else {
         throw exception::Malformed_uri{
             "Invalid URI: missing routing key, crypto key or extra data"};
     }
 
-    if (auto crypto_key = uri.get_crypto_key();
+    if (const auto& crypto_key = uri.get_crypto_key();
         crypto_key.size() == crypto_key_length) {
-        crypto_key_ = std::move(crypto_key);
+        crypto_key_ = crypto_key;
     }
     else {
         throw exception::Malformed_uri{"Invalid URI: invalid crypto key"};
@@ -55,24 +56,18 @@ Subspace_key::Subspace_key(const Uri& uri): Key(uri)
     }
 
     // Docname should be the first item of meta strings
-    if (auto& meta_strings = uri.get_meta_strings(); !meta_strings.empty()) {
-        set_docname(meta_strings.front());
+    if (const auto& meta_strings = uri.get_meta_strings();
+        !meta_strings.empty()) {
+        docname_ = meta_strings.front();
     }
     else {
         throw exception::Malformed_uri{"Invalid URI: missing docname"};
     }
 }
-Subspace_key::~Subspace_key() = default;
 
-Usk::Usk(const Uri& uri): Subspace_key(uri)
+void Subspace_key::parse_algo(std::byte algo_byte)
 {
-    if (uri.get_uri_type() != Uri_type::usk) {
-        throw exception::Malformed_uri{"Invalid URI: expected USK"};
-    }
-
-    auto& extra = uri.get_extra();
-    // TODO: Verify extra data
-    if (int algo = std::to_integer<int>(extra.at(2)); algo == 2) {
+    if (const int algo = std::to_integer<int>(algo_byte); algo == 2) {
         set_crypto_algorithm(Crypto_algorithm::algo_aes_pcfb_256_sha_256);
     }
     else if (algo == 3) {
@@ -82,9 +77,23 @@ Usk::Usk(const Uri& uri): Subspace_key(uri)
         throw exception::Malformed_uri{
             "Invalid URI: invalid Crypto algorithm in extra data"};
     }
+}
+
+Subspace_key::~Subspace_key() = default;
+
+Usk::Usk(const Uri& uri): Subspace_key(uri)
+{
+    if (uri.get_uri_type() != Uri_type::usk) {
+        throw exception::Malformed_uri{"Invalid URI: expected USK"};
+    }
+
+    const auto& extra = uri.get_extra();
+    // TODO: Verify extra data
+    parse_algo(extra.at(2));
 
     // Suggested edition number is the second item of meta strings
-    if (auto& meta_strings = uri.get_meta_strings(); meta_strings.size() >= 2) {
+    if (const auto& meta_strings = uri.get_meta_strings();
+        meta_strings.size() >= 2) {
         try {
             suggested_edition_ = std::stol(meta_strings.at(1));
         }
@@ -96,6 +105,11 @@ Usk::Usk(const Uri& uri): Subspace_key(uri)
             suggested_edition_ = -1;
         }
     }
+}
+
+Ssk::Ssk(const Uri& uri): Subspace_key(uri)
+{
+    // Calculate Encrypted Hashed Docname
 }
 
 } // namespace keys::user

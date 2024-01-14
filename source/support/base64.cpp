@@ -93,7 +93,7 @@ std::vector<std::byte> decode(std::string_view encoded,
 
     decoder.Attach(new StringSink(decoded)); // NOLINT
 
-    const StringSource ss(encoded_str, true,
+    const StringSource ss(encoded_str, true, // NOLINT
                           new Redirector(decoder) // Base64Decoder
     ); // StringSource
 

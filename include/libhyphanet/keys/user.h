@@ -228,6 +228,7 @@ public:
         = 32; // TODO: same as Node_ssk::pubkey_hash_size
 protected:
     void set_docname(std::string_view docname) { docname_ = docname; }
+    void parse_algo(std::byte algo_byte);
 private:
     /**
      * @brief Document name.
