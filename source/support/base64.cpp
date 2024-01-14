@@ -22,6 +22,19 @@ std::array<CryptoPP::byte, 65> alphabet_str_to_bytes(std::string_view alphabet)
     return alphabet_bytes;
 }
 
+/**
+ * @brief Base64 encoding related functions.
+ *
+ * @details
+ * Both Freenet specified Base64 and standard Base64 encoding/decoding are
+ * implemented.
+ *
+ * Freenet specified Base64 encoding is modified Base64 with [slightly different
+ * characters](#base64_alphabet_freenet) than usual, so it won't require
+ * escaping when used in URIs. Also by default, the equals sign (=) padding is
+ * not added.
+ *
+ */
 namespace support::base64 {
 
 std::string encode(const std::vector<std::byte>& bytes, bool equals_pad,

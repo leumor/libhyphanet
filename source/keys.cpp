@@ -1,11 +1,15 @@
 #include "libhyphanet/keys.h"
 #include "libhyphanet/support.h"
-#include <array>
+#include "libhyphanet/support/base64.h"
 #include <boost/algorithm/string/case_conv.hpp>
+#include <cstddef>
 #include <gsl/assert>
+#include <memory>
+#include <optional>
 #include <regex>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -14,44 +18,51 @@ using namespace support::util;
 namespace keys {
 
 Uri::Uri(Uri_params url_params)
-    : key_type_{url_params.key_type},
+    : uri_type_{url_params.uri_type},
       routing_key_{std::move(url_params.routing_key)},
       crypto_key_{std::move(url_params.crypto_key)},
-      extra_{std::move(url_params.extra)}, docname_{url_params.docname},
+      extra_{std::move(url_params.extra)},
       meta_strings_{std::move(url_params.meta_strings)}
 {
-    using enum keys::Uri_type;
+    // routing_key_ and crypto_key_ and extra_ are all existent or non-existent
+    Expects(
+        (!routing_key_.empty() && !crypto_key_.empty() && !extra_.empty())
+        || (!routing_key_.empty() && !crypto_key_.empty() && !extra_.empty()));
 
-    if (in_range(key_type_, std::array<Uri_type, 3>{chk, ssk, usk})) {
-        // CHK, SSK and USKs require routing key, crypto key and extra data
-        Expects(routing_key_ && crypto_key_ && extra_);
+    // TODO: move the checks to the constructor of Child classes
+    // using enum keys::Uri_type;
 
-        // CHK routing key length check
-        if (key_type_ == chk) {
-            Expects(routing_key_->size() == user::Chk::routing_key_length);
-        }
+    // if (in_range(uri_type_, std::array<Uri_type, 3>{chk, ssk, usk})) {
+    //     // CHK, SSK and USKs require routing key, crypto key and extra data
+    //     Expects(routing_key_ && crypto_key_ && extra_);
 
-        // Crypto key length check
-        Expects(crypto_key_->size() == user::Key::crypto_key_length);
+    //     // CHK routing key length check
+    //     if (uri_type_ == chk) {
+    //         Expects(routing_key_->size() == user::Chk::routing_key_length);
+    //     }
 
-        // Extra data length check
-        Expects(extra_->size() >= user::Key::extra_length);
-    }
-    else if (key_type_ == ksk) {
-        // KSK should not have routing key or crypto key or extra data
-        Expects(!routing_key_ && !crypto_key_ && !extra_);
+    //     // Crypto key length check
+    //     Expects(crypto_key_->size() == user::Key::crypto_key_length);
 
-        // KSK should have a docname (keyword)
-        Expects(docname_);
-    }
+    //     // Extra data length check
+    //     Expects(extra_->size() >= user::Key::extra_length);
+    // }
+    // else if (uri_type_ == ksk) {
+    //     // KSK should not have routing key or crypto key or extra data
+    //     Expects(!routing_key_ && !crypto_key_ && !extra_);
+
+    //     // KSK should have a docname (keyword)
+    //     Expects(docname_);
+    // }
 }
 
-Uri::Uri(std::string_view uri, bool no_trim)
+std::unique_ptr<Uri> Uri::create(std::string_view uri, bool no_trim)
 {
     Expects(!uri.empty());
 
-    Uri_params url_params;
+    Uri_params uri_params;
 
+    // BEGIN Preprocessing the URI
     std::string processed_uri{uri};
     std::string_view processed_uri_view{processed_uri};
 
@@ -78,38 +89,52 @@ Uri::Uri(std::string_view uri, bool no_trim)
     static const std::regex re{
         "^(https?://[^/]+/+)?(((ext|web)\\+)?(freenet|hyphanet|hypha):)?"};
 
-    processed_uri = std::regex_replace(processed_uri, re, "",
-                                       std::regex_constants::format_first_only);
-    processed_uri_view = std::string_view{processed_uri};
+    const auto processed_uri_const = std::regex_replace(
+        processed_uri, re, "", std::regex_constants::format_first_only);
+    // END Preprocessing the URI
+
+    // BEGIN Parsing the URI
+    processed_uri_view = std::string_view{processed_uri_const};
 
     // Decode key_type_
     auto pos = processed_uri_view.find('@');
     if (pos == std::string_view::npos) {
         throw exception::Malformed_uri{"Invalid URI: no @"};
     }
-    url_params.key_type = parse_key_type_str(processed_uri_view.substr(0, pos));
+    uri_params.uri_type = parse_uri_type_str(processed_uri_view.substr(0, pos));
     processed_uri_view.remove_prefix(pos + 1);
 
-    pos = processed_uri_view.find('/');
+    std::string_view uri_path;
+
+    pos = processed_uri_view.find(uri_separator);
     if (pos != std::string_view::npos) {
-        // Uri that contains RoutingKey,CryptoKey,ExtraData
+        // URI may contains RoutingKey,CryptoKey,ExtraData
 
         auto keys_str = processed_uri_view.substr(0, pos);
-        processed_uri_view.remove_prefix(pos + 1);
-    }
-    // Decode meta_strings_
-    std::vector<std::string> uri_paths;
-    for (const auto uri_path: std::views::split(processed_uri_view, '/')) {
-        std::string_view sv{uri_path.begin(), uri_path.end()};
-        std::string s;
-        try {
-            s = url_decode(sv, true);
+
+        if (auto keys_tuple = parse_routing_crypto_keys(keys_str); keys_tuple) {
+            auto [routing_key, crypto_key, extra] = *keys_tuple;
+
+            uri_params.routing_key = std::move(routing_key);
+            uri_params.crypto_key = std::move(crypto_key);
+            uri_params.extra = std::move(extra);
+            uri_path = processed_uri_view.substr(pos + 1);
         }
-        catch (const support::exception::Url_decode_error&) {
-            throw exception::Malformed_uri{"Invalid URI: invalid meta string"};
+        else {
+            // URI does not contain RoutingKey, CryptoKey and ExtraData, so
+            // the first part of the URI separated by '/' might be a docname in
+            // a KSK.
+            uri_path = processed_uri_view;
         }
-        if (!s.empty()) { uri_paths.push_back(std::move(s)); }
     }
+    else {
+        // No '/' found, it's possibly a KSK
+        uri_path = processed_uri_view;
+    }
+
+    uri_params.meta_strings = parse_meta_strings(uri_path);
+
+    return std::make_unique<Uri>(std::move(uri_params));
 
     // std::optional<std::string_view> docname;
     // long suggested_edition = -1;
@@ -134,34 +159,96 @@ Uri::Uri(std::string_view uri, bool no_trim)
     // }
 }
 
-Uri_type Uri::parse_key_type_str(std::string_view str)
+Uri_type Uri::parse_uri_type_str(std::string_view str)
 {
     using enum keys::Uri_type;
 
-    Uri_type key_type{};
+    Uri_type uri_type{};
 
-    auto key_type_str = std::string(str);
-    boost::algorithm::to_lower(key_type_str);
-    if (key_type_str == "usk") { key_type = usk; }
-    else if (key_type_str == "ssk") {
-        key_type = ssk;
+    auto uri_type_str = std::string(str);
+    boost::algorithm::to_lower(uri_type_str);
+    if (uri_type_str == "usk") { uri_type = usk; }
+    else if (uri_type_str == "ssk") {
+        uri_type = ssk;
     }
-    else if (key_type_str == "chk") {
-        key_type = chk;
+    else if (uri_type_str == "chk") {
+        uri_type = chk;
     }
-    else if (key_type_str == "ksk") {
-        key_type = ksk;
+    else if (uri_type_str == "ksk") {
+        uri_type = ksk;
     }
     else {
         throw exception::Malformed_uri{"Invalid URI: unknown key type"};
     }
 
-    return key_type;
+    return uri_type;
 }
 
-namespace user {
-    Insertable::~Insertable() = default;
-    Subspace_key::~Subspace_key() = default;
-} // namespace user
+std::optional<std::tuple<std::vector<std::byte>, std::vector<std::byte>,
+                         std::vector<std::byte>>>
+Uri::parse_routing_crypto_keys(const std::string_view keys_str)
+{
+    auto keys_str_copy = keys_str;
+
+    std::optional<std::string_view> routing_key;
+    std::optional<std::string_view> crypto_key;
+    std::optional<std::string_view> extra;
+
+    size_t comma_pos = std::string_view::npos;
+    if (comma_pos = keys_str_copy.find(',');
+        comma_pos < keys_str_copy.size()
+        && comma_pos != std::string_view::npos) {
+        routing_key = keys_str_copy.substr(0, comma_pos);
+        keys_str_copy.remove_prefix(comma_pos + 1);
+    }
+    if (comma_pos = keys_str_copy.find(',');
+        comma_pos < keys_str_copy.size()
+        && comma_pos != std::string_view::npos) {
+        crypto_key = keys_str_copy.substr(0, comma_pos);
+        keys_str_copy.remove_prefix(comma_pos + 1);
+    }
+    if (!keys_str_copy.empty()) { extra = keys_str_copy; }
+
+    using namespace support::base64;
+    if (routing_key && crypto_key && extra) {
+        // URI does contain RoutingKey, CryptoKey and ExtraData
+
+        return std::tuple{decode_freenet(*routing_key),
+                          decode_freenet(*crypto_key), decode_freenet(*extra)};
+    }
+    return std::nullopt;
+}
+
+std::vector<std::string> Uri::parse_meta_strings(std::string_view uri_path)
+{
+    std::vector<std::string> meta_strings;
+    if (!uri_path.empty()) {
+        size_t start = 0;
+        size_t end = uri_path.find(uri_separator);
+
+        if (end == std::string_view::npos) {
+            // No '/' is found in the URI Path. So the whole URI Path is a meta
+            // string
+            meta_strings.push_back(url_decode(uri_path));
+        }
+
+        while (end != std::string_view::npos) {
+            if (start < end) { // In case the first char is '/'
+                try {
+                    meta_strings.push_back(
+                        url_decode(uri_path.substr(start, end - start)));
+                }
+                catch (const support::exception::Url_decode_error&) {
+                    throw exception::Malformed_uri{
+                        "Invalid URI: invalid meta string"};
+                }
+            }
+            start = end + 1;
+            end = uri_path.find(uri_separator, start);
+        }
+    }
+
+    return meta_strings;
+}
 
 } // namespace keys

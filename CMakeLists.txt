@@ -21,7 +21,9 @@ add_library(
     include/libhyphanet/libhyphanet.h
 
     include/libhyphanet/keys.h
+    include/libhyphanet/keys/user.h
     source/keys.cpp
+    source/keys/user.cpp
 
     include/libhyphanet/support.h
     source/support.cpp
