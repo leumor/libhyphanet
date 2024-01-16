@@ -1,0 +1,12 @@
+Index:
+  StandardLibrary: Yes
+CompileFlags:
+  CompilationDatabase: build/dev
+Hover:
+  ShowAKA: True
+
+---
+If:
+  PathMatch: [.*/vcpkg_installed/.*, third_party/.*]
+Diagnostics:
+  Suppress: "*"
