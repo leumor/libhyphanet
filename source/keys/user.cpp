@@ -1,5 +1,6 @@
 #include "libhyphanet/keys/user.h"
 #include "libhyphanet/keys.h"
+#include <cryptopp/sha.h>
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
@@ -36,7 +37,7 @@ Key::Key(const Uri& uri)
 
     if (const auto& crypto_key = uri.get_crypto_key();
         crypto_key.size() == crypto_key_length) {
-        crypto_key_ = crypto_key;
+        std::ranges::copy(crypto_key, crypto_key_.begin());
     }
     else {
         throw exception::Malformed_uri{"Invalid URI: invalid crypto key"};
@@ -109,7 +110,22 @@ Usk::Usk(const Uri& uri): Subspace_key(uri)
 
 Ssk::Ssk(const Uri& uri): Subspace_key(uri)
 {
+    using namespace CryptoPP;
+
     // Calculate Encrypted Hashed Docname
+}
+
+std::vector<std::byte> Ssk::calculate_encrypted_hashed_docname(
+    std::string_view docname,
+    const std::array<std::byte, crypto_key_length>& crypto_key,
+    const std::array<std::byte, routing_key_size>& routing_key,
+    const std::optional<CryptoPP::DSA::PublicKey>& pub_key)
+{
+    using namespace CryptoPP;
+
+    SHA256 hasher;
+
+    // if (pub_key) {}
 }
 
 } // namespace keys::user

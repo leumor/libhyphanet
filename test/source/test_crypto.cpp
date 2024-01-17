@@ -1,9 +1,13 @@
 #include "libhyphanet/crypto.h"
+#include "libhyphanet/support.h"
 #include <algorithm>
 #include <array>
 #include <catch2/catch_test_macros.hpp>
+#include <cryptopp/queue.h>
 #include <cstddef>
-#include <iostream>
+#include <fmt/core.h>
+#include <fmt/format.h>
+#include <string>
 
 std::array<std::byte, 32> chars_to_bytes(const std::array<char, 32>& chars)
 {
@@ -34,9 +38,29 @@ TEST_CASE("rijndael256_256", "[library][crypto]")
     const std::array<std::byte, 32> encrypted
         = crypto::rijndael256_256_encrypt(key, plain);
 
-    for (std::size_t i = 0; i < 32; ++i) {
-        std::cout << std::hex << static_cast<int>(encrypted.at(i)) << " ";
-    }
-
     REQUIRE(encrypted == cipher);
+
+    const std::array<std::byte, 32> decrypted
+        = crypto::rijndael256_256_decrypt(key, cipher);
+
+    REQUIRE(decrypted == plain);
+}
+
+TEST_CASE("DSA", "[library][crypto]")
+{
+    auto [priv_key_bytes, pub_key_bytes] = crypto::dsa::generate_keys();
+
+    fmt::println(
+        "Private key: {:02x}",
+        fmt::join(crypto::dsa::priv_key_bytes_to_pkcs8(priv_key_bytes), " "));
+
+    fmt::println(
+        "Public key: {:02x}",
+        fmt::join(crypto::dsa::pub_key_bytes_to_x509(pub_key_bytes), " "));
+
+    const auto message = support::util::str_to_bytes("Hello, world!");
+    const auto signature = crypto::dsa::sign(priv_key_bytes, message);
+    fmt::println("Signature: {:02x}", fmt::join(signature, " "));
+
+    REQUIRE(crypto::dsa::verify(pub_key_bytes, message, signature));
 }

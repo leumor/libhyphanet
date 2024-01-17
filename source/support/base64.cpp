@@ -14,14 +14,6 @@
 #include <utility>
 #include <vector>
 
-std::array<CryptoPP::byte, 65> alphabet_str_to_bytes(std::string_view alphabet)
-{
-    std::array<CryptoPP::byte, 65> alphabet_bytes{};
-    std::ranges::copy(alphabet, alphabet_bytes.begin());
-
-    return alphabet_bytes;
-}
-
 /**
  * @brief Base64 encoding related functions.
  *
@@ -36,6 +28,17 @@ std::array<CryptoPP::byte, 65> alphabet_str_to_bytes(std::string_view alphabet)
  *
  */
 namespace support::base64 {
+
+namespace {
+    std::array<CryptoPP::byte, 65>
+    alphabet_str_to_bytes(std::string_view alphabet)
+    {
+        std::array<CryptoPP::byte, 65> alphabet_bytes{};
+        std::ranges::copy(alphabet, alphabet_bytes.begin());
+
+        return alphabet_bytes;
+    }
+} // namespace
 
 std::string encode(const std::vector<std::byte>& bytes, bool equals_pad,
                    std::optional<std::string_view> alphabet)

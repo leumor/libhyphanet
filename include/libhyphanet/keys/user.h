@@ -3,12 +3,14 @@
 
 #include "libhyphanet/keys.h"
 #include "libhyphanet/support.h"
+#include <array>
 #include <cryptopp/dsa.h>
 #include <cryptopp/gfpcrypt.h>
 #include <cstddef>
 #include <gsl/assert>
 #include <gsl/gsl>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -45,15 +47,17 @@ public:
         algo_aes_ctr_256_sha_256 = 3,
     };
 
+    static const size_t crypto_key_length = 32;
+    static const size_t extra_length = 5;
+
     struct Key_params {
         std::vector<std::byte> routing_key;
-        std::vector<std::byte> crypto_key;
+        std::array<std::byte, crypto_key_length> crypto_key;
         Crypto_algorithm crypto_algorithm;
     };
 
     explicit Key(Key_params key)
-        : routing_key_(std::move(key.routing_key)),
-          crypto_key_(std::move(key.crypto_key)),
+        : routing_key_(std::move(key.routing_key)), crypto_key_(key.crypto_key),
           crypto_algorithm_(key.crypto_algorithm)
     {}
 
@@ -75,7 +79,8 @@ public:
         return routing_key_;
     }
 
-    [[nodiscard]] std::vector<std::byte> get_crypto_key() const
+    [[nodiscard]] std::array<std::byte, crypto_key_length>
+    get_crypto_key() const
     {
         return crypto_key_;
     }
@@ -84,17 +89,14 @@ public:
     {
         return crypto_algorithm_;
     }
-
-    static const size_t crypto_key_length = 32;
-    static const size_t extra_length = 5;
 protected:
     void set_routing_key(std::vector<std::byte> key)
     {
         routing_key_ = std::move(key);
     }
-    void set_crypto_key(std::vector<std::byte> key)
+    void set_crypto_key(const std::array<std::byte, crypto_key_length>& key)
     {
-        crypto_key_ = std::move(key);
+        crypto_key_ = key;
     }
     void set_crypto_algorithm(Crypto_algorithm algo)
     {
@@ -125,7 +127,7 @@ private:
      * decrypt the data without the encryption key.
      *
      */
-    std::vector<std::byte> crypto_key_;
+    std::array<std::byte, crypto_key_length> crypto_key_{};
 
     /**
      * @brief Algorithm used to encrypt the data
@@ -196,6 +198,7 @@ private:
      *
      */
     CryptoPP::DSA::PrivateKey priv_key_;
+    CryptoPP::DSA::PublicKey pub_key_;
 };
 
 /**
@@ -360,6 +363,13 @@ public:
 
     [[nodiscard]] std::string to_uri() const override;
     [[nodiscard]] node::Node_key get_node_key() const override;
+protected:
+    [[nodiscard]] static std::vector<std::byte>
+    calculate_encrypted_hashed_docname(
+        std::string_view docname,
+        const std::array<std::byte, crypto_key_length>& crypto_key,
+        const std::array<std::byte, routing_key_size>& routing_key,
+        const std::optional<CryptoPP::DSA::PublicKey>& pub_key);
 private:
     std::vector<std::byte> encrypted_hashed_docname_;
 };
