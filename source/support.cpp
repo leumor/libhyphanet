@@ -1,6 +1,7 @@
 #include "libhyphanet/support.h"
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cstddef>
 #include <gsl/util>
 #include <iterator>
@@ -55,7 +56,7 @@ namespace util {
                 }
             }
             else {
-                decoded_bytes.push_back(static_cast<std::byte>(*iter));
+                decoded_bytes.push_back(std::bit_cast<std::byte>(*iter));
             }
             ++iter;
         }
@@ -67,8 +68,9 @@ namespace util {
     {
         std::u8string u8str;
         u8str.reserve(str.size());
-        std::ranges::transform(str, std::back_inserter(u8str),
-                               [](char c) { return static_cast<char8_t>(c); });
+        std::ranges::transform(str, std::back_inserter(u8str), [](char c) {
+            return std::bit_cast<char8_t>(c);
+        });
 
         return u8str;
     }
@@ -77,10 +79,32 @@ namespace util {
     {
         std::string str;
         str.reserve(u8str.size());
-        std::ranges::transform(u8str, std::back_inserter(str),
-                               [](char8_t c) { return static_cast<char>(c); });
+        std::ranges::transform(u8str, std::back_inserter(str), [](char8_t c) {
+            return std::bit_cast<char>(c);
+        });
 
         return str;
     }
+
+    std::array<unsigned char, 32>
+    bytes_to_chars(const std::array<std::byte, 32>& bytes)
+    {
+        std::array<unsigned char, 32> chars{};
+        std::ranges::transform(bytes, std::begin(chars), [](std::byte b) {
+            return std::bit_cast<unsigned char>(b);
+        });
+        return chars;
+    }
+
+    std::array<std::byte, 32>
+    chars_to_bytes(const std::array<unsigned char, 32>& chars)
+    {
+        std::array<std::byte, 32> bytes{};
+        std::ranges::transform(chars, std::begin(bytes), [](unsigned char c) {
+            return std::bit_cast<std::byte>(c);
+        });
+        return bytes;
+    }
+
 } // namespace util
 } // namespace support

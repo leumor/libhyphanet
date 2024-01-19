@@ -114,8 +114,8 @@ namespace util {
      *
      * @return a copy of the trimmed string
      */
-    inline std::string_view ltrim_copy(std::string_view s,
-                                       std::string_view chars = " \t\r\v\n")
+    [[nodiscard]] inline std::string_view
+    ltrim_copy(std::string_view s, std::string_view chars = " \t\r\v\n")
     {
         ltrim(s, chars);
         return s;
@@ -130,9 +130,10 @@ namespace util {
      *
      * @return a copy of the trimmed string
      */
-    inline std::string_view rtrim_copy(std::string_view s,
+    [[nodiscard]] inline std::string_view rtrim_copy(std::string_view s,
 
-                                       std::string_view chars = " \t\r\v\n")
+                                                     std::string_view chars
+                                                     = " \t\r\v\n")
     {
         rtrim(s, chars);
         return s;
@@ -147,8 +148,8 @@ namespace util {
      *
      * @return a copy of the trimmed string
      */
-    inline std::string_view trim_copy(std::string_view s,
-                                      std::string_view chars = " \t\r\v\n")
+    [[nodiscard]] inline std::string_view
+    trim_copy(std::string_view s, std::string_view chars = " \t\r\v\n")
     {
         trim(s, chars);
         return s;
@@ -165,7 +166,7 @@ namespace util {
      * @return bool true if the two underlying values are equal
      */
     template<concepts::EnumWithInt E>
-    bool compare_byte_enum(std::byte byte_value, E enum_value)
+    [[nodiscard]] bool compare_byte_enum(std::byte byte_value, E enum_value)
     {
         // Convert the enum class item to its underlying type using
         // std::to_underlying
@@ -189,7 +190,7 @@ namespace util {
      */
     template<typename T, typename R>
     requires concepts::RangeWithUnderlyingType<T, R>
-    bool in_range(const T& val, const R& arr)
+    [[nodiscard]] bool in_range(const T& val, const R& arr)
     {
         auto it = std::ranges::find(arr, val);
         return it != arr.end();
@@ -205,13 +206,13 @@ namespace util {
      *
      * @return a vector of bytes representing the string
      */
-    template<concepts::CharOrChar8_t T>
-    std::vector<std::byte> basicstr_to_bytes(std::basic_string_view<T> str)
+    template<concepts::CharOrChar8_t T> [[nodiscard]] std::vector<std::byte>
+    basicstr_to_bytes(std::basic_string_view<T> str)
     {
         std::vector<std::byte> bytes;
         bytes.reserve(str.size());
         std::ranges::transform(str, std::back_inserter(bytes), [](char c) {
-            return static_cast<std::byte>(c);
+            return std::bit_cast<std::byte>(c);
         });
         return bytes;
     }
@@ -223,7 +224,8 @@ namespace util {
      *
      * @return A vector of bytes representing the string.
      */
-    inline std::vector<std::byte> str_to_bytes(std::string_view str)
+    [[nodiscard]] inline std::vector<std::byte>
+    str_to_bytes(std::string_view str)
     {
         return basicstr_to_bytes(str);
     }
@@ -235,7 +237,8 @@ namespace util {
      *
      * @return a vector of bytes representing the std::u8string
      */
-    inline std::vector<std::byte> u8str_to_bytes(std::u8string_view str)
+    [[nodiscard]] inline std::vector<std::byte>
+    u8str_to_bytes(std::u8string_view str)
     {
         return basicstr_to_bytes(str);
     }
@@ -249,13 +252,13 @@ namespace util {
      * @param bytes the vector of bytes to convert
      * @return std::string the converted string
      */
-    template<concepts::CharOrChar8_t T>
-    std::basic_string<T> bytes_to_basicstr(const std::vector<std::byte>& bytes)
+    template<concepts::CharOrChar8_t T> [[nodiscard]] std::basic_string<T>
+    bytes_to_basicstr(const std::vector<std::byte>& bytes)
     {
         std::basic_string<T> str;
         str.reserve(bytes.size());
         std::ranges::transform(bytes, std::back_inserter(str),
-                               [](std::byte b) { return static_cast<T>(b); });
+                               [](std::byte b) { return std::bit_cast<T>(b); });
         return str;
     }
 
@@ -266,7 +269,8 @@ namespace util {
      *
      * @return the converted string
      */
-    inline std::string bytes_to_str(const std::vector<std::byte>& bytes)
+    [[nodiscard]] inline std::string
+    bytes_to_str(const std::vector<std::byte>& bytes)
     {
         return bytes_to_basicstr<char>(bytes);
     }
@@ -278,7 +282,8 @@ namespace util {
      *
      * @return the converted std::u8string
      */
-    inline std::u8string bytes_to_u8str(const std::vector<std::byte>& bytes)
+    [[nodiscard]] inline std::u8string
+    bytes_to_u8str(const std::vector<std::byte>& bytes)
     {
         return bytes_to_basicstr<char8_t>(bytes);
     }
@@ -290,7 +295,7 @@ namespace util {
      *
      * @return The converted std::u8string.
      */
-    std::u8string str_to_u8str(std::string_view str);
+    [[nodiscard]] std::u8string str_to_u8str(std::string_view str);
 
     /**
      * @brief Converts a std::u8string to a std::string.
@@ -299,7 +304,7 @@ namespace util {
      *
      * @return The converted std::string..
      */
-    std::string u8str_to_str(std::u8string_view u8str);
+    [[nodiscard]] std::string u8str_to_str(std::u8string_view u8str);
 
     /**
      * @brief Decodes an freenet specific URL encoded string
@@ -311,7 +316,14 @@ namespace util {
      *
      * @return std::string the translated String.
      */
-    std::string url_decode(std::string_view str, bool tolerant = false);
+    [[nodiscard]] std::string url_decode(std::string_view str,
+                                         bool tolerant = false);
+
+    [[nodiscard]] std::array<unsigned char, 32>
+    bytes_to_chars(const std::array<std::byte, 32>& bytes);
+
+    [[nodiscard]] std::array<std::byte, 32>
+    chars_to_bytes(const std::array<unsigned char, 32>& chars);
 } // namespace util
 
 namespace compressor {

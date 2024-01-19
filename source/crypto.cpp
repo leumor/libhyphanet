@@ -4,6 +4,7 @@
 #include "libhyphanet/support.h"
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <cryptopp/config_int.h>
 #include <cryptopp/filters.h>
 #include <cryptopp/gfpcrypt.h>
@@ -11,31 +12,13 @@
 #include <cryptopp/osrng.h>
 #include <cryptopp/queue.h>
 #include <cstddef>
+#include <fmt/core.h>
+#include <fmt/format.h>
 #include <iterator>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-
-std::array<unsigned char, 32>
-bytes_to_chars(const std::array<std::byte, 32>& bytes)
-{
-    std::array<unsigned char, 32> chars{};
-    std::ranges::transform(bytes, std::begin(chars), [](std::byte b) {
-        return static_cast<unsigned char>(b);
-    });
-    return chars;
-}
-
-std::array<std::byte, 32>
-chars_to_bytes(const std::array<unsigned char, 32>& chars)
-{
-    std::array<std::byte, 32> bytes{};
-    std::ranges::transform(chars, std::begin(bytes), [](unsigned char c) {
-        return static_cast<std::byte>(c);
-    });
-    return bytes;
-}
 
 namespace crypto {
 std::array<std::byte, 32>
@@ -43,6 +26,8 @@ rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
                         const std::array<std::byte, 32>& input)
 {
     using namespace cppcrypto;
+    using namespace support::util;
+
     auto rijndael = std::make_unique<rijndael256_256>();
     rijndael->init(bytes_to_chars(key).data(),
                    block_cipher::direction::encryption);
@@ -58,6 +43,8 @@ rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
                         const std::array<std::byte, 32>& input)
 {
     using namespace cppcrypto;
+    using namespace support::util;
+
     auto rijndael = std::make_unique<rijndael256_256>();
     rijndael->init(bytes_to_chars(key).data(),
                    block_cipher::direction::decryption);
@@ -68,7 +55,7 @@ rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
     return chars_to_bytes(output);
 }
 
-namespace cryptopp {
+namespace {
 
     std::vector<std::byte>
     cryptoppbytes_to_bytes(const std::vector<CryptoPP::byte>& cryptopp_bytes)
@@ -78,7 +65,7 @@ namespace cryptopp {
 
         std::ranges::transform(
             cryptopp_bytes, std::back_inserter(std_bytes),
-            [](CryptoPP::byte b) { return static_cast<std::byte>(b); });
+            [](CryptoPP::byte b) { return std::bit_cast<std::byte>(b); });
         return std_bytes;
     }
 
@@ -89,7 +76,7 @@ namespace cryptopp {
         cryptopp_bytes.reserve(bytes.size());
         std::ranges::transform(
             bytes, std::back_inserter(cryptopp_bytes),
-            [](std::byte b) { return static_cast<CryptoPP::byte>(b); });
+            [](std::byte b) { return std::bit_cast<CryptoPP::byte>(b); });
         return cryptopp_bytes;
     }
 
@@ -105,7 +92,25 @@ namespace cryptopp {
 
         return cryptoppbytes_to_bytes(cryptopp_bytes);
     }
-} // namespace cryptopp
+
+    [[nodiscard]] std::vector<std::byte> mpi_bytes(const CryptoPP::Integer& num)
+    {
+        using namespace CryptoPP;
+
+        const size_t len = num.BitCount();
+
+        std::vector<byte> bytes(2 + ((len + 8) >> 3));
+        num.Encode(&bytes[2], bytes.size() - 2, Integer::UNSIGNED);
+
+        bytes[0] = static_cast<byte>(len >> 8);
+        bytes[1] = static_cast<byte>(len & 0xff);
+
+        fmt::println("{:02x} Length: {}", fmt::join(bytes, " "), len);
+
+        return cryptoppbytes_to_bytes(bytes);
+    }
+
+} // namespace
 
 namespace dsa {
     namespace {
@@ -151,7 +156,7 @@ namespace dsa {
                 group_big_a_params.p, group_big_a_params.q,
                 group_big_a_params.g);
 
-            auto bytes = cryptopp::bytes_to_cryptoppbytes(key_bytes);
+            auto bytes = bytes_to_cryptoppbytes(key_bytes);
             ByteQueue queue;
             queue.Put(bytes.data(), bytes.size());
             queue.MessageEnd();
@@ -178,7 +183,7 @@ namespace dsa {
                                                        group_big_a_params.q,
                                                        group_big_a_params.g);
 
-            auto bytes = cryptopp::bytes_to_cryptoppbytes(key_bytes);
+            auto bytes = bytes_to_cryptoppbytes(key_bytes);
             ByteQueue queue;
             queue.Put(bytes.data(), bytes.size());
             queue.MessageEnd();
@@ -203,7 +208,7 @@ namespace dsa {
         ByteQueue priv_key_queue;
         priv_key.Save(priv_key_queue);
 
-        return cryptopp::bytequeue_to_bytes(priv_key_queue);
+        return bytequeue_to_bytes(priv_key_queue);
     }
 
     std::vector<std::byte>
@@ -215,7 +220,7 @@ namespace dsa {
         ByteQueue pub_key_queue;
         pub_key.Save(pub_key_queue);
 
-        return cryptopp::bytequeue_to_bytes(pub_key_queue);
+        return bytequeue_to_bytes(pub_key_queue);
     }
 
     std::pair<std::vector<std::byte>, std::vector<std::byte>> generate_keys()
@@ -243,8 +248,8 @@ namespace dsa {
         private_key.DEREncodePrivateKey(private_key_queue);
         public_key.DEREncodePublicKey(public_key_queue);
 
-        return {cryptopp::bytequeue_to_bytes(private_key_queue),
-                cryptopp::bytequeue_to_bytes(public_key_queue)};
+        return {bytequeue_to_bytes(private_key_queue),
+                bytequeue_to_bytes(public_key_queue)};
     }
 
     std::vector<std::byte>
@@ -256,7 +261,7 @@ namespace dsa {
         AutoSeededRandomPool prng;
 
         auto priv_key = load_priv_key(priv_key_bytes);
-        auto message = cryptopp::bytes_to_cryptoppbytes(message_bytes);
+        auto message = bytes_to_cryptoppbytes(message_bytes);
 
         std::string signature;
 
@@ -278,7 +283,7 @@ namespace dsa {
 
         auto pub_key = load_pub_key(pub_key_bytes);
 
-        bool result = false;
+        bool result = false; // NOLINT
 
         const DSA::Verifier verifier(pub_key);
         std::vector<std::byte> data_to_verify;
@@ -287,14 +292,24 @@ namespace dsa {
         data_to_verify.insert(data_to_verify.end(), signature.begin(),
                               signature.end());
         const VectorSource ss(
-            cryptopp::bytes_to_cryptoppbytes(data_to_verify), true,
+            bytes_to_cryptoppbytes(data_to_verify), true,
             new SignatureVerificationFilter(
                 verifier,
-                new ArraySink((byte*)&result, sizeof(result)), // NOLINT
+                new ArraySink(std::bit_cast<byte*>(&result), sizeof(result)),
                 SignatureVerificationFilter::PUT_RESULT
                     | SignatureVerificationFilter::SIGNATURE_AT_END));
 
         return result;
+    }
+
+    std::vector<std::byte>
+    priv_key_to_mpi_bytes(const std::vector<std::byte>& priv_key_bytes)
+    {
+        using namespace CryptoPP;
+
+        auto priv_key = load_priv_key(priv_key_bytes);
+
+        return mpi_bytes(priv_key.GetPrivateExponent());
     }
 
 } // namespace dsa

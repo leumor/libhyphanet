@@ -38,22 +38,6 @@ rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
 rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
                         const std::array<std::byte, 32>& input);
 
-namespace cryptopp {
-
-    [[nodiscard]] std::vector<std::byte>
-    cryptoppbytes_to_bytes(const std::vector<CryptoPP::byte>& cryptopp_bytes);
-
-    [[nodiscard]] std::vector<CryptoPP::byte>
-    bytes_to_cryptoppbytes(const std::vector<std::byte>& bytes);
-
-    [[nodiscard]] std::vector<std::byte>
-    bytequeue_to_bytes(CryptoPP::ByteQueue& queue);
-
-    [[nodiscard]] std::vector<std::byte>
-    pubkey_to_bytes(const CryptoPP::PublicKey& key);
-
-} // namespace cryptopp
-
 namespace dsa {
     [[nodiscard]] std::vector<std::byte>
     priv_key_bytes_to_pkcs8(const std::vector<std::byte>& key_bytes);
@@ -71,6 +55,9 @@ namespace dsa {
     [[nodiscard]] bool verify(const std::vector<std::byte>& pub_key_bytes,
                               const std::vector<std::byte>& message_bytes,
                               const std::vector<std::byte>& signature);
+
+    [[nodiscard]] std::vector<std::byte>
+    priv_key_to_mpi_bytes(const CryptoPP::DSA::PrivateKey& priv_key);
 
 } // namespace dsa
 
