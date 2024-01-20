@@ -57,7 +57,7 @@ namespace dsa {
                               const std::vector<std::byte>& signature);
 
     [[nodiscard]] std::vector<std::byte>
-    priv_key_to_mpi_bytes(const CryptoPP::DSA::PrivateKey& priv_key);
+    priv_key_bytes_to_mpi_bytes(const std::vector<std::byte>& priv_key_bytes);
 
 } // namespace dsa
 

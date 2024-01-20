@@ -197,6 +197,26 @@ namespace dsa {
             return pub_key;
         }
 
+        [[nodiscard]] std::vector<std::byte>
+        priv_key_to_bytes(const CryptoPP::DSA::PrivateKey& priv_key)
+        {
+            using namespace CryptoPP;
+            ByteQueue priv_key_queue;
+            priv_key.DEREncodePrivateKey(priv_key_queue);
+
+            return bytequeue_to_bytes(priv_key_queue);
+        }
+
+        [[nodiscard]] std::vector<std::byte>
+        pub_key_to_bytes(const CryptoPP::DSA::PublicKey& pub_key)
+        {
+            using namespace CryptoPP;
+            ByteQueue pub_key_queue;
+            pub_key.DEREncodePublicKey(pub_key_queue);
+
+            return bytequeue_to_bytes(pub_key_queue);
+        }
+
     } // namespace
 
     std::vector<std::byte>
@@ -229,27 +249,19 @@ namespace dsa {
 
         AutoSeededRandomPool prng;
 
-        DSA::PrivateKey private_key;
-        ByteQueue private_key_queue;
+        DSA::PrivateKey priv_key;
+        DSA::PublicKey pub_key;
 
-        DSA::PublicKey public_key;
-        ByteQueue public_key_queue;
-
-        while (!private_key.Validate(prng, 3)
-               || !public_key.Validate(prng, 3)) {
+        while (!priv_key.Validate(prng, 3) || !pub_key.Validate(prng, 3)) {
             // Generate Private Key
-            private_key.Initialize(prng, group_big_a_params.p,
-                                   group_big_a_params.q, group_big_a_params.g);
+            priv_key.Initialize(prng, group_big_a_params.p,
+                                group_big_a_params.q, group_big_a_params.g);
 
             // Generate Public Key
-            public_key.AssignFrom(private_key);
+            pub_key.AssignFrom(priv_key);
         }
 
-        private_key.DEREncodePrivateKey(private_key_queue);
-        public_key.DEREncodePublicKey(public_key_queue);
-
-        return {bytequeue_to_bytes(private_key_queue),
-                bytequeue_to_bytes(public_key_queue)};
+        return {priv_key_to_bytes(priv_key), pub_key_to_bytes(pub_key)};
     }
 
     std::vector<std::byte>
@@ -303,7 +315,7 @@ namespace dsa {
     }
 
     std::vector<std::byte>
-    priv_key_to_mpi_bytes(const std::vector<std::byte>& priv_key_bytes)
+    priv_key_bytes_to_mpi_bytes(const std::vector<std::byte>& priv_key_bytes)
     {
         using namespace CryptoPP;
 

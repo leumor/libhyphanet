@@ -106,5 +106,19 @@ namespace util {
         return bytes;
     }
 
+    std::vector<std::byte> hex_to_bytes(std::string_view hex)
+    {
+        std::vector<std::byte> bytes;
+
+        for (unsigned int i = 0; i < hex.length(); i += 2) {
+            auto byte_string = hex.substr(i, 2);
+            auto byte = static_cast<std::byte>(
+                std::stoi(std::string{byte_string}, nullptr, 16));
+            bytes.push_back(byte);
+        }
+
+        return bytes;
+    }
+
 } // namespace util
 } // namespace support

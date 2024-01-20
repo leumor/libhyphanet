@@ -1,8 +1,10 @@
-#include "libhyphanet/crypto.h"
+#include "crypto.cpp" // NOLINT
 #include "libhyphanet/support.h"
 #include <algorithm>
 #include <array>
 #include <catch2/catch_test_macros.hpp>
+#include <cryptopp/gfpcrypt.h>
+#include <cryptopp/integer.h>
 #include <cryptopp/queue.h>
 #include <cstddef>
 #include <fmt/core.h>
@@ -48,7 +50,12 @@ TEST_CASE("rijndael256_256", "[library][crypto]")
 
 TEST_CASE("DSA", "[library][crypto]")
 {
+    using namespace CryptoPP;
+    using namespace crypto::dsa;
+
     auto [priv_key_bytes, pub_key_bytes] = crypto::dsa::generate_keys();
+
+    fmt::println("Private key bytes: {:02x}", fmt::join(priv_key_bytes, " "));
 
     fmt::println(
         "Private key: {:02x}",
@@ -63,4 +70,25 @@ TEST_CASE("DSA", "[library][crypto]")
     fmt::println("Signature: {:02x}", fmt::join(signature, " "));
 
     REQUIRE(crypto::dsa::verify(pub_key_bytes, message, signature));
+
+    DL_GroupParameters_DSA params;
+    params.Initialize(group_big_a_params.p, group_big_a_params.q,
+                      group_big_a_params.g);
+    const Integer x{
+        "7023799064111746470536234125360927524069493472142839802707671571"
+        "6722926262045"};
+
+    CryptoPP::DSA::PrivateKey priv_key;
+    priv_key.Initialize(params, x);
+    priv_key_bytes = priv_key_to_bytes(priv_key);
+
+    // As bytes
+    auto priv_key_mpi_bytes = priv_key_bytes_to_mpi_bytes(priv_key_bytes);
+    fmt::println("Private key MPI bytes: {:02x}",
+                 fmt::join(priv_key_mpi_bytes, " "));
+
+    REQUIRE(
+        priv_key_mpi_bytes
+        == support::util::hex_to_bytes("0100009b494b3cfac60b09ba9f5f59bce5f0fc3"
+                                       "c37b5722ddbf1e9c9fd5da3e063971d"));
 }

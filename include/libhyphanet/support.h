@@ -324,6 +324,8 @@ namespace util {
 
     [[nodiscard]] std::array<std::byte, 32>
     chars_to_bytes(const std::array<unsigned char, 32>& chars);
+
+    [[nodiscard]] std::vector<std::byte> hex_to_bytes(std::string_view hex);
 } // namespace util
 
 namespace compressor {
