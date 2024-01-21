@@ -368,8 +368,8 @@ protected:
     calculate_encrypted_hashed_docname(
         std::string_view docname,
         const std::array<std::byte, crypto_key_length>& crypto_key,
-        const std::array<std::byte, routing_key_size>& routing_key,
-        const std::optional<CryptoPP::DSA::PublicKey>& pub_key);
+        const std::vector<std::byte>& routing_key,
+        const std::optional<std::vector<std::byte>>& pub_key);
 private:
     std::vector<std::byte> encrypted_hashed_docname_;
 };

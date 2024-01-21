@@ -56,7 +56,6 @@ rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
 }
 
 namespace {
-
     std::vector<std::byte>
     cryptoppbytes_to_bytes(const std::vector<CryptoPP::byte>& cryptopp_bytes)
     {
@@ -78,6 +77,12 @@ namespace {
             bytes, std::back_inserter(cryptopp_bytes),
             [](std::byte b) { return std::bit_cast<CryptoPP::byte>(b); });
         return cryptopp_bytes;
+    }
+
+    const CryptoPP::byte*
+    bytes_to_cryptoppbytes_ptr(const std::vector<std::byte>& bytes)
+    {
+        return std::bit_cast<const CryptoPP::byte*>(bytes.data());
     }
 
     std::vector<std::byte> bytequeue_to_bytes(CryptoPP::ByteQueue& queue)
@@ -111,6 +116,23 @@ namespace {
     }
 
 } // namespace
+
+void Sha256::update(const std::vector<std::byte>& data)
+{
+    hasher_.Update(bytes_to_cryptoppbytes_ptr(data), data.size());
+}
+
+void Sha256::update(std::string_view str)
+{
+    hasher_.Update(std::bit_cast<CryptoPP::byte*>(str.data()), str.size());
+}
+
+std::array<std::byte, 32> Sha256::digest()
+{
+    std::array<std::byte, 32> digest{};
+    hasher_.Final(std::bit_cast<CryptoPP::byte*>(digest.data()));
+    return digest;
+}
 
 namespace dsa {
     namespace {
@@ -156,9 +178,9 @@ namespace dsa {
                 group_big_a_params.p, group_big_a_params.q,
                 group_big_a_params.g);
 
-            auto bytes = bytes_to_cryptoppbytes(key_bytes);
+            auto bytes_ptr = bytes_to_cryptoppbytes_ptr(key_bytes);
             ByteQueue queue;
-            queue.Put(bytes.data(), bytes.size());
+            queue.Put(bytes_ptr, key_bytes.size());
             queue.MessageEnd();
 
             private_key.BERDecodePrivateKey(queue, false,
@@ -183,9 +205,9 @@ namespace dsa {
                                                        group_big_a_params.q,
                                                        group_big_a_params.g);
 
-            auto bytes = bytes_to_cryptoppbytes(key_bytes);
+            auto bytes_ptr = bytes_to_cryptoppbytes_ptr(key_bytes);
             ByteQueue queue;
-            queue.Put(bytes.data(), bytes.size());
+            queue.Put(bytes_ptr, key_bytes.size());
             queue.MessageEnd();
 
             pub_key.BERDecodePublicKey(queue, false, queue.MaxRetrievable());
@@ -273,13 +295,13 @@ namespace dsa {
         AutoSeededRandomPool prng;
 
         auto priv_key = load_priv_key(priv_key_bytes);
-        auto message = bytes_to_cryptoppbytes(message_bytes);
+        auto message = bytes_to_cryptoppbytes_ptr(message_bytes);
 
         std::string signature;
 
         const DSA::Signer signer(priv_key);
-        const VectorSource ss1(
-            message, true,
+        const ArraySource ss1(
+            message, message_bytes.size(), true,
             new SignerFilter(prng, signer,
                              new StringSink(signature)) // SignerFilter
         ); // StringSource
@@ -303,8 +325,11 @@ namespace dsa {
                               message_bytes.end());
         data_to_verify.insert(data_to_verify.end(), signature.begin(),
                               signature.end());
-        const VectorSource ss(
-            bytes_to_cryptoppbytes(data_to_verify), true,
+
+        auto data_to_verify_ptr = bytes_to_cryptoppbytes_ptr(data_to_verify);
+
+        const ArraySource ss(
+            data_to_verify_ptr, data_to_verify.size(), true,
             new SignatureVerificationFilter(
                 verifier,
                 new ArraySink(std::bit_cast<byte*>(&result), sizeof(result)),
@@ -322,6 +347,16 @@ namespace dsa {
         auto priv_key = load_priv_key(priv_key_bytes);
 
         return mpi_bytes(priv_key.GetPrivateExponent());
+    }
+
+    std::vector<std::byte>
+    pub_key_bytes_to_mpi_bytes(const std::vector<std::byte>& pub_key_bytes)
+    {
+        using namespace CryptoPP;
+
+        auto pub_key = load_pub_key(pub_key_bytes);
+
+        return mpi_bytes(pub_key.GetPublicElement());
     }
 
 } // namespace dsa

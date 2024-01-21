@@ -38,6 +38,22 @@ rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
 rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
                         const std::array<std::byte, 32>& input);
 
+class Sha256 {
+public:
+    Sha256() = default;
+    Sha256(const Sha256& other) = delete;
+    Sha256(Sha256&& other) noexcept = delete;
+    Sha256& operator=(const Sha256& other) = delete;
+    Sha256& operator=(Sha256&& other) noexcept = delete;
+    ~Sha256() = default;
+
+    void update(const std::vector<std::byte>& data);
+    void update(std::string_view str);
+    [[nodiscard]] std::array<std::byte, 32> digest();
+private:
+    CryptoPP::SHA256 hasher_;
+};
+
 namespace dsa {
     [[nodiscard]] std::vector<std::byte>
     priv_key_bytes_to_pkcs8(const std::vector<std::byte>& key_bytes);
@@ -58,6 +74,9 @@ namespace dsa {
 
     [[nodiscard]] std::vector<std::byte>
     priv_key_bytes_to_mpi_bytes(const std::vector<std::byte>& priv_key_bytes);
+
+    [[nodiscard]] std::vector<std::byte>
+    pub_key_bytes_to_mpi_bytes(const std::vector<std::byte>& pub_key_bytes);
 
 } // namespace dsa
 

@@ -1,4 +1,5 @@
 #include "crypto.cpp" // NOLINT
+#include "libhyphanet/crypto.h"
 #include "libhyphanet/support.h"
 #include <algorithm>
 #include <array>
@@ -91,4 +92,26 @@ TEST_CASE("DSA", "[library][crypto]")
         priv_key_mpi_bytes
         == support::util::hex_to_bytes("0100009b494b3cfac60b09ba9f5f59bce5f0fc3"
                                        "c37b5722ddbf1e9c9fd5da3e063971d"));
+}
+
+TEST_CASE("SHA-256", "[library][crypto]")
+{
+    crypto::Sha256 hasher;
+
+    const std::string message_1{"Yoda said, Do or do not. "};
+    const std::string message_2{"There is no try."};
+
+    hasher.update(support::util::str_to_bytes(message_1));
+    hasher.update(message_2);
+
+    auto digest = hasher.digest();
+    fmt::println("SHA-256: {:02x}", fmt::join(digest, " "));
+
+    auto bytes_to_verify
+        = support::util::hex_to_bytes("F00E3F70A268FBA990296B32FF2B6CE7A07"
+                                      "57F31EC3059B13D3DB1E60D9E885C");
+    std::array<std::byte, 32> digest_to_verify{};
+    std::ranges::copy(bytes_to_verify, digest_to_verify.begin());
+
+    REQUIRE(digest == digest_to_verify);
 }
