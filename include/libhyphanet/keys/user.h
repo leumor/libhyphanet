@@ -33,6 +33,8 @@ namespace keys::user {
  *                   ClientKey by some algorithm.
  */
 class Key {
+protected:
+    class Token {};
 public:
     enum class Crypto_algorithm {
         /**
@@ -59,11 +61,12 @@ public:
     explicit Key(Key_params key)
         : routing_key_(std::move(key.routing_key)), crypto_key_(key.crypto_key),
           crypto_algorithm_(key.crypto_algorithm)
-    {}
+    {
+        check_invariants();
+    }
 
-    explicit Key(const Uri& uri);
-
-    Key() = default;
+    explicit Key(Token /*unused*/) {}
+    Key() = delete;
     Key(const Key& other) = default;
     Key(Key&& other) noexcept = default;
     Key& operator=(const Key& other) = default;
@@ -72,7 +75,7 @@ public:
 
     [[nodiscard]] virtual std::string to_uri() const = 0;
 
-    [[nodiscard]] static std::unique_ptr<Key> create_from_uri(const Uri& uri);
+    [[nodiscard]] static std::unique_ptr<Key> create(const Uri& uri);
 
     [[nodiscard]] std::vector<std::byte> get_routing_key() const
     {
@@ -90,7 +93,9 @@ public:
         return crypto_algorithm_;
     }
 protected:
-    void set_routing_key(std::vector<std::byte> key)
+    virtual void init_from_uri(const Uri& uri);
+
+    virtual void set_routing_key(std::vector<std::byte> key)
     {
         routing_key_ = std::move(key);
     }
@@ -103,6 +108,8 @@ protected:
         crypto_algorithm_ = algo;
     }
 private:
+    void check_invariants() const;
+
     /**
      * @brief Client Routing key.
      *
@@ -177,17 +184,20 @@ public:
  */
 class Insertable {
 public:
-    Insertable() = default;
-    explicit Insertable(const CryptoPP::DSA::PrivateKey& priv_key)
-        : priv_key_(priv_key)
+    explicit Insertable(const std::vector<std::byte>& priv_key)
+        : priv_key_{priv_key}
     {}
+
+    Insertable() = delete;
+    virtual ~Insertable() = 0;
 
     /**
      * @brief Return the private key for current [Key](#Key).
      */
-    CryptoPP::DSA::PrivateKey get_priv_key() const { return priv_key_; }
-
-    virtual ~Insertable() = 0;
+    [[nodiscard]] std::vector<std::byte> get_priv_key() const
+    {
+        return priv_key_;
+    }
 private:
     /**
      * @brief Private key for current [Key](#Key)
@@ -197,8 +207,7 @@ private:
      * Once signed, the data can be inserted into the network.
      *
      */
-    CryptoPP::DSA::PrivateKey priv_key_;
-    CryptoPP::DSA::PublicKey pub_key_;
+    std::vector<std::byte> priv_key_;
 };
 
 /**
@@ -214,11 +223,17 @@ class Subspace_key : public Key {
 public:
     Subspace_key(Key_params key, std::string_view docname)
         : Key{std::move(key)}, docname_(docname)
-    {}
+    {
+        check_invariants();
 
-    explicit Subspace_key(const Uri& uri);
+        // SSK always uses algo_aes_pcfb_256_sha_256
+        set_crypto_algorithm(Crypto_algorithm::algo_aes_pcfb_256_sha_256);
 
-    Subspace_key() = default;
+        get_routing_key().reserve(routing_key_size);
+    }
+
+    explicit Subspace_key(Token t): Key{t} {}
+    Subspace_key() = delete;
     Subspace_key(const Subspace_key& other) = default;
     Subspace_key(Subspace_key&& other) noexcept = default;
     Subspace_key& operator=(const Subspace_key& other) = default;
@@ -230,9 +245,13 @@ public:
     static const size_t routing_key_size
         = 32; // TODO: same as Node_ssk::pubkey_hash_size
 protected:
+    void init_from_uri(const Uri& uri) override;
+
+    [[nodiscard]] virtual std::vector<std::byte> get_extra_bytes();
     void set_docname(std::string_view docname) { docname_ = docname; }
-    void parse_algo(std::byte algo_byte);
 private:
+    void check_invariants() const;
+
     /**
      * @brief Document name.
      *
@@ -247,6 +266,64 @@ private:
      * - [Key#crypto_key_](#Key#crypto_key_)
      */
     std::string docname_;
+};
+
+class Ssk : public Subspace_key, public Client {
+public:
+    Ssk(Key_params key, std::string_view docname,
+        const std::optional<const std::vector<std::byte>>& pub_key
+        = std::nullopt)
+        : Subspace_key{std::move(key), docname}, pub_key_{pub_key}
+    {
+        calculate_encrypted_hashed_docname();
+        check_invariants();
+    }
+
+    explicit Ssk(Token t): Subspace_key{t} {}
+    Ssk() = delete;
+    Ssk(const Ssk& other) = default;
+    Ssk(Ssk&& other) noexcept = default;
+    Ssk& operator=(const Ssk& other) = default;
+    Ssk& operator=(Ssk&& other) noexcept = default;
+    ~Ssk() override = default;
+
+    [[nodiscard]] std::string to_uri() const override;
+    [[nodiscard]] node::Node_key get_node_key() const override;
+
+    void set_pub_key(const std::vector<std::byte>& pub_key);
+
+    [[nodiscard]] std::optional<std::vector<std::byte>> get_pub_key() const
+    {
+        return pub_key_;
+    }
+protected:
+    void init_from_uri(const Uri& uri) override;
+private:
+    void calculate_encrypted_hashed_docname();
+    void check_invariants() const;
+    [[nodiscard]] static std::array<std::byte, 32>
+    calculate_pub_key_hash(const std::vector<std::byte>& pub_key);
+
+    std::array<std::byte, 32> encrypted_hashed_docname_{};
+
+    std::optional<std::vector<std::byte>> pub_key_;
+};
+
+class Insertable_ssk : public Ssk, public Insertable {
+public:
+    Insertable_ssk(Key_params key, std::string_view docname,
+                   const std::vector<std::byte>& priv_key)
+        : Ssk{std::move(key), docname}, Insertable(priv_key)
+    {}
+
+    Insertable_ssk(Ssk ssk, const std::vector<std::byte>& priv_key)
+        : Ssk{std::move(ssk)}, Insertable{priv_key}
+    {}
+
+    explicit Insertable_ssk(Token t): Ssk{t} {}
+    Insertable_ssk() = delete;
+protected:
+    void init_from_uri(const Uri& uri) override;
 };
 
 /**
@@ -276,9 +353,8 @@ public:
           suggested_edition_(suggested_edition)
     {}
 
-    explicit Usk(const Uri& uri);
-
-    Usk() = default;
+    explicit Usk(Token t): Subspace_key{t} {}
+    Usk() = delete;
     Usk(const Usk& other) = default;
     Usk(Usk&& other) noexcept = default;
     Usk& operator=(const Usk& other) = default;
@@ -286,6 +362,8 @@ public:
     ~Usk() override = default;
 
     [[nodiscard]] std::string to_uri() const override;
+protected:
+    void init_from_uri(const Uri& uri) override;
 private:
     /**
      * @brief The character to separate the site name from the edition
@@ -330,9 +408,12 @@ private:
 
 class Insertable_usk : public Usk, public Insertable {
 public:
-    Insertable_usk(Usk usk, const CryptoPP::DSA::PrivateKey& priv_key)
+    Insertable_usk(Usk usk, const std::vector<std::byte>& priv_key)
         : Usk(std::move(usk)), Insertable(priv_key)
     {}
+
+    explicit Insertable_usk(Token t): Usk{t} {}
+    Insertable_usk() = delete;
 
     /**
      * @brief Create a from uri object.
@@ -348,51 +429,12 @@ public:
     create_insertable_from_uri(const Uri& uri);
 };
 
-class Ssk : public Subspace_key, public Client {
-public:
-    Ssk(Key_params key, std::string_view docname);
-
-    explicit Ssk(const Uri& uri);
-
-    Ssk() = default;
-    Ssk(const Ssk& other) = default;
-    Ssk(Ssk&& other) noexcept = default;
-    Ssk& operator=(const Ssk& other) = default;
-    Ssk& operator=(Ssk&& other) noexcept = default;
-    ~Ssk() override = default;
-
-    [[nodiscard]] std::string to_uri() const override;
-    [[nodiscard]] node::Node_key get_node_key() const override;
-protected:
-    [[nodiscard]] static std::vector<std::byte>
-    calculate_encrypted_hashed_docname(
-        std::string_view docname,
-        const std::array<std::byte, crypto_key_length>& crypto_key,
-        const std::vector<std::byte>& routing_key,
-        const std::optional<std::vector<std::byte>>& pub_key);
-private:
-    std::vector<std::byte> encrypted_hashed_docname_;
-};
-
-class Insertable_ssk : public Ssk, public Insertable {
-public:
-    Insertable_ssk() = default;
-    Insertable_ssk(Key_params key, std::string_view docname,
-                   const CryptoPP::DSA::PrivateKey& priv_key)
-        : Ssk{std::move(key), docname}, Insertable(priv_key)
-    {}
-
-    Insertable_ssk(Ssk ssk, const CryptoPP::DSA::PrivateKey& priv_key)
-        : Ssk(std::move(ssk)), Insertable(priv_key)
-    {}
-};
-
 class Ksk : public Insertable_ssk {
 public:
     explicit Ksk(std::string keyword);
-    explicit Ksk(const Uri& uri);
 
-    Ksk() = default;
+    explicit Ksk(Token t): Insertable_ssk{t} {}
+    Ksk() = delete;
 private:
     std::string keyword_;
 };
@@ -404,15 +446,19 @@ public:
         : Key(std::move(key)), control_document_(control_document),
           compression_algorithm_(compression_algorithm)
     {}
-    explicit Chk(const Uri& uri);
 
-    Chk() = default;
+    explicit Chk(Token t): Key{t} {}
+    Chk() = delete;
 
     [[nodiscard]] std::string to_uri() const override;
     [[nodiscard]] node::Node_key get_node_key() const override;
 
     static const short routing_key_length = 32;
+protected:
+    void init_from_uri(const Uri& uri) override;
 private:
+    void parse_algo(std::byte algo_byte);
+
     bool control_document_{false};
     support::compressor::Compress_type compression_algorithm_{
         support::compressor::Compress_type::gzip};

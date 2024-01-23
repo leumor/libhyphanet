@@ -28,32 +28,6 @@ Uri::Uri(Uri_params url_params)
     Expects(
         (!routing_key_.empty() && !crypto_key_.empty() && !extra_.empty())
         || (!routing_key_.empty() && !crypto_key_.empty() && !extra_.empty()));
-
-    // TODO: move the checks to the constructor of Child classes
-    // using enum keys::Uri_type;
-
-    // if (in_range(uri_type_, std::array<Uri_type, 3>{chk, ssk, usk})) {
-    //     // CHK, SSK and USKs require routing key, crypto key and extra data
-    //     Expects(routing_key_ && crypto_key_ && extra_);
-
-    //     // CHK routing key length check
-    //     if (uri_type_ == chk) {
-    //         Expects(routing_key_->size() == user::Chk::routing_key_length);
-    //     }
-
-    //     // Crypto key length check
-    //     Expects(crypto_key_->size() == user::Key::crypto_key_length);
-
-    //     // Extra data length check
-    //     Expects(extra_->size() >= user::Key::extra_length);
-    // }
-    // else if (uri_type_ == ksk) {
-    //     // KSK should not have routing key or crypto key or extra data
-    //     Expects(!routing_key_ && !crypto_key_ && !extra_);
-
-    //     // KSK should have a docname (keyword)
-    //     Expects(docname_);
-    // }
 }
 
 std::unique_ptr<Uri> Uri::create(std::string_view uri, bool no_trim)

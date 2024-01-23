@@ -326,6 +326,28 @@ namespace util {
     chars_to_bytes(const std::array<unsigned char, 32>& chars);
 
     [[nodiscard]] std::vector<std::byte> hex_to_bytes(std::string_view hex);
+
+    template<typename T, std::size_t N>
+    std::array<T, N> vector_to_array(const std::vector<T>& vec)
+    {
+        std::array<T, N> arr;
+        std::copy_n(vec.begin(), N, arr.begin());
+        return arr;
+    }
+
+    template<typename T, std::size_t N>
+    std::vector<T> array_to_vector(const std::array<T, N>& arr)
+    {
+        std::vector<T> vec(arr.begin(), arr.end());
+        return vec;
+    }
+
+    template<class T, std::size_t N>
+    bool equal(const std::vector<T>& v, const std::array<T, N>& a)
+    {
+        if (v.size() != N) { return false; }
+        return std::equal(v.begin(), v.end(), a.begin());
+    }
 } // namespace util
 
 namespace compressor {
