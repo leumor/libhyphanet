@@ -13,6 +13,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -35,8 +36,10 @@ namespace keys::user {
 class Key {
 protected:
     class Token {};
+    friend class Insertable;
 public:
-    enum class Crypto_algorithm {
+    // Remmember to also modify valid_crypto_algorithms if you change this
+    enum class Crypto_algorithm : std::underlying_type_t<std::byte> {
         /**
          * AES-256 with
          * [PCFB](https://csrc.nist.rip/groups/ST/toolkit/BCM/documents/proposedmodes/pcfb/pcfb-spec.pdf)
@@ -48,9 +51,10 @@ public:
          */
         algo_aes_ctr_256_sha_256 = 3,
     };
+    static constexpr std::array<std::byte, 2> valid_crypto_algorithms{
+        std::byte{2}, std::byte{3}};
 
     static const size_t crypto_key_length = 32;
-    static const size_t extra_length = 5;
 
     struct Key_params {
         std::vector<std::byte> routing_key;
@@ -188,6 +192,7 @@ public:
         : priv_key_{priv_key}
     {}
 
+    explicit Insertable(Key::Token /*unused*/) {}
     Insertable() = delete;
     virtual ~Insertable() = 0;
 
@@ -197,6 +202,11 @@ public:
     [[nodiscard]] std::vector<std::byte> get_priv_key() const
     {
         return priv_key_;
+    }
+protected:
+    void set_priv_key(std::vector<std::byte> key)
+    {
+        priv_key_ = std::move(key);
     }
 private:
     /**
@@ -244,10 +254,11 @@ public:
 
     static const size_t routing_key_size
         = 32; // TODO: same as Node_ssk::pubkey_hash_size
+    static const size_t extra_length = 5;
 protected:
     void init_from_uri(const Uri& uri) override;
 
-    [[nodiscard]] virtual std::vector<std::byte> get_extra_bytes();
+    [[nodiscard]] virtual std::vector<std::byte> get_extra_bytes() const;
     void set_docname(std::string_view docname) { docname_ = docname; }
 private:
     void check_invariants() const;
@@ -320,10 +331,8 @@ public:
         : Ssk{std::move(ssk)}, Insertable{priv_key}
     {}
 
-    explicit Insertable_ssk(Token t): Ssk{t} {}
+    explicit Insertable_ssk(Token t): Ssk{t}, Insertable{t} {}
     Insertable_ssk() = delete;
-protected:
-    void init_from_uri(const Uri& uri) override;
 };
 
 /**
@@ -412,7 +421,7 @@ public:
         : Usk(std::move(usk)), Insertable(priv_key)
     {}
 
-    explicit Insertable_usk(Token t): Usk{t} {}
+    explicit Insertable_usk(Token t): Usk{t}, Insertable{t} {}
     Insertable_usk() = delete;
 
     /**
@@ -435,6 +444,8 @@ public:
 
     explicit Ksk(Token t): Insertable_ssk{t} {}
     Ksk() = delete;
+protected:
+    void init_from_uri(const Uri& uri) override;
 private:
     std::string keyword_;
 };
@@ -442,9 +453,9 @@ private:
 class Chk : public Key, public Client {
 public:
     Chk(Key_params key, bool control_document,
-        support::compressor::Compress_type compression_algorithm)
+        support::compressor::Compressor_type compressor)
         : Key(std::move(key)), control_document_(control_document),
-          compression_algorithm_(compression_algorithm)
+          compressor_(compressor)
     {}
 
     explicit Chk(Token t): Key{t} {}
@@ -453,15 +464,18 @@ public:
     [[nodiscard]] std::string to_uri() const override;
     [[nodiscard]] node::Node_key get_node_key() const override;
 
+    static const size_t extra_length = 5;
     static const short routing_key_length = 32;
 protected:
     void init_from_uri(const Uri& uri) override;
 private:
     void parse_algo(std::byte algo_byte);
+    void parse_compressor(std::byte byte_1, std::byte byte_2);
+    [[nodiscard]] std::vector<std::byte> get_extra_bytes() const;
 
     bool control_document_{false};
-    support::compressor::Compress_type compression_algorithm_{
-        support::compressor::Compress_type::gzip};
+    support::compressor::Compressor_type compressor_{
+        support::compressor::Compressor_type::gzip};
 };
 
 } // namespace keys::user

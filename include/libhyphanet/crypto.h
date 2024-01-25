@@ -63,6 +63,8 @@ namespace dsa {
 
     [[nodiscard]] std::pair<std::vector<std::byte>, std::vector<std::byte>>
     generate_keys();
+    [[nodiscard]] std::pair<std::vector<std::byte>, std::vector<std::byte>>
+    generate_keys(CryptoPP::RandomNumberGenerator& rng);
 
     [[nodiscard]] std::vector<std::byte>
     sign(const std::vector<std::byte>& priv_key_bytes,

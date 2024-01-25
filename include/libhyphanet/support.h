@@ -351,12 +351,8 @@ namespace util {
 } // namespace util
 
 namespace compressor {
-    enum class Compress_type : short {
-        gzip = 0,
-        bzip2 = 1,
-        lzma = 2,
-        lzma_new = 3
-    };
+    enum class Compressor_type { gzip = 0, bzip2 = 1, lzma = 2, lzma_new = 3 };
+    static constexpr std::array<int, 4> valid_compressor_types{0, 1, 2, 3};
 } // namespace compressor
 
 } // namespace support

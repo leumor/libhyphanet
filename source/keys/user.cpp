@@ -3,17 +3,21 @@
 #include "libhyphanet/keys.h"
 #include "libhyphanet/support.h"
 #include <algorithm>
+#include <array>
 #include <cstddef>
+#include <gsl/assert>
+#include <gsl/util>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace keys::user {
 
 std::unique_ptr<Key> Key::create(const Uri& uri)
 {
     std::unique_ptr<Key> key;
-    Token t{};
+    const Token t{};
 
     switch (uri.get_uri_type()) {
         using enum keys::Uri_type;
@@ -39,10 +43,6 @@ std::unique_ptr<Key> Key::create(const Uri& uri)
 
 void Key::init_from_uri(const Uri& uri)
 {
-    if (uri.get_extra().size() < extra_length) {
-        throw exception::Malformed_uri{"Invalid URI: invalid extra data"};
-    }
-
     routing_key_ = uri.get_routing_key();
 
     const auto& crypto_key = uri.get_crypto_key();
@@ -79,7 +79,7 @@ void Subspace_key::init_from_uri(const Uri& uri)
     set_crypto_algorithm(Crypto_algorithm::algo_aes_pcfb_256_sha_256);
 
     if (const auto& extra = uri.get_extra();
-        extra.size() != 5 || extra != get_extra_bytes()) {
+        extra.size() != extra_length || extra != get_extra_bytes()) {
         throw exception::Malformed_uri{"Invalid URI: invalid extra data"};
     }
 
@@ -99,7 +99,7 @@ void Subspace_key::check_invariants() const
     }
 }
 
-std::vector<std::byte> Subspace_key::get_extra_bytes()
+std::vector<std::byte> Subspace_key::get_extra_bytes() const
 {
     std::vector<std::byte> extra_bytes{
         std::byte{node::Node_ssk::ssk_version}, // Node SSK version
@@ -196,17 +196,97 @@ void Usk::init_from_uri(const Uri& uri)
         }
     }
 }
+
+void Ksk::init_from_uri(const Uri& uri)
+{
+    auto meta_strings = uri.get_meta_strings();
+
+    if (meta_strings.size() < 2) {
+        throw exception::Malformed_uri{"Invalid URI: missing keyword"};
+    }
+
+    const auto& keyword = meta_strings[0];
+    if (keyword.empty()) {
+        throw exception::Malformed_uri{"Invalid URI: missing keyword"};
+    }
+
+    crypto::Sha256 hasher;
+    hasher.update(keyword);
+    set_crypto_key(hasher.digest());
+
+    auto [priv_key_bytes, pub_key_bytes] = crypto::dsa::generate_keys();
+    set_priv_key(priv_key_bytes);
+    set_pub_key(pub_key_bytes);
+
+    hasher.update(crypto::dsa::pub_key_bytes_to_mpi_bytes(pub_key_bytes));
+    auto pub_key_hash = hasher.digest();
+    set_routing_key(support::util::array_to_vector(pub_key_hash));
+}
+
+void Chk::init_from_uri(const Uri& uri)
+{
+    Key::init_from_uri(uri);
+
+    if (uri.get_uri_type() != Uri_type::chk) {
+        throw exception::Malformed_uri{"Invalid URI: expected CHK"};
+    }
+
+    const auto& extra = uri.get_extra();
+    if (extra.size() != extra_length || extra != get_extra_bytes()) {
+        throw exception::Malformed_uri{"Invalid URI: invalid extra data"};
+    }
+
+    // byte 0 is reserved, for now
+
+    // byte 1 is the crypto algorithm
+    auto algo_byte = extra.at(1);
+    parse_algo(algo_byte);
+
+    // byte 2 is the control document flag
+    control_document_ = (extra.at(2) & std::byte{0x02}) != std::byte{0};
+
+    // byte 3 and 4 are the compress algorithm
+    parse_compressor(extra.at(3), extra.at(4));
+}
+
 void Chk::parse_algo(std::byte algo_byte)
 {
-    if (const int algo = std::to_integer<int>(algo_byte); algo == 2) {
-        set_crypto_algorithm(Crypto_algorithm::algo_aes_pcfb_256_sha_256);
-    }
-    else if (algo == 3) {
-        set_crypto_algorithm(Crypto_algorithm::algo_aes_ctr_256_sha_256);
-    }
-    else {
+    if (!support::util::in_range(algo_byte, valid_crypto_algorithms)) {
         throw exception::Malformed_uri{
-            "Invalid URI: invalid Crypto algorithm in extra data"};
+            "Invalid URI: invalid extra data (cryto algorithm)"};
     }
+
+    set_crypto_algorithm(static_cast<Crypto_algorithm>(algo_byte));
+}
+
+void Chk::parse_compressor(std::byte byte_1, std::byte byte_2)
+{
+    int compressor_value = std::to_integer<int>((byte_1 & std::byte{0xff}) << 8)
+                           + std::to_integer<int>(byte_2 & std::byte{0xff});
+
+    using namespace support;
+
+    if (!util::in_range(compressor_value, compressor::valid_compressor_types)) {
+        throw exception::Malformed_uri{
+            "Invalid URI: invalid extra data (compressor)"};
+    }
+
+    compressor_ = static_cast<compressor::Compressor_type>(compressor_value);
+}
+
+std::vector<std::byte> Chk::get_extra_bytes() const
+{
+    auto crypto_algorithm = static_cast<std::byte>(get_crypto_algorithm());
+    auto compressor = static_cast<int>(compressor_);
+
+    std::vector<std::byte> extra_bytes{
+        crypto_algorithm >> 8, // Not used
+        crypto_algorithm,
+        control_document_ ? std::byte{2} : std::byte{0},
+        gsl::narrow_cast<std::byte>(compressor >> 8),
+        gsl::narrow_cast<std::byte>(compressor),
+    };
+
+    return extra_bytes;
 }
 } // namespace keys::user

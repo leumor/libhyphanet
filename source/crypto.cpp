@@ -6,6 +6,7 @@
 #include <array>
 #include <bit>
 #include <cryptopp/config_int.h>
+#include <cryptopp/cryptlib.h>
 #include <cryptopp/filters.h>
 #include <cryptopp/gfpcrypt.h>
 #include <cryptopp/integer.h>
@@ -267,17 +268,22 @@ namespace dsa {
 
     std::pair<std::vector<std::byte>, std::vector<std::byte>> generate_keys()
     {
-        using namespace CryptoPP;
+        CryptoPP::AutoSeededRandomPool prng;
+        return generate_keys(prng);
+    }
 
-        AutoSeededRandomPool prng;
+    std::pair<std::vector<std::byte>, std::vector<std::byte>>
+    generate_keys(CryptoPP::RandomNumberGenerator& rng)
+    {
+        using namespace CryptoPP;
 
         DSA::PrivateKey priv_key;
         DSA::PublicKey pub_key;
 
-        while (!priv_key.Validate(prng, 3) || !pub_key.Validate(prng, 3)) {
+        while (!priv_key.Validate(rng, 3) || !pub_key.Validate(rng, 3)) {
             // Generate Private Key
-            priv_key.Initialize(prng, group_big_a_params.p,
-                                group_big_a_params.q, group_big_a_params.g);
+            priv_key.Initialize(rng, group_big_a_params.p, group_big_a_params.q,
+                                group_big_a_params.g);
 
             // Generate Public Key
             pub_key.AssignFrom(priv_key);
