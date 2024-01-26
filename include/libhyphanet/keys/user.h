@@ -54,8 +54,6 @@ public:
     static constexpr std::array<std::byte, 2> valid_crypto_algorithms{
         std::byte{2}, std::byte{3}};
 
-    static const size_t crypto_key_length = 32;
-
     struct Key_params {
         std::vector<std::byte> routing_key;
         std::array<std::byte, crypto_key_length> crypto_key;
@@ -77,7 +75,7 @@ public:
     Key& operator=(Key&& other) noexcept = default;
     virtual ~Key() = default;
 
-    [[nodiscard]] virtual std::string to_uri() const = 0;
+    [[nodiscard]] virtual Uri to_uri() const = 0;
 
     [[nodiscard]] static std::unique_ptr<Key> create(const Uri& uri);
 
@@ -252,6 +250,8 @@ public:
 
     [[nodiscard]] std::string get_docname() const { return docname_; }
 
+    [[nodiscard]] Uri to_uri() const override;
+
     static const size_t routing_key_size
         = 32; // TODO: same as Node_ssk::pubkey_hash_size
     static const size_t extra_length = 5;
@@ -298,7 +298,7 @@ public:
     Ssk& operator=(Ssk&& other) noexcept = default;
     ~Ssk() override = default;
 
-    [[nodiscard]] std::string to_uri() const override;
+    [[nodiscard]] Uri to_uri() const override;
     [[nodiscard]] node::Node_key get_node_key() const override;
 
     void set_pub_key(const std::vector<std::byte>& pub_key);
@@ -370,7 +370,7 @@ public:
     Usk& operator=(Usk&& other) noexcept = default;
     ~Usk() override = default;
 
-    [[nodiscard]] std::string to_uri() const override;
+    [[nodiscard]] Uri to_uri() const override;
 protected:
     void init_from_uri(const Uri& uri) override;
 private:
@@ -444,6 +444,8 @@ public:
 
     explicit Ksk(Token t): Insertable_ssk{t} {}
     Ksk() = delete;
+
+    [[nodiscard]] Uri to_uri() const override;
 protected:
     void init_from_uri(const Uri& uri) override;
 private:
@@ -461,7 +463,7 @@ public:
     explicit Chk(Token t): Key{t} {}
     Chk() = delete;
 
-    [[nodiscard]] std::string to_uri() const override;
+    [[nodiscard]] Uri to_uri() const override;
     [[nodiscard]] node::Node_key get_node_key() const override;
 
     static const size_t extra_length = 5;

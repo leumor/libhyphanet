@@ -14,6 +14,10 @@
 
 namespace keys::user {
 
+// =============================================================================
+// class Key
+// =============================================================================
+
 std::unique_ptr<Key> Key::create(const Uri& uri)
 {
     std::unique_ptr<Key> key;
@@ -63,7 +67,15 @@ void Key::check_invariants() const
     }
 }
 
+// =============================================================================
+// class Insertable
+// =============================================================================
+
 Insertable::~Insertable() = default;
+
+// =============================================================================
+// class Subspace_key
+// =============================================================================
 
 void Subspace_key::init_from_uri(const Uri& uri)
 {
@@ -114,7 +126,22 @@ std::vector<std::byte> Subspace_key::get_extra_bytes() const
     return extra_bytes;
 }
 
+Uri Subspace_key::to_uri() const
+{
+    Uri_params params;
+    params.routing_key = get_routing_key();
+    params.crypto_key = get_crypto_key();
+    params.extra = get_extra_bytes();
+    params.meta_strings = {docname_};
+
+    return Uri{params};
+}
+
 Subspace_key::~Subspace_key() = default;
+
+// =============================================================================
+// class Ssk
+// =============================================================================
 
 void Ssk::init_from_uri(const Uri& uri)
 {
@@ -173,6 +200,17 @@ Ssk::calculate_pub_key_hash(const std::vector<std::byte>& pub_key)
     return hasher.digest();
 }
 
+Uri Ssk::to_uri() const
+{
+    auto uri = Subspace_key::to_uri();
+    uri.set_uri_type(Uri_type::ssk);
+    return uri;
+}
+
+// =============================================================================
+// class Usk
+// =============================================================================
+
 void Usk::init_from_uri(const Uri& uri)
 {
     Subspace_key::init_from_uri(uri);
@@ -196,6 +234,20 @@ void Usk::init_from_uri(const Uri& uri)
         }
     }
 }
+
+Uri Usk::to_uri() const
+{
+    auto uri = Subspace_key::to_uri();
+    uri.set_uri_type(Uri_type::usk);
+    auto meta_strings = uri.get_meta_strings();
+    meta_strings.push_back(std::to_string(suggested_edition_));
+    uri.set_meta_strings(meta_strings);
+    return uri;
+}
+
+// =============================================================================
+// class Ksk
+// =============================================================================
 
 void Ksk::init_from_uri(const Uri& uri)
 {
@@ -222,6 +274,19 @@ void Ksk::init_from_uri(const Uri& uri)
     auto pub_key_hash = hasher.digest();
     set_routing_key(support::util::array_to_vector(pub_key_hash));
 }
+
+Uri Ksk::to_uri() const
+{
+    Uri_params params;
+    params.uri_type = Uri_type::ksk;
+    params.meta_strings = {keyword_};
+
+    return Uri{params};
+}
+
+// =============================================================================
+// class Chk
+// =============================================================================
 
 void Chk::init_from_uri(const Uri& uri)
 {
@@ -289,4 +354,16 @@ std::vector<std::byte> Chk::get_extra_bytes() const
 
     return extra_bytes;
 }
+
+Uri Chk::to_uri() const
+{
+    Uri_params params;
+    params.uri_type = Uri_type::chk;
+    params.routing_key = get_routing_key();
+    params.crypto_key = get_crypto_key();
+    params.extra = get_extra_bytes();
+
+    return Uri{params};
+}
+
 } // namespace keys::user

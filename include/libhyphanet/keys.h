@@ -1,6 +1,7 @@
 #ifndef LIBHYPHANET_KEYS_H
 #define LIBHYPHANET_KEYS_H
 
+#include <array>
 #include <cryptopp/dsa.h>
 #include <cryptopp/gfpcrypt.h>
 #include <cstddef>
@@ -46,10 +47,12 @@ enum class Uri_type {
     chk, ///< [Content Hash Key](#user::Chk)
 };
 
+static const size_t crypto_key_length = 32;
+
 struct Uri_params {
     Uri_type uri_type{Uri_type::usk};
     std::vector<std::byte> routing_key;
-    std::vector<std::byte> crypto_key;
+    std::array<std::byte, crypto_key_length> crypto_key;
     std::vector<std::byte> extra;
     std::vector<std::string> meta_strings;
 };
@@ -107,6 +110,7 @@ public:
      * @return Uri_type The key type
      */
     [[nodiscard]] Uri_type get_uri_type() const { return uri_type_; }
+    void set_uri_type(Uri_type uri_type) { uri_type_ = uri_type; }
 
     /**
      * @brief Get the routing key from the URI
@@ -123,7 +127,8 @@ public:
      *
      * @return The crypto key
      */
-    [[nodiscard]] const std::vector<std::byte>& get_crypto_key() const
+    [[nodiscard]] const std::array<std::byte, crypto_key_length>&
+    get_crypto_key() const
     {
         return crypto_key_;
     }
@@ -147,11 +152,17 @@ public:
     {
         return meta_strings_;
     }
+
+    void set_meta_strings(const std::vector<std::string>& meta_strings)
+    {
+        meta_strings_ = meta_strings;
+    }
 private:
     static Uri_type parse_uri_type_str(std::string_view str);
 
-    static std::optional<std::tuple<
-        std::vector<std::byte>, std::vector<std::byte>, std::vector<std::byte>>>
+    static std::optional<std::tuple<std::vector<std::byte>,
+                                    std::array<std::byte, crypto_key_length>,
+                                    std::vector<std::byte>>>
     parse_routing_crypto_keys(std::string_view keys_str);
 
     static std::vector<std::string>
@@ -189,7 +200,7 @@ private:
      * is not used for [routing](#routing_key_), but only for accessing the
      * file.
      */
-    std::vector<std::byte> crypto_key_;
+    std::array<std::byte, crypto_key_length> crypto_key_{};
 
     /**
      * @brief Extra data associated with the URI.

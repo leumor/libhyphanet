@@ -20,14 +20,12 @@ namespace keys {
 Uri::Uri(Uri_params url_params)
     : uri_type_{url_params.uri_type},
       routing_key_{std::move(url_params.routing_key)},
-      crypto_key_{std::move(url_params.crypto_key)},
-      extra_{std::move(url_params.extra)},
+      crypto_key_{url_params.crypto_key}, extra_{std::move(url_params.extra)},
       meta_strings_{std::move(url_params.meta_strings)}
 {
     // routing_key_ and crypto_key_ and extra_ are all existent or non-existent
-    Expects(
-        (!routing_key_.empty() && !crypto_key_.empty() && !extra_.empty())
-        || (!routing_key_.empty() && !crypto_key_.empty() && !extra_.empty()));
+    Expects((!routing_key_.empty() && !crypto_key_.empty() && !extra_.empty())
+            || (routing_key_.empty() && crypto_key_.empty() && extra_.empty()));
 }
 
 std::unique_ptr<Uri> Uri::create(std::string_view uri, bool no_trim)
@@ -90,7 +88,7 @@ std::unique_ptr<Uri> Uri::create(std::string_view uri, bool no_trim)
             auto [routing_key, crypto_key, extra] = *keys_tuple;
 
             uri_params.routing_key = std::move(routing_key);
-            uri_params.crypto_key = std::move(crypto_key);
+            uri_params.crypto_key = crypto_key;
             uri_params.extra = std::move(extra);
             uri_path = processed_uri_view.substr(pos + 1);
         }
@@ -109,28 +107,6 @@ std::unique_ptr<Uri> Uri::create(std::string_view uri, bool no_trim)
     uri_params.meta_strings = parse_meta_strings(uri_path);
 
     return std::make_unique<Uri>(std::move(uri_params));
-
-    // std::optional<std::string_view> docname;
-    // long suggested_edition = -1;
-    // if (key_type != Uri_type::chk && !uri_paths.empty()) {
-    //     docname = uri_paths.front();
-    //     uri_paths.erase(uri_paths.begin());
-    //     if (key_type == Uri_type::usk) {
-    //         if (uri_paths.empty()) {
-    //             throw exception::Malformed_uri{
-    //                 "Invalid URI: No suggested edition number for USK"};
-    //         }
-
-    //         try {
-    //             suggested_edition = std::stol(uri_paths.front());
-    //         }
-    //         catch (...) {
-    //             throw exception::Malformed_uri{
-    //                 "Invalid URI: Invalid suggested edition number for
-    //                 USK"};
-    //         }
-    //     }
-    // }
 }
 
 Uri_type Uri::parse_uri_type_str(std::string_view str)
@@ -158,8 +134,9 @@ Uri_type Uri::parse_uri_type_str(std::string_view str)
     return uri_type;
 }
 
-std::optional<std::tuple<std::vector<std::byte>, std::vector<std::byte>,
-                         std::vector<std::byte>>>
+std::optional<
+    std::tuple<std::vector<std::byte>, std::array<std::byte, crypto_key_length>,
+               std::vector<std::byte>>>
 Uri::parse_routing_crypto_keys(const std::string_view keys_str)
 {
     auto keys_str_copy = keys_str;
@@ -187,8 +164,15 @@ Uri::parse_routing_crypto_keys(const std::string_view keys_str)
     if (routing_key && crypto_key && extra) {
         // URI does contain RoutingKey, CryptoKey and ExtraData
 
-        return std::tuple{decode_freenet(*routing_key),
-                          decode_freenet(*crypto_key), decode_freenet(*extra)};
+        auto crypto_key_bytes = decode_freenet(*crypto_key);
+        if (crypto_key_bytes.size() != crypto_key_length) {
+            throw exception::Malformed_uri{"Invalid URI: invalid crypto key"};
+        }
+
+        return std::tuple{
+            decode_freenet(*routing_key),
+            vector_to_array<std::byte, crypto_key_length>(crypto_key_bytes),
+            decode_freenet(*extra)};
     }
     return std::nullopt;
 }
