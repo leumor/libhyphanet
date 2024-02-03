@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <gsl/assert>
 #include <gsl/gsl>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -45,6 +46,13 @@ enum class Uri_type {
     ssk, ///< [Signed Subspace Key](#user::Ssk)
     ksk, ///< [Keyword Signed Key](#user::Ksk)
     chk, ///< [Content Hash Key](#user::Chk)
+};
+
+static const std::map<Uri_type, std::string> uri_type_to_string = {
+    {Uri_type::usk, "usk"},
+    {Uri_type::ssk, "ssk"},
+    {Uri_type::chk, "chk"},
+    {Uri_type::ksk, "ksk"},
 };
 
 static const size_t crypto_key_length = 32;
@@ -103,6 +111,30 @@ public:
      */
     static std::unique_ptr<Uri> create(std::string_view uri,
                                        bool no_trim = false);
+
+    [[nodiscard]] std::string to_string() const;
+
+    /**
+     * @brief Get the Freenet URI as a string
+     *
+     * @param prefix Whether to include the "freenet:" prefix.
+     * @param pure_ascii If true, encode any non-english characters. If false,
+     * only encode dangerous characters (slashes e.g.).
+     *
+     * @return std::string The Freenet URI as a string
+     */
+    [[nodiscard]] std::string to_string(bool prefix, bool pure_ascii) const;
+
+    /**
+     * @brief Get the FreenetURI as a pure ASCII string
+     *
+     * @details
+     * Any non-english characters as well as any dangerous characters are
+     * encoded.
+     *
+     * @return std::string The Freenet URI as an ASCII string
+     */
+    [[nodiscard]] std::string to_ascii_string() const;
 
     /**
      * @brief Get the key type from the URI

@@ -163,3 +163,5 @@ CheckOptions:
     value: "lower_case"
   - key: "readability-identifier-naming.VirtualMethodCase"
     value: "lower_case"
+  - key: "bugprone-easily-swappable-parameters.MinimumLength"
+    value: 3

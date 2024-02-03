@@ -1,22 +1,161 @@
 #include "libhyphanet/support.h"
 #include "libhyphanet/support/base64.h"
+#include "test/utf_util.h"
+#include <bit>
 #include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <cstddef>
+#include <fmt/core.h>
+#include <fmt/format.h>
 #include <string>
+#include <string_view>
+#include <unicode/unistr.h>
 #include <vector>
 
-TEST_CASE("url can be decoded", "[library][support]")
+bool are_correctly_encoded_decoded(
+    const std::vector<std::string_view>& to_encode, bool ascii)
 {
-    const std::string url{"%41%42%43alot"};
+    using namespace support::url;
 
-    auto decoded = support::util::url_decode(url, false);
+    std::vector<std::string> encoded;
 
-    INFO("decoded url: " << decoded);
+    // encoding
+    encoded.reserve(to_encode.size());
+    for (auto& str: to_encode) {
+        auto coded = url_encode(str, ascii);
+        encoded.push_back(coded);
+    }
+    // decoding
+    for (size_t i = 0; i < to_encode.size(); ++i) {
+        auto orig = to_encode[i];
+        auto const& coded = encoded[i];
+        auto decoded = url_decode(coded, ascii);
 
-    REQUIRE_THAT(decoded, Catch::Matchers::Equals("ABCalot"));
+        if (orig != decoded) {
+            for (size_t j = 0; j < orig.size(); ++j) {
+                auto orig_char = orig.at(j);
+                auto decoded_char = decoded.at(j);
+                if (j > decoded.size() || orig_char != decoded_char) {
+                    fmt::println("orig: %{:02x}, decoded: %{:02x}",
+                                 std::bit_cast<unsigned char>(orig_char),
+                                 std::bit_cast<unsigned char>(decoded_char));
+                    return false;
+                }
+            }
+            return false;
+        }
+    }
+
+    return true;
+}
+
+TEST_CASE("url can be encoded and decoded", "[library][support]")
+{
+    SECTION("simple decoding")
+    {
+        const std::string url{"%41%42%43alot"};
+
+        auto decoded = support::url::url_decode(url, false);
+
+        INFO("decoded url: " << decoded);
+
+        REQUIRE_THAT(decoded, Catch::Matchers::Equals("ABCalot"));
+    }
+
+    SECTION("encodes a string of ALL unicode characters except the 0-character "
+            "and tests whether it is decoded correctly")
+    {
+        using namespace utf_util;
+        auto all_chars_except_null
+            = icu::UnicodeString(all_characters.data(), all_characters.size());
+
+        all_chars_except_null.findAndReplace(icu::UnicodeString{u'\u0000'},
+                                             icu::UnicodeString{});
+
+        std::string all_chars_except_null_utf8;
+        all_chars_except_null.toUTF8String(all_chars_except_null_utf8);
+
+        REQUIRE(are_correctly_encoded_decoded(
+            std::vector<std::string_view>{all_chars_except_null_utf8}, false));
+        REQUIRE(are_correctly_encoded_decoded(
+            std::vector<std::string_view>{all_chars_except_null_utf8}, true));
+    }
+
+    SECTION("test if encoding and decoding work correctly together with both "
+            "safe and unsafe ascii chars")
+    {
+        using namespace utf_util;
+
+        auto printable_ascii_str_utf8 = uchar_arr_to_str(printable_ascii);
+
+        const std::vector<std::string_view> to_encode = {
+            // safe chars
+            support::url::safe_url_characters,
+            printable_ascii_str_utf8,
+            // triple % char, if badly encoded it will generate an exception
+            "%%%",
+            // no chars
+            "",
+        };
+
+        REQUIRE(are_correctly_encoded_decoded(to_encode, true));
+        REQUIRE(are_correctly_encoded_decoded(to_encode, false));
+    }
+
+    SECTION("test if encoding and decoding work correctly together with both "
+            "safe and not safe \"advanced\" (non-ascii) chars")
+    {
+        using namespace utf_util;
+
+        auto stressed_utf_str_utf8 = uchar_arr_to_str(stressed_utf);
+
+        const std::vector<std::string_view> to_encode = {stressed_utf_str_utf8};
+
+        REQUIRE(are_correctly_encoded_decoded(to_encode, true));
+        REQUIRE(are_correctly_encoded_decoded(to_encode, false));
+    }
+
+    SECTION(
+        "test if the force parameter is well-managed for each safe url chars")
+    {
+        using namespace support::url;
+
+        for (auto& c: safe_url_characters) {
+            const std::string to_encode{c};
+            std::string expected_result
+                = fmt::format("%{:02x}", std::bit_cast<unsigned char>(c));
+
+            REQUIRE(url_encode(to_encode, true, to_encode) == expected_result);
+            REQUIRE(url_encode(to_encode, false, to_encode) == expected_result);
+        }
+    }
+
+    SECTION("test decoding invalid encoded string")
+    {
+        using namespace support::url;
+
+        // Wrong string
+        std::string to_decode{"%00"};
+
+        REQUIRE_THROWS_AS(url_decode(to_decode, false), Url_decode_error);
+
+        // Invalid hex
+        to_decode = "123456789abcde"
+                    + utf_util::uchar_arr_to_str(utf_util::printable_ascii)
+                    + utf_util::uchar_arr_to_str(utf_util::stressed_utf);
+
+        for (size_t i = 0; i < to_decode.size(); ++i) {
+            REQUIRE_THROWS_AS(url_decode("%" + to_decode.substr(i, 1), false),
+                              Url_decode_error);
+        }
+
+        // Tolerant decoding
+        to_decode = "%%%";
+
+        REQUIRE_NOTHROW(url_decode(to_decode, true));
+    }
 }
 
 TEST_CASE("Freenet specified versions of base64", "[library][support]")

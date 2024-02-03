@@ -19,12 +19,16 @@ add_executable(libhyphanet_test
   source/libhyphanet_test.cpp
   source/test_support.cpp
   source/test_crypto.cpp
+
+  include/test/utf_util.h
 )
 
 target_include_directories(
   libhyphanet_test ${warning_guard}
   PUBLIC
   "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/../source>"
+  PUBLIC
+  "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>"
 )
 
 target_link_libraries(

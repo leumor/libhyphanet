@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
-#include <gsl/assert>
 #include <gsl/util>
 #include <memory>
 #include <stdexcept>
@@ -318,7 +317,7 @@ void Chk::parse_algo(std::byte algo_byte)
 {
     if (!support::util::in_range(algo_byte, valid_crypto_algorithms)) {
         throw exception::Malformed_uri{
-            "Invalid URI: invalid extra data (cryto algorithm)"};
+            "Invalid URI: invalid extra data (crypto algorithm)"};
     }
 
     set_crypto_algorithm(static_cast<Crypto_algorithm>(algo_byte));
@@ -326,8 +325,9 @@ void Chk::parse_algo(std::byte algo_byte)
 
 void Chk::parse_compressor(std::byte byte_1, std::byte byte_2)
 {
-    int compressor_value = std::to_integer<int>((byte_1 & std::byte{0xff}) << 8)
-                           + std::to_integer<int>(byte_2 & std::byte{0xff});
+    const int compressor_value
+        = std::to_integer<int>((byte_1 & std::byte{0xff}) << 8)
+          + std::to_integer<int>(byte_2 & std::byte{0xff});
 
     using namespace support;
 

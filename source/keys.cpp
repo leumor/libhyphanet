@@ -1,12 +1,14 @@
 #include "libhyphanet/keys.h"
 #include "libhyphanet/support.h"
 #include "libhyphanet/support/base64.h"
+#include <array>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <cstddef>
 #include <gsl/assert>
 #include <memory>
 #include <optional>
 #include <regex>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -14,6 +16,7 @@
 #include <vector>
 
 using namespace support::util;
+using namespace support::url;
 
 namespace keys {
 
@@ -48,9 +51,9 @@ std::unique_ptr<Uri> Uri::create(std::string_view uri, bool no_trim)
         || uri.find('/') == std::string_view::npos) {
         // Maybe an encoded URI
         try {
-            processed_uri = url_decode(uri);
+            processed_uri = support::url::url_decode(uri);
         }
-        catch (const support::exception::Url_decode_error&) {
+        catch (const Url_decode_error&) {
             throw exception::Malformed_uri{
                 "Invalid URI: no @ or /, or @ or / is escaped but there are "
                 "invalid escapes"};
@@ -196,7 +199,7 @@ std::vector<std::string> Uri::parse_meta_strings(std::string_view uri_path)
                     meta_strings.push_back(
                         url_decode(uri_path.substr(start, end - start)));
                 }
-                catch (const support::exception::Url_decode_error&) {
+                catch (const Url_decode_error&) {
                     throw exception::Malformed_uri{
                         "Invalid URI: invalid meta string"};
                 }
@@ -207,6 +210,21 @@ std::vector<std::string> Uri::parse_meta_strings(std::string_view uri_path)
     }
 
     return meta_strings;
+}
+
+std::string Uri::to_string(bool prefix, bool pure_ascii) const
+{
+    std::stringstream ss;
+
+    if (prefix) { ss << "freenet:"; }
+
+    ss << uri_type_to_string.at(uri_type_) << '@';
+
+    if (!routing_key_.empty() && !crypto_key_.empty() && !extra_.empty()) {
+        ss << support::base64::encode_freenet(routing_key_) << ','
+           << support::base64::encode_freenet(array_to_vector(crypto_key_))
+           << ',' << support::base64::encode_freenet(extra_) << '/';
+    }
 }
 
 } // namespace keys

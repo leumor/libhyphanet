@@ -14,17 +14,6 @@
 
 namespace support {
 
-namespace exception {
-    /**
-     * @brief An exception class for url decode errors
-     *
-     */
-    class Url_decode_error : public std::runtime_error {
-    public:
-        using std::runtime_error::runtime_error;
-    };
-} // namespace exception
-
 namespace concepts {
 
     /**
@@ -306,19 +295,6 @@ namespace util {
      */
     [[nodiscard]] std::string u8str_to_str(std::u8string_view u8str);
 
-    /**
-     * @brief Decodes an freenet specific URL encoded string
-     *
-     * @param str String to be translated.
-     * @param tolerant If true, be tolerant of bogus escapes; bogus escapes
-     * are treated as just plain characters. Not recommended; a hack to
-     * allow users to paste in URLs containing %'s.
-     *
-     * @return std::string the translated String.
-     */
-    [[nodiscard]] std::string url_decode(std::string_view str,
-                                         bool tolerant = false);
-
     [[nodiscard]] std::array<unsigned char, 32>
     bytes_to_chars(const std::array<std::byte, 32>& bytes);
 
@@ -354,6 +330,37 @@ namespace compressor {
     enum class Compressor_type { gzip = 0, bzip2 = 1, lzma = 2, lzma_new = 3 };
     static constexpr std::array<int, 4> valid_compressor_types{0, 1, 2, 3};
 } // namespace compressor
+
+namespace url {
+    /**
+     * @brief An exception class for url decode errors
+     *
+     */
+    class Url_decode_error : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
+    /**
+     * @brief Decodes an freenet specific URL encoded string
+     *
+     * @param str String to be translated.
+     * @param tolerant If true, be tolerant of bogus escapes; bogus escapes
+     * are treated as just plain characters. Not recommended; a hack to
+     * allow users to paste in URLs containing %'s.
+     *
+     * @return std::string the translated utf-8 String.
+     */
+    [[nodiscard]] std::string url_decode(std::string_view str,
+                                         bool tolerant = false);
+
+    static const std::string safe_url_characters{
+        "*-_./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"};
+
+    [[nodiscard]] std::string
+    url_encode(std::string_view uri, bool ascii, std::string_view force = "",
+               std::string_view extra_safe_chars = "");
+} // namespace url
 
 } // namespace support
 
