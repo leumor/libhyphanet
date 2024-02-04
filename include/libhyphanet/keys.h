@@ -60,7 +60,7 @@ static const size_t crypto_key_length = 32;
 struct Uri_params {
     Uri_type uri_type{Uri_type::usk};
     std::vector<std::byte> routing_key;
-    std::array<std::byte, crypto_key_length> crypto_key;
+    std::optional<std::array<std::byte, crypto_key_length>> crypto_key;
     std::vector<std::byte> extra;
     std::vector<std::string> meta_strings;
 };
@@ -159,7 +159,7 @@ public:
      *
      * @return The crypto key
      */
-    [[nodiscard]] const std::array<std::byte, crypto_key_length>&
+    [[nodiscard]] const std::optional<std::array<std::byte, crypto_key_length>>&
     get_crypto_key() const
     {
         return crypto_key_;
@@ -192,9 +192,10 @@ public:
 private:
     static Uri_type parse_uri_type_str(std::string_view str);
 
-    static std::optional<std::tuple<std::vector<std::byte>,
-                                    std::array<std::byte, crypto_key_length>,
-                                    std::vector<std::byte>>>
+    static std::optional<
+        std::tuple<std::vector<std::byte>,
+                   std::optional<std::array<std::byte, crypto_key_length>>,
+                   std::vector<std::byte>>>
     parse_routing_crypto_keys(std::string_view keys_str);
 
     static std::vector<std::string>
@@ -232,7 +233,7 @@ private:
      * is not used for [routing](#routing_key_), but only for accessing the
      * file.
      */
-    std::array<std::byte, crypto_key_length> crypto_key_{};
+    std::optional<std::array<std::byte, crypto_key_length>> crypto_key_;
 
     /**
      * @brief Extra data associated with the URI.

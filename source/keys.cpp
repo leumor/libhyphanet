@@ -27,8 +27,8 @@ Uri::Uri(Uri_params url_params)
       meta_strings_{std::move(url_params.meta_strings)}
 {
     // routing_key_ and crypto_key_ and extra_ are all existent or non-existent
-    Expects((!routing_key_.empty() && !crypto_key_.empty() && !extra_.empty())
-            || (routing_key_.empty() && crypto_key_.empty() && extra_.empty()));
+    Expects((!routing_key_.empty() && crypto_key_ && !extra_.empty())
+            || (routing_key_.empty() && !crypto_key_ && extra_.empty()));
 }
 
 std::unique_ptr<Uri> Uri::create(std::string_view uri, bool no_trim)
@@ -138,7 +138,8 @@ Uri_type Uri::parse_uri_type_str(std::string_view str)
 }
 
 std::optional<
-    std::tuple<std::vector<std::byte>, std::array<std::byte, crypto_key_length>,
+    std::tuple<std::vector<std::byte>,
+               std::optional<std::array<std::byte, crypto_key_length>>,
                std::vector<std::byte>>>
 Uri::parse_routing_crypto_keys(const std::string_view keys_str)
 {
@@ -166,7 +167,6 @@ Uri::parse_routing_crypto_keys(const std::string_view keys_str)
     using namespace support::base64;
     if (routing_key && crypto_key && extra) {
         // URI does contain RoutingKey, CryptoKey and ExtraData
-
         auto crypto_key_bytes = decode_freenet(*crypto_key);
         if (crypto_key_bytes.size() != crypto_key_length) {
             throw exception::Malformed_uri{"Invalid URI: invalid crypto key"};
@@ -220,11 +220,17 @@ std::string Uri::to_string(bool prefix, bool pure_ascii) const
 
     ss << uri_type_to_string.at(uri_type_) << '@';
 
-    if (!routing_key_.empty() && !crypto_key_.empty() && !extra_.empty()) {
+    if (!routing_key_.empty() && crypto_key_ && !extra_.empty()) {
         ss << support::base64::encode_freenet(routing_key_) << ','
-           << support::base64::encode_freenet(array_to_vector(crypto_key_))
+           << support::base64::encode_freenet(array_to_vector(*crypto_key_))
            << ',' << support::base64::encode_freenet(extra_) << '/';
     }
+
+    for (const std::string& meta_string: meta_strings_) {
+        ss << url_encode(meta_string, pure_ascii, "/") << '/';
+    }
+
+    return ss.str();
 }
 
 } // namespace keys

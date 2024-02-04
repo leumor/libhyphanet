@@ -19,6 +19,7 @@ add_executable(libhyphanet_test
   source/libhyphanet_test.cpp
   source/test_support.cpp
   source/test_crypto.cpp
+  source/test_keys.cpp
 
   include/test/utf_util.h
 )

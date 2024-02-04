@@ -49,7 +49,12 @@ void Key::init_from_uri(const Uri& uri)
     routing_key_ = uri.get_routing_key();
 
     const auto& crypto_key = uri.get_crypto_key();
-    std::ranges::copy(crypto_key, crypto_key_.begin());
+
+    if (!crypto_key) {
+        throw exception::Malformed_uri{"Invalid URI: invalid crypto key"};
+    }
+
+    std::ranges::copy(*crypto_key, crypto_key_.begin());
 
     check_invariants();
 }
@@ -59,10 +64,6 @@ void Key::check_invariants() const
     if (routing_key_.empty()) {
         throw exception::Malformed_uri{
             "Invalid URI: missing routing key, crypto key or extra data"};
-    }
-
-    if (crypto_key_.size() != crypto_key_length) {
-        throw exception::Malformed_uri{"Invalid URI: invalid crypto key"};
     }
 }
 
@@ -204,6 +205,12 @@ Uri Ssk::to_uri() const
     auto uri = Subspace_key::to_uri();
     uri.set_uri_type(Uri_type::ssk);
     return uri;
+}
+
+node::Node_key Ssk::get_node_key() const
+{
+    // TODO
+    return node::Node_key{};
 }
 
 // =============================================================================
@@ -364,6 +371,12 @@ Uri Chk::to_uri() const
     params.extra = get_extra_bytes();
 
     return Uri{params};
+}
+
+node::Node_key Chk::get_node_key() const
+{
+    // TODO
+    return node::Node_key{};
 }
 
 } // namespace keys::user

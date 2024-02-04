@@ -355,7 +355,8 @@ namespace url {
                                          bool tolerant = false);
 
     static const std::string safe_url_characters{
-        "*-_./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"};
+        "*-_./"
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"};
 
     [[nodiscard]] std::string
     url_encode(std::string_view uri, bool ascii, std::string_view force = "",
