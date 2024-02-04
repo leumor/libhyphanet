@@ -6,11 +6,15 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
+#include <fmt/core.h>
 #include <gsl/util>
 #include <memory>
 #include <optional>
+#include <regex>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace keys::user {
@@ -221,6 +225,35 @@ Uri Ssk::to_uri() const
     return uri;
 }
 
+std::optional<std::pair<std::string, long>> Ssk::parse_sitename_edition() const
+{
+    static const std::regex docname_with_edition_re{
+        fmt::format("(.*)\\{}([0-9]+)", seperator)};
+    std::smatch match;
+
+    if (auto docname = get_docname();
+        std::regex_search(docname, match, docname_with_edition_re)) {
+        return std::pair<std::string, long>{match[1], std::stol(match[2])};
+    }
+    return std::nullopt;
+}
+
+std::optional<Usk> Ssk::to_usk() const
+{
+    if (auto sitename_edition = parse_sitename_edition(); sitename_edition) {
+        auto const& [sitename, edition] = *sitename_edition;
+
+        Key_params params;
+        params.routing_key = get_routing_key();
+        params.crypto_key = get_crypto_key();
+        params.crypto_algorithm = get_crypto_algorithm();
+        params.meta_strings = get_meta_strings();
+
+        return Usk{params, sitename, edition};
+    }
+    return std::nullopt;
+}
+
 node::Node_key Ssk::get_node_key() const
 {
     // TODO
@@ -261,6 +294,29 @@ Uri Usk::to_uri() const
     uri.append_meta_string(std::to_string(suggested_edition_));
     uri.append_meta_strings(get_meta_strings());
     return uri;
+}
+
+Ssk Usk::to_ssk() const
+{
+    const long min_val = std::numeric_limits<long>::min();
+    const long max_val = std::numeric_limits<long>::max();
+
+    long edition = std::abs(suggested_edition_);
+
+    if (edition == min_val) { edition = max_val; }
+
+    Key_params params;
+    params.routing_key = get_routing_key();
+    params.crypto_key = get_crypto_key();
+    params.crypto_algorithm = get_crypto_algorithm();
+    params.meta_strings = get_meta_strings();
+
+    auto docname = get_docname();
+
+    return Ssk{
+        params,
+        fmt::format("{}{}{}", docname, Ssk::seperator, edition),
+    };
 }
 
 // =============================================================================

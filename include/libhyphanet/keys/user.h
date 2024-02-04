@@ -294,8 +294,21 @@ private:
     std::string docname_;
 };
 
+class Usk;
+
 class Ssk : public Subspace_key, public Client {
 public:
+    /**
+     * @brief The character to separate the site name from the edition
+     * number in its SSK form.
+     *
+     * @details
+     * The reason for choosing '-' is that it makes it ludicrously easy
+     * to go from the **USK** form to the **SSK** form, and we don't
+     * need to go vice versa.
+     */
+    static constexpr auto seperator = '-';
+
     Ssk(Key_params key, std::string_view docname,
         const std::optional<const std::vector<std::byte>>& pub_key
         = std::nullopt)
@@ -314,6 +327,9 @@ public:
     ~Ssk() override = default;
 
     [[nodiscard]] Uri to_uri() const override;
+
+    [[nodiscard]] std::optional<Usk> to_usk() const;
+
     [[nodiscard]] node::Node_key get_node_key() const override;
 
     void set_pub_key(const std::vector<std::byte>& pub_key);
@@ -326,9 +342,14 @@ protected:
     void init_from_uri(const Uri& uri) override;
 private:
     void calculate_encrypted_hashed_docname();
+
     void check_invariants() const;
+
     [[nodiscard]] static std::array<std::byte, 32>
     calculate_pub_key_hash(const std::vector<std::byte>& pub_key);
+
+    [[nodiscard]] std::optional<std::pair<std::string, long>>
+    parse_sitename_edition() const;
 
     std::array<std::byte, 32> encrypted_hashed_docname_{};
 
@@ -386,20 +407,11 @@ public:
     ~Usk() override = default;
 
     [[nodiscard]] Uri to_uri() const override;
+
+    [[nodiscard]] Ssk to_ssk() const;
 protected:
     void init_from_uri(const Uri& uri) override;
 private:
-    /**
-     * @brief The character to separate the site name from the edition
-     * number in its SSK form.
-     *
-     * @details
-     * The reason for choosing '-' is that it makes it ludicrously easy
-     * to go from the **USK** form to the **SSK** form, and we don't
-     * need to go vice versa.
-     */
-    static const auto seperator = '-';
-
     /**
      * @brief Suggestion edition.
      *
