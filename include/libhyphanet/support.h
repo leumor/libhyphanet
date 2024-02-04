@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <concepts>
 #include <cstddef>
+#include <cstdint>
 #include <ranges>
 #include <stdexcept>
 #include <string>
@@ -327,8 +328,15 @@ namespace util {
 } // namespace util
 
 namespace compressor {
-    enum class Compressor_type { gzip = 0, bzip2 = 1, lzma = 2, lzma_new = 3 };
-    static constexpr std::array<int, 4> valid_compressor_types{0, 1, 2, 3};
+    enum class Compressor_type {
+        nocomp = -1,
+        gzip = 0,
+        bzip2 = 1,
+        lzma = 2,
+        lzma_new = 3
+    };
+    static constexpr std::array<int16_t, 5> valid_compressor_types{-1, 0, 1, 2,
+                                                                   3};
 } // namespace compressor
 
 namespace url {

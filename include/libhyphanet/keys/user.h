@@ -58,11 +58,13 @@ public:
         std::vector<std::byte> routing_key;
         std::array<std::byte, crypto_key_length> crypto_key;
         Crypto_algorithm crypto_algorithm;
+        std::vector<std::string> meta_strings;
     };
 
     explicit Key(Key_params key)
         : routing_key_(std::move(key.routing_key)), crypto_key_(key.crypto_key),
-          crypto_algorithm_(key.crypto_algorithm)
+          crypto_algorithm_(key.crypto_algorithm),
+          meta_strings_(key.meta_strings)
     {
         check_invariants();
     }
@@ -94,6 +96,11 @@ public:
     {
         return crypto_algorithm_;
     }
+
+    [[nodiscard]] const std::vector<std::string>& get_meta_strings() const
+    {
+        return meta_strings_;
+    }
 protected:
     virtual void init_from_uri(const Uri& uri);
 
@@ -109,6 +116,12 @@ protected:
     {
         crypto_algorithm_ = algo;
     }
+    void set_meta_strings(const std::vector<std::string>& meta_strings)
+    {
+        meta_strings_ = meta_strings;
+    }
+
+    std::optional<std::string> pop_meta_strings();
 private:
     void check_invariants() const;
 
@@ -149,6 +162,8 @@ private:
      */
     Crypto_algorithm crypto_algorithm_{
         Crypto_algorithm::algo_aes_pcfb_256_sha_256};
+
+    std::vector<std::string> meta_strings_;
 };
 
 /**

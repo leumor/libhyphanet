@@ -192,20 +192,33 @@ std::vector<std::string> Uri::parse_meta_strings(std::string_view uri_path)
             // string
             meta_strings.push_back(url_decode(uri_path));
         }
+        else {
+            while (end != std::string_view::npos) {
+                if (start < end) { // In case the first char is '/'
+                    try {
+                        meta_strings.push_back(
+                            url_decode(uri_path.substr(start, end - start)));
+                    }
+                    catch (const Url_decode_error&) {
+                        throw exception::Malformed_uri{
+                            "Invalid URI: invalid meta string"};
+                    }
+                }
+                start = end + 1;
+                end = uri_path.find(uri_separator, start);
+            }
 
-        while (end != std::string_view::npos) {
-            if (start < end) { // In case the first char is '/'
+            if (start < uri_path.size()) {
+                // Last part of the URI Path
                 try {
-                    meta_strings.push_back(
-                        url_decode(uri_path.substr(start, end - start)));
+                    meta_strings.push_back(url_decode(
+                        uri_path.substr(start, uri_path.size() - start)));
                 }
                 catch (const Url_decode_error&) {
                     throw exception::Malformed_uri{
                         "Invalid URI: invalid meta string"};
                 }
             }
-            start = end + 1;
-            end = uri_path.find(uri_separator, start);
         }
     }
 
@@ -230,7 +243,22 @@ std::string Uri::to_string(bool prefix, bool pure_ascii) const
         ss << url_encode(meta_string, pure_ascii, "/") << '/';
     }
 
-    return ss.str();
+    std::string ret{ss.str()};
+    if (ret.back() == '/') {
+        ret.pop_back(); // Remove last "/"
+    }
+    return ret;
 }
 
+void Uri::append_meta_strings(
+    const std::vector<std::string>& additional_meta_strings)
+{
+    meta_strings_.insert(meta_strings_.end(), additional_meta_strings.begin(),
+                         additional_meta_strings.end());
+}
+
+void Uri::append_meta_string(std::string_view additional_meta_string)
+{
+    meta_strings_.push_back(url_decode(additional_meta_string));
+}
 } // namespace keys

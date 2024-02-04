@@ -49,10 +49,10 @@ enum class Uri_type {
 };
 
 static const std::map<Uri_type, std::string> uri_type_to_string = {
-    {Uri_type::usk, "usk"},
-    {Uri_type::ssk, "ssk"},
-    {Uri_type::chk, "chk"},
-    {Uri_type::ksk, "ksk"},
+    {Uri_type::usk, "USK"},
+    {Uri_type::ssk, "SSK"},
+    {Uri_type::chk, "CHK"},
+    {Uri_type::ksk, "KSK"},
 };
 
 static const size_t crypto_key_length = 32;
@@ -112,8 +112,6 @@ public:
     static std::unique_ptr<Uri> create(std::string_view uri,
                                        bool no_trim = false);
 
-    [[nodiscard]] std::string to_string() const;
-
     /**
      * @brief Get the Freenet URI as a string
      *
@@ -123,7 +121,8 @@ public:
      *
      * @return std::string The Freenet URI as a string
      */
-    [[nodiscard]] std::string to_string(bool prefix, bool pure_ascii) const;
+    [[nodiscard]] std::string to_string(bool prefix = false,
+                                        bool pure_ascii = false) const;
 
     /**
      * @brief Get the FreenetURI as a pure ASCII string
@@ -189,6 +188,10 @@ public:
     {
         meta_strings_ = meta_strings;
     }
+
+    void append_meta_strings(
+        const std::vector<std::string>& additional_meta_strings);
+    void append_meta_string(std::string_view additional_meta_string);
 private:
     static Uri_type parse_uri_type_str(std::string_view str);
 

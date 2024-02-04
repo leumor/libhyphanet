@@ -5,8 +5,10 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <gsl/util>
 #include <memory>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -56,6 +58,8 @@ void Key::init_from_uri(const Uri& uri)
 
     std::ranges::copy(*crypto_key, crypto_key_.begin());
 
+    meta_strings_ = uri.get_meta_strings();
+
     check_invariants();
 }
 
@@ -65,6 +69,15 @@ void Key::check_invariants() const
         throw exception::Malformed_uri{
             "Invalid URI: missing routing key, crypto key or extra data"};
     }
+}
+
+std::optional<std::string> Key::pop_meta_strings()
+{
+    std::string meta_string;
+    if (meta_strings_.empty()) { return std::nullopt; }
+    meta_string = std::move(meta_strings_.front());
+    meta_strings_.erase(meta_strings_.begin());
+    return meta_string;
 }
 
 // =============================================================================
@@ -82,9 +95,8 @@ void Subspace_key::init_from_uri(const Uri& uri)
     Key::init_from_uri(uri);
 
     // Docname should be the first item of meta strings
-    if (const auto& meta_strings = uri.get_meta_strings();
-        !meta_strings.empty()) {
-        docname_ = meta_strings.front();
+    if (auto docname = pop_meta_strings(); docname) {
+        docname_ = std::move(*docname);
     }
 
     // Subspace_key always uses algo_aes_pcfb_256_sha_256
@@ -169,11 +181,12 @@ void Ssk::set_pub_key(const std::vector<std::byte>& pub_key)
     if (pub_key_ && pub_key_ != pub_key) {
         throw std::invalid_argument{"Cannot reassign public key"};
     }
-
-    if (auto new_key_hash = calculate_pub_key_hash(pub_key);
-        !support::util::equal(get_routing_key(), new_key_hash)) {
-        throw std::invalid_argument{
-            "New public key's hash does not match routing key"};
+    if (auto routing_key = get_routing_key(); !routing_key.empty()) {
+        if (auto new_key_hash = calculate_pub_key_hash(pub_key);
+            !support::util::equal(get_routing_key(), new_key_hash)) {
+            throw std::invalid_argument{
+                "New public key's hash does not match routing key"};
+        }
     }
 
     pub_key_ = pub_key;
@@ -204,6 +217,7 @@ Uri Ssk::to_uri() const
 {
     auto uri = Subspace_key::to_uri();
     uri.set_uri_type(Uri_type::ssk);
+    uri.append_meta_strings(get_meta_strings());
     return uri;
 }
 
@@ -226,10 +240,9 @@ void Usk::init_from_uri(const Uri& uri)
     }
 
     // Suggested edition number is the second item of meta strings
-    if (const auto& meta_strings = uri.get_meta_strings();
-        meta_strings.size() >= 2) {
+    if (auto suggested_edition = pop_meta_strings(); suggested_edition) {
         try {
-            suggested_edition_ = std::stol(meta_strings.at(1));
+            suggested_edition_ = std::stol(*suggested_edition);
         }
         catch (const std::invalid_argument&) {
             throw exception::Malformed_uri{
@@ -245,9 +258,8 @@ Uri Usk::to_uri() const
 {
     auto uri = Subspace_key::to_uri();
     uri.set_uri_type(Uri_type::usk);
-    auto meta_strings = uri.get_meta_strings();
-    meta_strings.push_back(std::to_string(suggested_edition_));
-    uri.set_meta_strings(meta_strings);
+    uri.append_meta_string(std::to_string(suggested_edition_));
+    uri.append_meta_strings(get_meta_strings());
     return uri;
 }
 
@@ -257,19 +269,17 @@ Uri Usk::to_uri() const
 
 void Ksk::init_from_uri(const Uri& uri)
 {
-    auto meta_strings = uri.get_meta_strings();
+    set_meta_strings(uri.get_meta_strings());
 
-    if (meta_strings.size() < 2) {
+    const auto& keyword = pop_meta_strings();
+    if (!keyword) {
         throw exception::Malformed_uri{"Invalid URI: missing keyword"};
     }
 
-    const auto& keyword = meta_strings[0];
-    if (keyword.empty()) {
-        throw exception::Malformed_uri{"Invalid URI: missing keyword"};
-    }
+    keyword_ = *keyword;
 
     crypto::Sha256 hasher;
-    hasher.update(keyword);
+    hasher.update(keyword_);
     set_crypto_key(hasher.digest());
 
     auto [priv_key_bytes, pub_key_bytes] = crypto::dsa::generate_keys();
@@ -287,7 +297,10 @@ Uri Ksk::to_uri() const
     params.uri_type = Uri_type::ksk;
     params.meta_strings = {keyword_};
 
-    return Uri{params};
+    auto uri = Uri{params};
+    uri.append_meta_strings(get_meta_strings());
+
+    return uri;
 }
 
 // =============================================================================
@@ -303,7 +316,7 @@ void Chk::init_from_uri(const Uri& uri)
     }
 
     const auto& extra = uri.get_extra();
-    if (extra.size() != extra_length || extra != get_extra_bytes()) {
+    if (extra.size() != extra_length) {
         throw exception::Malformed_uri{"Invalid URI: invalid extra data"};
     }
 
@@ -332,9 +345,9 @@ void Chk::parse_algo(std::byte algo_byte)
 
 void Chk::parse_compressor(std::byte byte_1, std::byte byte_2)
 {
-    const int compressor_value
-        = std::to_integer<int>((byte_1 & std::byte{0xff}) << 8)
-          + std::to_integer<int>(byte_2 & std::byte{0xff});
+    const auto compressor_value
+        = gsl::narrow_cast<int16_t>(((std::to_integer<int>(byte_1) & 0xff) << 8)
+                                    + (std::to_integer<int>(byte_2) & 0xff));
 
     using namespace support;
 
@@ -370,7 +383,10 @@ Uri Chk::to_uri() const
     params.crypto_key = get_crypto_key();
     params.extra = get_extra_bytes();
 
-    return Uri{params};
+    auto uri = Uri{params};
+    uri.append_meta_strings(get_meta_strings());
+
+    return uri;
 }
 
 node::Node_key Chk::get_node_key() const
