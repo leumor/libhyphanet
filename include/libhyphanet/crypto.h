@@ -55,6 +55,16 @@ private:
 };
 
 namespace dsa {
+    class Invalid_priv_key_error : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
+    class Invalid_pub_key_error : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
     [[nodiscard]] std::vector<std::byte>
     priv_key_bytes_to_pkcs8(const std::vector<std::byte>& key_bytes);
 
@@ -67,6 +77,9 @@ namespace dsa {
     generate_keys(CryptoPP::RandomNumberGenerator& rng);
 
     [[nodiscard]] std::vector<std::byte>
+    make_pub_key(const std::vector<std::byte>& priv_key_bytes);
+
+    [[nodiscard]] std::vector<std::byte>
     sign(const std::vector<std::byte>& priv_key_bytes,
          const std::vector<std::byte>& message_bytes);
 
@@ -77,8 +90,13 @@ namespace dsa {
     [[nodiscard]] std::vector<std::byte>
     priv_key_bytes_to_mpi_bytes(const std::vector<std::byte>& priv_key_bytes);
 
+    [[nodiscard]] std::vector<std::byte> group_to_mpi_bytes();
+
     [[nodiscard]] std::vector<std::byte>
     pub_key_bytes_to_mpi_bytes(const std::vector<std::byte>& pub_key_bytes);
+
+    [[nodiscard]] std::array<std::byte, 32>
+    pub_key_hash(const std::vector<std::byte>& pub_key_bytes);
 
 } // namespace dsa
 

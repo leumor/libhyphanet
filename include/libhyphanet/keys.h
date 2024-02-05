@@ -65,6 +65,16 @@ struct Uri_params {
     std::vector<std::string> meta_strings;
 };
 
+// Forward declarations
+namespace user {
+    class Ssk;
+    class Insertable_ssk;
+    class Usk;
+    class Insertable_usk;
+    class Ksk;
+    class Chk;
+} // namespace user
+
 /**
  * @brief Represents a Hyphanet URI
  *
@@ -90,6 +100,12 @@ struct Uri_params {
  * (e.g. `CHK@blahblahblah.html`). The constructor will remove it.
  */
 class Uri {
+    friend class user::Ssk;
+    friend class user::Insertable_ssk;
+    friend class user::Usk;
+    friend class user::Insertable_usk;
+    friend class user::Ksk;
+    friend class user::Chk;
 public:
     /**
      * @brief Construct a new Uri object
@@ -141,7 +157,6 @@ public:
      * @return Uri_type The key type
      */
     [[nodiscard]] Uri_type get_uri_type() const { return uri_type_; }
-    void set_uri_type(Uri_type uri_type) { uri_type_ = uri_type; }
 
     /**
      * @brief Get the routing key from the URI
@@ -183,15 +198,6 @@ public:
     {
         return meta_strings_;
     }
-
-    void set_meta_strings(const std::vector<std::string>& meta_strings)
-    {
-        meta_strings_ = meta_strings;
-    }
-
-    void append_meta_strings(
-        const std::vector<std::string>& additional_meta_strings);
-    void append_meta_string(std::string_view additional_meta_string);
 private:
     static Uri_type parse_uri_type_str(std::string_view str);
 
@@ -205,6 +211,24 @@ private:
     parse_meta_strings(std::string_view uri_path);
 
     static const char uri_separator = '/';
+
+    void set_uri_type(Uri_type uri_type) { uri_type_ = uri_type; }
+
+    void set_routing_key(const std::vector<std::byte>& routing_key)
+    {
+        routing_key_ = routing_key;
+    }
+
+    void set_extra(const std::vector<std::byte>& extra) { extra_ = extra; }
+
+    void set_meta_strings(const std::vector<std::string>& meta_strings)
+    {
+        meta_strings_ = meta_strings;
+    }
+
+    void append_meta_strings(
+        const std::vector<std::string>& additional_meta_strings);
+    void append_meta_string(std::string_view additional_meta_string);
 
     /**
      * @brief The three-letter abbreviation of the key.

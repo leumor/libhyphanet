@@ -8,7 +8,10 @@
 #include <cstdint>
 #include <cstdlib>
 #include <fmt/core.h>
+#include <fmt/format.h>
+#include <gsl/assert>
 #include <gsl/util>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <regex>
@@ -28,13 +31,25 @@ std::unique_ptr<Key> Key::create(const Uri& uri)
     std::unique_ptr<Key> key;
     const Token t{};
 
+    bool is_insertable{false};
+    if (auto extra = uri.get_extra();
+        !extra.empty() && extra.size() >= 5 && extra.at(1) == std::byte{1}) {
+        is_insertable = true;
+    }
+
     switch (uri.get_uri_type()) {
         using enum keys::Uri_type;
     case usk:
-        key = std::make_unique<Usk>(t);
+        if (is_insertable) { key = std::make_unique<Insertable_usk>(t); }
+        else {
+            key = std::make_unique<Usk>(t);
+        }
         break;
     case ssk:
-        key = std::make_unique<Ssk>(t);
+        if (is_insertable) { key = std::make_unique<Insertable_ssk>(t); }
+        else {
+            key = std::make_unique<Ssk>(t);
+        }
         break;
     case chk:
         key = std::make_unique<Chk>(t);
@@ -186,8 +201,8 @@ void Ssk::set_pub_key(const std::vector<std::byte>& pub_key)
         throw std::invalid_argument{"Cannot reassign public key"};
     }
     if (auto routing_key = get_routing_key(); !routing_key.empty()) {
-        if (auto new_key_hash = calculate_pub_key_hash(pub_key);
-            !support::util::equal(get_routing_key(), new_key_hash)) {
+        if (auto new_key_hash = crypto::dsa::pub_key_hash(pub_key);
+            get_routing_key() != support::util::array_to_vector(new_key_hash)) {
             throw std::invalid_argument{
                 "New public key's hash does not match routing key"};
         }
@@ -200,21 +215,13 @@ void Ssk::check_invariants() const
 {
     // Verify pub_key_hash
     if (pub_key_) {
-        auto pub_key_hash = calculate_pub_key_hash(*pub_key_);
+        auto pub_key_hash = crypto::dsa::pub_key_hash(*pub_key_);
         auto routing_key = get_routing_key();
-        if (!support::util::equal(routing_key, pub_key_hash)) {
+        if (routing_key != support::util::array_to_vector(pub_key_hash)) {
             throw exception::Malformed_uri{
                 "Invalid URI: invalid routing key or public key"};
         }
     }
-}
-
-std::array<std::byte, 32>
-Ssk::calculate_pub_key_hash(const std::vector<std::byte>& pub_key)
-{
-    crypto::Sha256 hasher;
-    hasher.update(crypto::dsa::pub_key_bytes_to_mpi_bytes(pub_key));
-    return hasher.digest();
 }
 
 Uri Ssk::to_uri() const
@@ -223,6 +230,11 @@ Uri Ssk::to_uri() const
     uri.set_uri_type(Uri_type::ssk);
     uri.append_meta_strings(get_meta_strings());
     return uri;
+}
+
+Uri Ssk::to_request_uri() const
+{
+    return this->to_uri();
 }
 
 std::optional<std::pair<std::string, long>> Ssk::parse_sitename_edition() const
@@ -261,6 +273,69 @@ node::Node_key Ssk::get_node_key() const
 }
 
 // =============================================================================
+// class Insertable_ssk
+// =============================================================================
+
+void Insertable_ssk::init_from_uri(const Uri& uri)
+{
+    Ssk::init_from_uri(uri);
+
+    const auto& extra = uri.get_extra();
+
+    // Insertable should be 1, meaning that routing key in the uri is the
+    // private key
+    Expects(extra.at(1) == std::byte{1});
+
+    set_priv_key(get_routing_key());
+    set_routing_key(
+        std::vector<std::byte>{}); // Disable pub_key/priv_key matching check
+
+    auto pub_key = crypto::dsa::make_pub_key(get_priv_key());
+    set_pub_key(pub_key);
+
+    set_routing_key(
+        support::util::array_to_vector(crypto::dsa::pub_key_hash(pub_key)));
+}
+
+Uri Insertable_ssk::to_uri() const
+{
+    auto uri = Ssk::to_uri();
+
+    auto extra = uri.get_extra();
+    // Insertable should be 1, meaning that routing key in the uri is the
+    // private key
+    extra[1] = std::byte{1};
+    uri.set_extra(extra);
+
+    uri.set_routing_key(get_priv_key());
+
+    return uri;
+}
+
+Uri Insertable_ssk::to_request_uri() const
+{
+    auto uri = Ssk::to_uri();
+
+    auto extra = uri.get_extra();
+    extra[1] = std::byte{0};
+
+    uri.set_extra(extra);
+
+    return uri;
+}
+
+std::vector<std::byte> Insertable_ssk::get_extra_bytes() const
+{
+    auto bytes = Subspace_key::get_extra_bytes();
+
+    // Insertable should be 1, meaning that routing key in the uri is the
+    // private key
+    bytes[1] = std::byte{1};
+
+    return bytes;
+}
+
+// =============================================================================
 // class Usk
 // =============================================================================
 
@@ -296,6 +371,11 @@ Uri Usk::to_uri() const
     return uri;
 }
 
+Uri Usk::to_request_uri() const
+{
+    return this->to_uri();
+}
+
 Ssk Usk::to_ssk() const
 {
     const long min_val = std::numeric_limits<long>::min();
@@ -320,6 +400,49 @@ Ssk Usk::to_ssk() const
 }
 
 // =============================================================================
+// class Insertable_usk
+// =============================================================================
+
+void Insertable_usk::init_from_uri(const Uri& uri)
+{
+    Usk::init_from_uri(uri);
+
+    const auto& extra = uri.get_extra();
+
+    // Insertable should be 1, meaning that routing key in the uri is the
+    // private key
+    Expects(extra.at(1) == std::byte{1});
+
+    set_priv_key(get_routing_key());
+    auto pub_key = crypto::dsa::make_pub_key(get_priv_key());
+
+    set_routing_key(
+        support::util::array_to_vector(crypto::dsa::pub_key_hash(pub_key)));
+}
+
+Uri Insertable_usk::to_request_uri() const
+{
+    auto uri = to_uri();
+
+    auto extra = uri.get_extra();
+    extra[1] = std::byte{0};
+
+    uri.set_extra(extra);
+
+    return uri;
+}
+
+std::vector<std::byte> Insertable_usk::get_extra_bytes() const
+{
+    auto bytes = Subspace_key::get_extra_bytes();
+
+    // Insertable should be 1, meaning that routing key in the uri is the
+    // private key
+    bytes[1] = std::byte{1};
+
+    return bytes;
+}
+// =============================================================================
 // class Ksk
 // =============================================================================
 
@@ -342,9 +465,8 @@ void Ksk::init_from_uri(const Uri& uri)
     set_priv_key(priv_key_bytes);
     set_pub_key(pub_key_bytes);
 
-    hasher.update(crypto::dsa::pub_key_bytes_to_mpi_bytes(pub_key_bytes));
-    auto pub_key_hash = hasher.digest();
-    set_routing_key(support::util::array_to_vector(pub_key_hash));
+    set_routing_key(support::util::array_to_vector(
+        crypto::dsa::pub_key_hash(pub_key_bytes)));
 }
 
 Uri Ksk::to_uri() const
@@ -357,6 +479,11 @@ Uri Ksk::to_uri() const
     uri.append_meta_strings(get_meta_strings());
 
     return uri;
+}
+
+Uri Ksk::to_request_uri() const
+{
+    return this->to_uri();
 }
 
 // =============================================================================
@@ -443,6 +570,11 @@ Uri Chk::to_uri() const
     uri.append_meta_strings(get_meta_strings());
 
     return uri;
+}
+
+Uri Chk::to_request_uri() const
+{
+    return this->to_uri();
 }
 
 node::Node_key Chk::get_node_key() const

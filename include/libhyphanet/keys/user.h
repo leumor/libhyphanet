@@ -78,6 +78,7 @@ public:
     virtual ~Key() = default;
 
     [[nodiscard]] virtual Uri to_uri() const = 0;
+    [[nodiscard]] virtual Uri to_request_uri() const = 0;
 
     [[nodiscard]] static std::unique_ptr<Key> create(const Uri& uri);
 
@@ -327,12 +328,11 @@ public:
     ~Ssk() override = default;
 
     [[nodiscard]] Uri to_uri() const override;
+    [[nodiscard]] Uri to_request_uri() const override;
 
     [[nodiscard]] std::optional<Usk> to_usk() const;
 
     [[nodiscard]] node::Node_key get_node_key() const override;
-
-    void set_pub_key(const std::vector<std::byte>& pub_key);
 
     [[nodiscard]] std::optional<std::vector<std::byte>> get_pub_key() const
     {
@@ -340,13 +340,11 @@ public:
     }
 protected:
     void init_from_uri(const Uri& uri) override;
+    void set_pub_key(const std::vector<std::byte>& pub_key);
 private:
     void calculate_encrypted_hashed_docname();
 
     void check_invariants() const;
-
-    [[nodiscard]] static std::array<std::byte, 32>
-    calculate_pub_key_hash(const std::vector<std::byte>& pub_key);
 
     [[nodiscard]] std::optional<std::pair<std::string, long>>
     parse_sitename_edition() const;
@@ -369,6 +367,17 @@ public:
 
     explicit Insertable_ssk(Token t): Ssk{t}, Insertable{t} {}
     Insertable_ssk() = delete;
+    Insertable_ssk(const Insertable_ssk& other) = default;
+    Insertable_ssk(Insertable_ssk&& other) noexcept = default;
+    Insertable_ssk& operator=(const Insertable_ssk& other) = default;
+    Insertable_ssk& operator=(Insertable_ssk&& other) noexcept = default;
+    ~Insertable_ssk() override = default;
+
+    [[nodiscard]] Uri to_uri() const override;
+    [[nodiscard]] Uri to_request_uri() const override;
+protected:
+    void init_from_uri(const Uri& uri) override;
+    [[nodiscard]] std::vector<std::byte> get_extra_bytes() const override;
 };
 
 /**
@@ -406,7 +415,13 @@ public:
     Usk& operator=(Usk&& other) noexcept = default;
     ~Usk() override = default;
 
+    [[nodiscard]] long get_suggested_edition() const
+    {
+        return suggested_edition_;
+    }
+
     [[nodiscard]] Uri to_uri() const override;
+    [[nodiscard]] Uri to_request_uri() const override;
 
     [[nodiscard]] Ssk to_ssk() const;
 protected:
@@ -451,18 +466,10 @@ public:
     explicit Insertable_usk(Token t): Usk{t}, Insertable{t} {}
     Insertable_usk() = delete;
 
-    /**
-     * @brief Create a from uri object.
-     *
-     * @details
-     * A new private/public key pair will be generated. The crypto_key and
-     * docname from the uri will be kept.
-     *
-     * @param uri
-     * @return std::unique_ptr<Insertable_usk>
-     */
-    static std::unique_ptr<Insertable_usk>
-    create_insertable_from_uri(const Uri& uri);
+    [[nodiscard]] Uri to_request_uri() const override;
+protected:
+    void init_from_uri(const Uri& uri) override;
+    [[nodiscard]] std::vector<std::byte> get_extra_bytes() const override;
 };
 
 class Ksk : public Insertable_ssk {
@@ -473,6 +480,7 @@ public:
     Ksk() = delete;
 
     [[nodiscard]] Uri to_uri() const override;
+    [[nodiscard]] Uri to_request_uri() const override;
 protected:
     void init_from_uri(const Uri& uri) override;
 private:
@@ -491,6 +499,8 @@ public:
     Chk() = delete;
 
     [[nodiscard]] Uri to_uri() const override;
+    [[nodiscard]] Uri to_request_uri() const override;
+
     [[nodiscard]] node::Node_key get_node_key() const override;
 
     static const size_t extra_length = 5;

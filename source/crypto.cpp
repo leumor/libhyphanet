@@ -15,8 +15,10 @@
 #include <cstddef>
 #include <fmt/core.h>
 #include <fmt/format.h>
+#include <iostream>
 #include <iterator>
 #include <memory>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -180,15 +182,19 @@ namespace dsa {
                 group_big_a_params.g);
 
             auto bytes_ptr = bytes_to_cryptoppbytes_ptr(key_bytes);
-            ByteQueue queue;
-            queue.Put(bytes_ptr, key_bytes.size());
-            queue.MessageEnd();
 
-            private_key.BERDecodePrivateKey(queue, false,
-                                            queue.MaxRetrievable());
+            try {
+                // Big endian encoded big integer private key
+                const Integer x{bytes_ptr, key_bytes.size()};
+                private_key.SetPrivateExponent(x);
+            }
+            catch (CryptoPP::Exception& e) {
+                throw Invalid_priv_key_error("Unable to load dsa private key");
+            }
 
             if (!private_key.Validate(prng, 3)) {
-                throw std::runtime_error("Dsa private key validation failed");
+                throw Invalid_pub_key_error(
+                    "Dsa private key validation failed");
             }
 
             return private_key;
@@ -207,14 +213,17 @@ namespace dsa {
                                                        group_big_a_params.g);
 
             auto bytes_ptr = bytes_to_cryptoppbytes_ptr(key_bytes);
-            ByteQueue queue;
-            queue.Put(bytes_ptr, key_bytes.size());
-            queue.MessageEnd();
 
-            pub_key.BERDecodePublicKey(queue, false, queue.MaxRetrievable());
+            try {
+                const Integer y{bytes_ptr, key_bytes.size()};
+                pub_key.SetPublicElement(y);
+            }
+            catch (CryptoPP::Exception&) {
+                throw Invalid_pub_key_error("Unable to load dsa public key");
+            }
 
             if (!pub_key.Validate(prng, 3)) {
-                throw std::runtime_error("Dsa public key validation failed");
+                throw Invalid_pub_key_error("Dsa public key validation failed");
             }
 
             return pub_key;
@@ -224,20 +233,30 @@ namespace dsa {
         priv_key_to_bytes(const CryptoPP::DSA::PrivateKey& priv_key)
         {
             using namespace CryptoPP;
-            ByteQueue priv_key_queue;
-            priv_key.DEREncodePrivateKey(priv_key_queue);
 
-            return bytequeue_to_bytes(priv_key_queue);
+            const auto& x = priv_key.GetPrivateExponent();
+
+            const size_t encoded_size = x.MinEncodedSize();
+            std::vector<byte> encoded(encoded_size);
+
+            x.Encode(encoded.data(), encoded_size);
+
+            return cryptoppbytes_to_bytes(encoded);
         }
 
         [[nodiscard]] std::vector<std::byte>
         pub_key_to_bytes(const CryptoPP::DSA::PublicKey& pub_key)
         {
             using namespace CryptoPP;
-            ByteQueue pub_key_queue;
-            pub_key.DEREncodePublicKey(pub_key_queue);
 
-            return bytequeue_to_bytes(pub_key_queue);
+            const auto& y = pub_key.GetPublicElement();
+
+            const size_t encoded_size = y.MinEncodedSize();
+            std::vector<byte> encoded(encoded_size);
+
+            y.Encode(encoded.data(), encoded_size);
+
+            return cryptoppbytes_to_bytes(encoded);
         }
 
     } // namespace
@@ -290,6 +309,19 @@ namespace dsa {
         }
 
         return {priv_key_to_bytes(priv_key), pub_key_to_bytes(pub_key)};
+    }
+
+    std::vector<std::byte>
+    make_pub_key(const std::vector<std::byte>& priv_key_bytes)
+    {
+        using namespace CryptoPP;
+
+        auto priv_key = load_priv_key(priv_key_bytes);
+
+        DSA::PublicKey pub_key;
+        priv_key.MakePublicKey(pub_key);
+
+        return pub_key_to_bytes(pub_key);
     }
 
     std::vector<std::byte>
@@ -355,14 +387,39 @@ namespace dsa {
         return mpi_bytes(priv_key.GetPrivateExponent());
     }
 
+    std::vector<std::byte> group_to_mpi_bytes()
+    {
+        auto pb = mpi_bytes(group_big_a_params.p);
+        auto qb = mpi_bytes(group_big_a_params.q);
+        auto gb = mpi_bytes(group_big_a_params.g);
+
+        pb.insert(pb.end(), qb.begin(), qb.end());
+        pb.insert(pb.end(), gb.begin(), gb.end());
+
+        return pb;
+    }
+
     std::vector<std::byte>
     pub_key_bytes_to_mpi_bytes(const std::vector<std::byte>& pub_key_bytes)
     {
-        using namespace CryptoPP;
-
         auto pub_key = load_pub_key(pub_key_bytes);
 
-        return mpi_bytes(pub_key.GetPublicElement());
+        auto group_bytes = group_to_mpi_bytes();
+        auto y_bytes = mpi_bytes(pub_key.GetPublicElement());
+
+        group_bytes.insert(group_bytes.end(), y_bytes.begin(), y_bytes.end());
+
+        return group_bytes;
+    }
+
+    std::array<std::byte, 32>
+    pub_key_hash(const std::vector<std::byte>& pub_key_bytes)
+    {
+        auto pub_key_mpi_bytes = pub_key_bytes_to_mpi_bytes(pub_key_bytes);
+
+        auto sha256 = Sha256();
+        sha256.update(pub_key_mpi_bytes);
+        return sha256.digest();
     }
 
 } // namespace dsa
