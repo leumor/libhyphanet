@@ -131,4 +131,14 @@ TEST_CASE("derive request uri", "[library][keys]")
     REQUIRE(insert_ssk->to_request_uri().to_string() == request_uri_ssk);
     // Request uri's request uri is itself
     REQUIRE(request_ssk->to_request_uri().to_string() == request_uri_ssk);
+
+    request_uri_ssk = "SSK@sdFxM0Z4zx4-gXhGwzXAVYvOUi6NRfdGbyJa797bNAg,"
+                      "ZP4aASnyZax8nYOvCOlUebegsmbGQIXfVzw7iyOsXEc,AQACAAE/";
+    request_ssk = user::Key::create(*Uri::create(request_uri_ssk));
+    insert_uri_ssk = "SSK@ZTeIa1g4T3OYCdUFfHrFSlRnt5coeFFDCIZxWSb7abs,"
+                     "ZP4aASnyZax8nYOvCOlUebegsmbGQIXfVzw7iyOsXEc,AQECAAE/";
+    insert_ssk = user::Key::create(*Uri::create(insert_uri_ssk));
+    REQUIRE(insert_ssk->to_request_uri().to_string() == request_uri_ssk);
+    // Request uri's request uri is itself
+    REQUIRE(request_ssk->to_request_uri().to_string() == request_uri_ssk);
 }

@@ -136,10 +136,6 @@ void Subspace_key::check_invariants() const
     if (get_routing_key().size() != routing_key_size) {
         throw exception::Malformed_uri{"Invalid URI: invalid routing key"};
     }
-
-    if (docname_.empty()) {
-        throw exception::Malformed_uri{"Invalid URI: missing docname"};
-    }
 }
 
 std::vector<std::byte> Subspace_key::get_extra_bytes() const

@@ -230,6 +230,9 @@ private:
         const std::vector<std::string>& additional_meta_strings);
     void append_meta_string(std::string_view additional_meta_string);
 
+    static void append_meta_string(std::vector<std::string>& meta_strings,
+                                   std::string_view additional_meta_string);
+
     /**
      * @brief The three-letter abbreviation of the key.
      */

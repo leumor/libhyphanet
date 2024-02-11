@@ -183,42 +183,40 @@ Uri::parse_routing_crypto_keys(const std::string_view keys_str)
 std::vector<std::string> Uri::parse_meta_strings(std::string_view uri_path)
 {
     std::vector<std::string> meta_strings;
-    if (!uri_path.empty()) {
-        size_t start = 0;
-        size_t end = uri_path.find(uri_separator);
 
-        if (end == std::string_view::npos) {
-            // No '/' is found in the URI Path. So the whole URI Path is a meta
-            // string
-            meta_strings.push_back(url_decode(uri_path));
+    if (uri_path.empty()) { return meta_strings; }
+
+    size_t start = 0;
+    size_t end = 0;
+
+    while (true) {
+        // Skip all consecutive '/'
+        while (uri_path.at(start) == uri_separator) { start += 1; }
+
+        // If we skipped any consecutive '/', add one empty string
+        // As SSK@blah,blah,blah//filename is allowed with empty docname
+        if (start > 1 && start < uri_path.size()
+            && uri_path.at(start - 1) == uri_separator
+            && uri_path.at(start - 2) == uri_separator) {
+            append_meta_string(meta_strings, "");
+        }
+
+        end = uri_path.find(uri_separator, start);
+
+        if (end != std::string_view::npos) {
+            append_meta_string(meta_strings,
+                               uri_path.substr(start, end - start));
+
+            start = end + 1;
         }
         else {
-            while (end != std::string_view::npos) {
-                if (start < end) { // In case the first char is '/'
-                    try {
-                        meta_strings.push_back(
-                            url_decode(uri_path.substr(start, end - start)));
-                    }
-                    catch (const Url_decode_error&) {
-                        throw exception::Malformed_uri{
-                            "Invalid URI: invalid meta string"};
-                    }
-                }
-                start = end + 1;
-                end = uri_path.find(uri_separator, start);
-            }
-
             if (start < uri_path.size()) {
                 // Last part of the URI Path
-                try {
-                    meta_strings.push_back(url_decode(
-                        uri_path.substr(start, uri_path.size() - start)));
-                }
-                catch (const Url_decode_error&) {
-                    throw exception::Malformed_uri{
-                        "Invalid URI: invalid meta string"};
-                }
+                append_meta_string(
+                    meta_strings,
+                    uri_path.substr(start, uri_path.size() - start));
             }
+            break;
         }
     }
 
@@ -259,6 +257,19 @@ void Uri::append_meta_strings(
 
 void Uri::append_meta_string(std::string_view additional_meta_string)
 {
-    meta_strings_.push_back(url_decode(additional_meta_string));
+    append_meta_string(meta_strings_, additional_meta_string);
+}
+
+void Uri::append_meta_string(std::vector<std::string>& meta_strings,
+                             std::string_view additional_meta_string)
+{
+    if (additional_meta_string != std::string(1, uri_separator)) {
+        try {
+            meta_strings.push_back(url_decode(additional_meta_string));
+        }
+        catch (const Url_decode_error&) {
+            throw exception::Malformed_uri{"Invalid URI: invalid meta string"};
+        }
+    }
 }
 } // namespace keys
