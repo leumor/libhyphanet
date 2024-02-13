@@ -38,8 +38,8 @@ protected:
     class Token {};
     friend class Insertable;
 public:
-    // Remmember to also modify valid_crypto_algorithms if you change this
     enum class Crypto_algorithm : std::underlying_type_t<std::byte> {
+        // Remmember to also modify valid_crypto_algorithms if you change this
         /**
          * AES-256 with
          * [PCFB](https://csrc.nist.rip/groups/ST/toolkit/BCM/documents/proposedmodes/pcfb/pcfb-spec.pdf)

@@ -227,7 +227,7 @@ std::string Uri::to_string(bool prefix, bool pure_ascii) const
 {
     std::stringstream ss;
 
-    if (prefix) { ss << "freenet:"; }
+    if (prefix) { ss << "hypha:"; }
 
     ss << uri_type_to_string.at(uri_type_) << '@';
 
@@ -246,6 +246,11 @@ std::string Uri::to_string(bool prefix, bool pure_ascii) const
         ret.pop_back(); // Remove last "/"
     }
     return ret;
+}
+
+std::string Uri::to_ascii_string() const
+{
+    return to_string(true, true);
 }
 
 void Uri::append_meta_strings(
