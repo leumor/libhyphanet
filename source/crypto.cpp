@@ -59,6 +59,17 @@ rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
 }
 
 namespace {
+    /**
+     * @brief Converts a vector of CryptoPP bytes to a vector of std::byte.
+     *
+     * @details
+     * This utility function transforms a vector of bytes from the CryptoPP
+     * library's byte type to the standard C++ std::byte type.
+     *
+     * @param cryptopp_bytes The vector of CryptoPP bytes to convert.
+     *
+     * @return A vector of std::byte.
+     */
     std::vector<std::byte>
     cryptoppbytes_to_bytes(const std::vector<CryptoPP::byte>& cryptopp_bytes)
     {
@@ -71,6 +82,17 @@ namespace {
         return std_bytes;
     }
 
+    /**
+     * @brief Converts a vector of std::byte to a vector of CryptoPP bytes.
+     *
+     * @details
+     * This utility function transforms a vector of bytes from the standard C++
+     * std::byte type to the CryptoPP library's byte type.
+     *
+     * @param bytes The vector of std::byte to convert.
+     *
+     * @return A vector of CryptoPP::byte.
+     */
     std::vector<CryptoPP::byte>
     bytes_to_cryptoppbytes(const std::vector<std::byte>& bytes)
     {
@@ -82,12 +104,35 @@ namespace {
         return cryptopp_bytes;
     }
 
+    /**
+     * @brief Converts a vector of std::byte to a pointer to CryptoPP bytes.
+     *
+     * @details
+     * This utility function provides a way to convert a vector of std::byte to
+     * a pointer that can be used with CryptoPP functions expecting a byte
+     * pointer.
+     *
+     * @param bytes The vector of std::byte to convert.
+     *
+     * @return A pointer to the converted CryptoPP::byte array.
+     */
     const CryptoPP::byte*
     bytes_to_cryptoppbytes_ptr(const std::vector<std::byte>& bytes)
     {
         return std::bit_cast<const CryptoPP::byte*>(bytes.data());
     }
 
+    /**
+     * @brief Converts a CryptoPP ByteQueue to a vector of std::byte.
+     *
+     * @details
+     * This function extracts bytes from a CryptoPP ByteQueue and converts them
+     * to a vector of std::byte.
+     *
+     * @param queue The CryptoPP ByteQueue to convert.
+     *
+     * @return A vector of std::byte.
+     */
     std::vector<std::byte> bytequeue_to_bytes(CryptoPP::ByteQueue& queue)
     {
         std::vector<CryptoPP::byte> cryptopp_bytes;
@@ -101,6 +146,18 @@ namespace {
         return cryptoppbytes_to_bytes(cryptopp_bytes);
     }
 
+    /**
+     * @brief Converts a CryptoPP Integer to a vector of std::byte in MPI
+     * format.
+     *
+     * @details
+     * This function encodes a CryptoPP Integer to a vector of std::byte,
+     * representing the integer in MPI (Multiple Precision Integer) format.
+     *
+     * @param num The CryptoPP Integer to convert.
+     *
+     * @return A vector of std::byte representing the integer in MPI format.
+     */
     [[nodiscard]] std::vector<std::byte> mpi_bytes(const CryptoPP::Integer& num)
     {
         using namespace CryptoPP;
@@ -137,12 +194,28 @@ std::array<std::byte, 32> Sha256::digest()
 
 namespace dsa {
     namespace {
+        /**
+         * @brief Holds the DSA group parameters (p, q, g).
+         *
+         * @details
+         * This structure encapsulates the DSA group parameters, which are three
+         * large prime numbers that define the finite field and subgroup used
+         * for DSA operations.
+         */
         struct GroupParameters {
-            CryptoPP::Integer p;
-            CryptoPP::Integer q;
-            CryptoPP::Integer g;
+            CryptoPP::Integer p; ///< The prime modulus p.
+            CryptoPP::Integer q; ///< The prime divisor q.
+            CryptoPP::Integer g; ///< The base generator g.
         };
 
+        /**
+         * @brief Predefined DSA group parameters for a specific DSA group.
+         *
+         * @details
+         * This variable holds a set of predefined DSA group parameters for a
+         * specific DSA group. These parameters are used to initialize DSA key
+         * objects for cryptographic operations.
+         */
         const GroupParameters group_big_a_params{
             CryptoPP::Integer{
                 "0x008608ac4f55361337f2a3e38ab1864ff3c98d66411d8d2afc9c526320c5"
@@ -167,6 +240,25 @@ namespace dsa {
                 "d6c9bc9e74e336560bb5cd4e91eabf6dad26bf0ca04807f8c31a2fc18ea7d4"
                 "5baab7cc997b53c356"}};
 
+        /**
+         * @brief Loads a DSA private key from a byte vector.
+         *
+         * @details
+         * This function takes a byte vector representing a DSA private key and
+         * initializes a
+         * [CryptoPP::DSA::PrivateKey](https://cryptopp.com/docs/ref/class_d_l___private_key___g_f_p.html)
+         * object with it. It throws an exception if the key is invalid or
+         * cannot be loaded.
+         *
+         * @param key_bytes The byte vector containing the DSA private key.
+         *
+         * @return A
+         * [CryptoPP::DSA::PrivateKey](https://cryptopp.com/docs/ref/class_d_l___private_key___g_f_p.html)
+         * object.
+         *
+         * @throws Invalid_priv_key_error if the key is invalid or cannot be
+         * loaded.
+         */
         CryptoPP::DSA::PrivateKey
         load_priv_key(const std::vector<std::byte>& key_bytes)
         {
@@ -198,6 +290,25 @@ namespace dsa {
             return private_key;
         }
 
+        /**
+         * @brief Loads a DSA public key from a byte vector.
+         *
+         * @details
+         * This function takes a byte vector representing a DSA public key and
+         * initializes a
+         * [CryptoPP::DSA::PublicKey](https://cryptopp.com/docs/ref/class_d_l___public_key___g_f_p.html)
+         * object with it. It throws an exception if the key is invalid or
+         * cannot be loaded.
+         *
+         * @param key_bytes The byte vector containing the DSA public key.
+         *
+         * @return A
+         * [CryptoPP::DSA::PublicKey](https://cryptopp.com/docs/ref/class_d_l___public_key___g_f_p.html)
+         * object.
+         *
+         * @throws Invalid_pub_key_error if the key is invalid or cannot be
+         * loaded.
+         */
         CryptoPP::DSA::PublicKey
         load_pub_key(const std::vector<std::byte>& key_bytes)
         {
@@ -227,6 +338,19 @@ namespace dsa {
             return pub_key;
         }
 
+        /**
+         * @brief Converts a DSA private key to a byte vector.
+         *
+         * @details
+         * This function takes a
+         * [CryptoPP::DSA::PrivateKey](https://cryptopp.com/docs/ref/class_d_l___private_key___g_f_p.html)
+         * object and converts it to a byte vector. The private key bytes are
+         * big-endian encoded `x` values.
+         *
+         * @param priv_key The DSA private key to convert.
+         *
+         * @return A byte vector representing the DSA private key.
+         */
         [[nodiscard]] std::vector<std::byte>
         priv_key_to_bytes(const CryptoPP::DSA::PrivateKey& priv_key)
         {
@@ -242,6 +366,18 @@ namespace dsa {
             return cryptoppbytes_to_bytes(encoded);
         }
 
+        /**
+         * @brief Converts a DSA public key to a byte vector.
+         *
+         * @details
+         * This function takes a
+         * [CryptoPP::DSA::PublicKey](https://cryptopp.com/docs/ref/class_d_l___public_key___g_f_p.html)
+         * object and converts it to a byte vector. The public key bytes are
+         * big-endian encoded `y` values.
+         *
+         * @param pub_key The DSA public key to convert.
+         * @return A byte vector representing the DSA public key.
+         */
         [[nodiscard]] std::vector<std::byte>
         pub_key_to_bytes(const CryptoPP::DSA::PublicKey& pub_key)
         {

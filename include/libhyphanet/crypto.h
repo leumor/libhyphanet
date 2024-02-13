@@ -10,6 +10,15 @@
 #include <cstddef>
 #include <vector>
 
+/**
+ * @brief The crypto namespace contains functions and classes for cryptographic
+ * operations.
+ *
+ * @details
+ * This namespace includes functionality for encryption, decryption, and hashing
+ * using various algorithms. It provides a high-level interface for secure
+ * cryptographic transformations on data.
+ */
 namespace crypto {
 
 /**
@@ -88,6 +97,15 @@ private:
     CryptoPP::SHA256 hasher_;
 };
 
+/**
+ * @brief The dsa namespace within crypto contains functions and classes related
+ * to the DSA (Digital Signature Algorithm).
+ *
+ * @details
+ * This namespace provides tools for generating DSA keys, signing messages, and
+ * verifying signatures. It also includes exceptions for handling errors related
+ * to DSA operations.
+ */
 namespace dsa {
     /**
      * @brief Exception for invalid private key errors.
@@ -143,8 +161,8 @@ namespace dsa {
      *
      * @return A pair of vectors, where the first vector is the private key
      * bytes and the second is the public key bytes. The private key bytes are
-     * big-endian encoded x values, and the public key bytes are big-endian
-     * encoded y values.
+     * big-endian encoded `x` values, and the public key bytes are big-endian
+     * encoded `y` values.
      */
     [[nodiscard]] std::pair<std::vector<std::byte>, std::vector<std::byte>>
     generate_keys();
@@ -170,7 +188,8 @@ namespace dsa {
      *
      * @details
      * This function computes the corresponding public key from the given
-     * private key bytes. The private key bytes are big-endian encoded x values.
+     * private key bytes. The private key bytes are big-endian encoded `x`
+     * values.
      *
      * @param priv_key_bytes The private key bytes.
      *
@@ -187,7 +206,7 @@ namespace dsa {
      * the signature.
      *
      * @param priv_key_bytes The private key bytes. The private key bytes are
-     * big-endian encoded x values.
+     * big-endian encoded `x` values.
      * @param message_bytes The message to sign.
      *
      * @return The signature as a byte vector.
@@ -204,7 +223,7 @@ namespace dsa {
      * public key.
      *
      * @param pub_key_bytes The public key bytes. The public key bytes are
-     * big-endian encoded y values.
+     * big-endian encoded `y` values.
      * @param message_bytes The message that was signed.
      * @param signature The signature to verify.
      *
