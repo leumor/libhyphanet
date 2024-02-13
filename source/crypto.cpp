@@ -113,8 +113,6 @@ namespace {
         bytes[0] = static_cast<byte>(len >> 8);
         bytes[1] = static_cast<byte>(len & 0xff);
 
-        // fmt::println("{:02x} Length: {}", fmt::join(bytes, " "), len);
-
         return cryptoppbytes_to_bytes(bytes);
     }
 

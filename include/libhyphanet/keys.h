@@ -280,7 +280,8 @@ private:
      *
      * @details
      * Extracts meta strings from a URI path, handling consecutive slashes and
-     * decoding the strings.
+     * decoding the strings. A URI path is the part of Hyphanet URI after crypto
+     * key.
      *
      * @param uri_path The URI path containing the meta strings.
      *
@@ -292,19 +293,38 @@ private:
 
     static const char uri_separator = '/';
 
+    /**
+     * @brief Sets the URI type of the `Uri` object.
+     *
+     * @details
+     * It's used by friend classes.
+     *
+     * @param uri_type The Uri_type value representing the type of the URI.
+     */
     void set_uri_type(Uri_type uri_type) { uri_type_ = uri_type; }
 
+    /**
+     * @brief Sets the routing key for the `Uri` object.
+     *
+     * @details
+     * It's used by friend classes.
+     *
+     * @param routing_key The routing key as a vector of std::byte.
+     */
     void set_routing_key(const std::vector<std::byte>& routing_key)
     {
         routing_key_ = routing_key;
     }
 
+    /**
+     * @brief Sets the extra data for the `Uri` object.
+     *
+     * @details
+     * It's used by friend classes.
+     *
+     * @param extra The extra data as a vector of std::byte.
+     */
     void set_extra(const std::vector<std::byte>& extra) { extra_ = extra; }
-
-    void set_meta_strings(const std::vector<std::string>& meta_strings)
-    {
-        meta_strings_ = meta_strings;
-    }
 
     /**
      * @brief Appends additional meta strings to the `Uri` object.
@@ -331,6 +351,18 @@ private:
      */
     void append_meta_string(std::string_view additional_meta_string);
 
+    /**
+     * @brief Appends a single meta string to a vector of meta strings.
+     *
+     * @details
+     * Adds a single meta string to a vector of meta strings, decoding it if
+     * necessary.
+     *
+     * @param meta_strings The vector of meta strings to append to.
+     * @param additional_meta_string The additional meta string to append.
+     *
+     * @throw exception::Malformed_uri If the meta string is invalid.
+     */
     static void append_meta_string(std::vector<std::string>& meta_strings,
                                    std::string_view additional_meta_string);
 
