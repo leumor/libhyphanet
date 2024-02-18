@@ -236,7 +236,7 @@ Uri Ssk::to_request_uri() const
 std::optional<std::pair<std::string, long>> Ssk::parse_sitename_edition() const
 {
     static const std::regex docname_with_edition_re{
-        fmt::format("(.*)\\{}([0-9]+)", seperator)};
+        fmt::format("(.*)\\{}([0-9]+)", separator)};
     std::smatch match;
 
     if (auto docname = get_docname();
@@ -391,7 +391,7 @@ Ssk Usk::to_ssk() const
 
     return Ssk{
         params,
-        fmt::format("{}{}{}", docname, Ssk::seperator, edition),
+        fmt::format("{}{}{}", docname, Ssk::separator, edition),
     };
 }
 

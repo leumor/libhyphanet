@@ -580,7 +580,7 @@ public:
      * to go from the **USK** form to the **SSK** form, and we don't
      * need to go vice versa.
      */
-    static constexpr auto seperator = '-';
+    static constexpr auto separator = '-';
 
     /**
      * @brief Constructs an Ssk (Signed Subspace Key) object with specified key
