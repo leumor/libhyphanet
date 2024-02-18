@@ -15,7 +15,6 @@
 #include <cstddef>
 #include <fmt/core.h>
 #include <fmt/format.h>
-#include <iostream>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -278,7 +277,7 @@ namespace dsa {
                 const Integer x{bytes_ptr, key_bytes.size()};
                 private_key.SetPrivateExponent(x);
             }
-            catch (CryptoPP::Exception& e) {
+            catch (CryptoPP::Exception&) {
                 throw Invalid_priv_key_error("Unable to load dsa private key");
             }
 
