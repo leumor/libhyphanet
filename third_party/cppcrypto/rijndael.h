@@ -3,8 +3,8 @@ This code is written by kerukuro for cppcrypto library
 (http://cppcrypto.sourceforge.net/) and released into public domain.
 */
 
-#ifndef INCLUDE_RIJNDAEL_H
-#define INCLUDE_RIJNDAEL_H
+#ifndef CPPCRYPTO_RIJNDAEL_H
+#define CPPCRYPTO_RIJNDAEL_H
 
 #ifndef CPPCRYPTO_RIJNDAEL_H
 #define CPPCRYPTO_RIJNDAEL_H
@@ -535,4 +535,4 @@ private:
 
 #endif
 
-#endif /* INCLUDE_RIJNDAEL_H */
+#endif /* CPPCRYPTO_RIJNDAEL_H */
