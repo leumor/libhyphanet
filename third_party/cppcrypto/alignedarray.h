@@ -3,8 +3,8 @@ This code is written by kerukuro for cppcrypto library
 (http://cppcrypto.sourceforge.net/) and released into public domain.
 */
 
-#ifndef INCLUDE_ALIGNEDARRAY_H
-#define INCLUDE_ALIGNEDARRAY_H
+#ifndef CPPCRYPTO_ALIGNEDARRAY_H
+#define CPPCRYPTO_ALIGNEDARRAY_H
 
 #ifndef CPPCRYPTO_ALIGNED_ARRAY_H
 #define CPPCRYPTO_ALIGNED_ARRAY_H
@@ -37,7 +37,9 @@ private:
 template<typename T, size_t N, size_t A>
 aligned_pod_array<T, N, A>::aligned_pod_array(): t(0)
 {
-    t = static_cast<T*>(aligned_allocate(sizeof(T) * N, A));
+    auto alignment = sizeof(T) * N;
+    auto multiples = A / alignment + 1;
+    t = static_cast<T*>(aligned_allocate(alignment, A * multiples));
 }
 
 template<typename T, size_t N, size_t A>
@@ -175,4 +177,4 @@ aligned_impl_ptr<T, A>::operator=(aligned_impl_ptr<T, A>&& other)
 
 #endif
 
-#endif /* INCLUDE_ALIGNEDARRAY_H */
+#endif /* CPPCRYPTO_ALIGNEDARRAY_H */
