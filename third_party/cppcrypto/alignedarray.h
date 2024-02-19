@@ -37,9 +37,7 @@ private:
 template<typename T, size_t N, size_t A>
 aligned_pod_array<T, N, A>::aligned_pod_array(): t(0)
 {
-    auto alignment = sizeof(T) * N;
-    auto multiples = A / alignment + 1;
-    t = static_cast<T*>(aligned_allocate(alignment, A * multiples));
+    t = static_cast<T*>(aligned_allocate(A, sizeof(T) * N));
 }
 
 template<typename T, size_t N, size_t A>
