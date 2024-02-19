@@ -4,6 +4,7 @@
 #include <array>
 #include <cstddef>
 #include <gsl/util>
+#include <limits>
 #include <string>
 #include <unicode/umachine.h>
 #include <unicode/unistr.h>
