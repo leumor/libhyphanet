@@ -140,10 +140,9 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set Environment Variables
+        if: matrix.os == 'ubuntu-22.04'
         run: |
-          if [ "${{ runner.os }}" == "Linux" ]; then
-            echo "CXX=g++-13" >> $GITHUB_ENV
-          fi
+          echo "CXX=g++-13" >> $GITHUB_ENV
 
       - name: Install static analyzers
         if: matrix.os == 'ubuntu-22.04'
