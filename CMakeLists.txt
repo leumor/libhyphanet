@@ -13,6 +13,10 @@ project(
 include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)
 
+if(BUILD_SHARED_LIBS)
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
+
 # ---- Declare library ----
 add_library(objlib_cppcrypto OBJECT
   third_party/cppcrypto/alignedarray.h
