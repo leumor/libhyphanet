@@ -436,36 +436,43 @@ static const uint32_t IT[4][256] = {
     }};
 
 #define KEYIMC(i)                                                              \
-    w[i * 4] = IT[0][S[(unsigned char)(w[i * 4] >> 24)]]                       \
-               ^ IT[1][S[((unsigned char)(w[i * 4] >> 16))]]                   \
-               ^ IT[2][S[(unsigned char)(w[i * 4] >> 8)]]                      \
-               ^ IT[3][S[(unsigned char)(w[i * 4])]];                          \
-    w[i * 4 + 1] = IT[0][S[(unsigned char)(w[i * 4 + 1] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 4 + 1] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 4 + 1] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 4 + 1])]];                  \
-    w[i * 4 + 2] = IT[0][S[(unsigned char)(w[i * 4 + 2] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 4 + 2] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 4 + 2] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 4 + 2])]];                  \
-    w[i * 4 + 3] = IT[0][S[(unsigned char)(w[i * 4 + 3] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 4 + 3] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 4 + 3] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 4 + 3])]];
+    w[i * 4] = IT[0][S[static_cast<unsigned char>(w[i * 4] >> 24)]]            \
+               ^ IT[1][S[(static_cast<unsigned char>(w[i * 4] >> 16))]]        \
+               ^ IT[2][S[static_cast<unsigned char>(w[i * 4] >> 8)]]           \
+               ^ IT[3][S[static_cast<unsigned char>(w[i * 4])]];               \
+    w[i * 4 + 1]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 4 + 1] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 4 + 1] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 4 + 1] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 4 + 1])]];                \
+    w[i * 4 + 2]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 4 + 2] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 4 + 2] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 4 + 2] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 4 + 2])]];                \
+    w[i * 4 + 3]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 4 + 3] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 4 + 3] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 4 + 3] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 4 + 3])]];
 
 #define ROUND(r)                                                               \
-    t0 = W_[r * 4 + 0] ^ T[0][(unsigned char)(s0 >> 24)]                       \
-         ^ T[1][(unsigned char)(s1 >> 16)] ^ T[2][(unsigned char)(s2 >> 8)]    \
-         ^ T[3][(unsigned char)(s3)];                                          \
-    t1 = W_[r * 4 + 1] ^ T[0][(unsigned char)(s1 >> 24)]                       \
-         ^ T[1][(unsigned char)(s2 >> 16)] ^ T[2][(unsigned char)(s3 >> 8)]    \
-         ^ T[3][(unsigned char)(s0)];                                          \
-    t2 = W_[r * 4 + 2] ^ T[0][(unsigned char)(s2 >> 24)]                       \
-         ^ T[1][(unsigned char)(s3 >> 16)] ^ T[2][(unsigned char)(s0 >> 8)]    \
-         ^ T[3][(unsigned char)(s1)];                                          \
-    t3 = W_[r * 4 + 3] ^ T[0][(unsigned char)(s3 >> 24)]                       \
-         ^ T[1][(unsigned char)(s0 >> 16)] ^ T[2][(unsigned char)(s1 >> 8)]    \
-         ^ T[3][(unsigned char)(s2)];                                          \
+    t0 = W_[r * 4 + 0] ^ T[0][static_cast<unsigned char>(s0 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s1 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s2 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s3)];                               \
+    t1 = W_[r * 4 + 1] ^ T[0][static_cast<unsigned char>(s1 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s2 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s3 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s0)];                               \
+    t2 = W_[r * 4 + 2] ^ T[0][static_cast<unsigned char>(s2 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s3 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s0 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s1)];                               \
+    t3 = W_[r * 4 + 3] ^ T[0][static_cast<unsigned char>(s3 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s0 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s1 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s2)];                               \
     s0 = t0;                                                                   \
     s1 = t1;                                                                   \
     s2 = t2;                                                                   \
@@ -484,24 +491,32 @@ static const uint32_t IT[4][256] = {
     s3 = W_[r * 4 + 3] ^ uint32_t(S[t3 >> 24]) << 24                           \
          ^ uint32_t(S[(t0 >> 16) & 0xff]) << 16                                \
          ^ uint32_t(S[(t1 >> 8) & 0xff]) << 8 ^ uint32_t(S[t2 & 0xff]);        \
-    *(uint32_t*)out = swap_uint32(s0);                                         \
-    *(uint32_t*)(out + 4) = swap_uint32(s1);                                   \
-    *(uint32_t*)(out + 8) = swap_uint32(s2);                                   \
-    *(uint32_t*)(out + 12) = swap_uint32(s3);
+    uint32_t tmp = swap_uint32(s0);                                            \
+    memcpy(out, &tmp, sizeof(tmp));                                            \
+    tmp = swap_uint32(s1);                                                     \
+    memcpy(out + 4, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s2);                                                     \
+    memcpy(out + 8, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s3);                                                     \
+    memcpy(out + 12, &tmp, sizeof(tmp));
 
 #define IROUND(r)                                                              \
-    t0 = W_[r * 4 + 0] ^ IT[0][(unsigned char)(s0 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s3 >> 16)] ^ IT[2][(unsigned char)(s2 >> 8)]  \
-         ^ IT[3][(unsigned char)(s1)];                                         \
-    t1 = W_[r * 4 + 1] ^ IT[0][(unsigned char)(s1 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s0 >> 16)] ^ IT[2][(unsigned char)(s3 >> 8)]  \
-         ^ IT[3][(unsigned char)(s2)];                                         \
-    t2 = W_[r * 4 + 2] ^ IT[0][(unsigned char)(s2 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s1 >> 16)] ^ IT[2][(unsigned char)(s0 >> 8)]  \
-         ^ IT[3][(unsigned char)(s3)];                                         \
-    t3 = W_[r * 4 + 3] ^ IT[0][(unsigned char)(s3 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s2 >> 16)] ^ IT[2][(unsigned char)(s1 >> 8)]  \
-         ^ IT[3][(unsigned char)(s0)];                                         \
+    t0 = W_[r * 4 + 0] ^ IT[0][static_cast<unsigned char>(s0 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s3 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s2 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s1)];                              \
+    t1 = W_[r * 4 + 1] ^ IT[0][static_cast<unsigned char>(s1 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s0 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s3 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s2)];                              \
+    t2 = W_[r * 4 + 2] ^ IT[0][static_cast<unsigned char>(s2 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s1 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s0 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s3)];                              \
+    t3 = W_[r * 4 + 3] ^ IT[0][static_cast<unsigned char>(s3 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s2 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s1 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s0)];                              \
     s0 = t0;                                                                   \
     s1 = t1;                                                                   \
     s2 = t2;                                                                   \
@@ -520,10 +535,14 @@ static const uint32_t IT[4][256] = {
     s3 = W_[r * 4 + 3] ^ uint32_t(IS[t3 >> 24]) << 24                          \
          ^ uint32_t(IS[(t2 >> 16) & 0xff]) << 16                               \
          ^ uint32_t(IS[(t1 >> 8) & 0xff]) << 8 ^ uint32_t(IS[t0 & 0xff]);      \
-    *(uint32_t*)out = swap_uint32(s0);                                         \
-    *(uint32_t*)(out + 4) = swap_uint32(s1);                                   \
-    *(uint32_t*)(out + 8) = swap_uint32(s2);                                   \
-    *(uint32_t*)(out + 12) = swap_uint32(s3);
+    uint32_t tmp = swap_uint32(s0);                                            \
+    memcpy(out, &tmp, sizeof(tmp));                                            \
+    tmp = swap_uint32(s1);                                                     \
+    memcpy(out + 4, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s2);                                                     \
+    memcpy(out + 8, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s3);                                                     \
+    memcpy(out + 12, &tmp, sizeof(tmp));
 
 #define KEYSWAP(Nr)                                                            \
     for (int i = 0; i < 4 * Nr / 2; i += 4) {                                  \
@@ -534,10 +553,15 @@ static const uint32_t IT[4][256] = {
     }
 
 #define FROUND()                                                               \
-    uint32_t s0 = swap_uint32(*(uint32_t*)in);                                 \
-    uint32_t s1 = swap_uint32(*(uint32_t*)(in + 4));                           \
-    uint32_t s2 = swap_uint32(*(uint32_t*)(in + 8));                           \
-    uint32_t s3 = swap_uint32(*(uint32_t*)(in + 12));                          \
+    uint32_t val;                                                              \
+    memcpy(&val, in, sizeof(val));                                             \
+    uint32_t s0 = swap_uint32(val);                                            \
+    memcpy(&val, in + 4, sizeof(val));                                         \
+    uint32_t s1 = swap_uint32(val);                                            \
+    memcpy(&val, in + 8, sizeof(val));                                         \
+    uint32_t s2 = swap_uint32(val);                                            \
+    memcpy(&val, in + 12, sizeof(val));                                        \
+    uint32_t s3 = swap_uint32(val);                                            \
     s0 ^= W_[0];                                                               \
     s1 ^= W_[1];                                                               \
     s2 ^= W_[2];                                                               \
@@ -549,16 +573,20 @@ bool rijndael128_128::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 4 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 4 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0; i < 10; i++) {
         uint32_t temp = w[3];
-        w[4] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[4] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[5] = w[1] ^ w[4];
         w[6] = w[2] ^ w[5];
         w[7] = w[3] ^ w[6];
@@ -938,16 +966,20 @@ bool rijndael128_192::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 6 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 6 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0;; i++) {
         uint32_t temp = w[5];
-        w[6] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[6] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[7] = w[1] ^ w[6];
         w[8] = w[2] ^ w[7];
         w[9] = w[3] ^ w[8];
@@ -1051,15 +1083,19 @@ bool rijndael128_256::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 8 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 8 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0;; i++) {
-        w[8] = w[0] ^ (uint32_t(S[(unsigned char)(w[7] >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(w[7])]) << 8)
-               ^ (uint32_t(S[(unsigned char)(w[7] >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(w[7] >> 16)]) << 24) ^ RC[i];
+        w[8] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7])]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 16)]) << 24)
+               ^ RC[i];
         w[9] = w[1] ^ w[8];
         w[10] = w[2] ^ w[9];
         w[11] = w[3] ^ w[10];
@@ -1067,10 +1103,10 @@ bool rijndael128_256::init(const unsigned char* key,
         if (i == 6) break;
 
         uint32_t temp = w[11];
-        w[12] = w[4] ^ (uint32_t(S[(unsigned char)(temp)]))
-                ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 8)
-                ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 16)
-                ^ (uint32_t(S[(unsigned char)(temp >> 24)]) << 24);
+        w[12] = w[4] ^ (uint32_t(S[static_cast<unsigned char>(temp)]))
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 8)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 16)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]) << 24);
         w[13] = w[5] ^ w[12];
         w[14] = w[6] ^ w[13];
         w[15] = w[7] ^ w[14];
@@ -1174,24 +1210,28 @@ bool rijndael128_224::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 7 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 7 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0; i < 7; i++) {
-        w[7] = w[0] ^ (uint32_t(S[(unsigned char)(w[6] >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(w[6])]) << 8)
-               ^ (uint32_t(S[(unsigned char)(w[6] >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(w[6] >> 16)]) << 24) ^ RC[i];
+        w[7] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6])]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 16)]) << 24)
+               ^ RC[i];
         w[8] = w[1] ^ w[7];
         w[9] = w[2] ^ w[8];
         w[10] = w[3] ^ w[9];
 
         uint32_t temp = w[10];
-        w[11] = w[4] ^ (uint32_t(S[(unsigned char)(temp)]))
-                ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 8)
-                ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 16)
-                ^ (uint32_t(S[(unsigned char)(temp >> 24)]) << 24);
+        w[11] = w[4] ^ (uint32_t(S[static_cast<unsigned char>(temp)]))
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 8)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 16)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]) << 24);
         w[12] = w[5] ^ w[11];
         w[13] = w[6] ^ w[12];
         w += 7;
@@ -1291,16 +1331,20 @@ bool rijndael128_160::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 5 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 5 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0;; i++) {
         uint32_t temp = w[4];
-        w[5] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[5] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[6] = w[1] ^ w[5];
         w[7] = w[2] ^ w[6];
 
@@ -1396,64 +1440,79 @@ void rijndael128_160::clear()
 }
 
 #define KEYIMC256(i)                                                           \
-    w[i * 8] = IT[0][S[(unsigned char)(w[i * 8] >> 24)]]                       \
-               ^ IT[1][S[((unsigned char)(w[i * 8] >> 16))]]                   \
-               ^ IT[2][S[(unsigned char)(w[i * 8] >> 8)]]                      \
-               ^ IT[3][S[(unsigned char)(w[i * 8])]];                          \
-    w[i * 8 + 1] = IT[0][S[(unsigned char)(w[i * 8 + 1] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 8 + 1] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 8 + 1] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 8 + 1])]];                  \
-    w[i * 8 + 2] = IT[0][S[(unsigned char)(w[i * 8 + 2] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 8 + 2] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 8 + 2] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 8 + 2])]];                  \
-    w[i * 8 + 3] = IT[0][S[(unsigned char)(w[i * 8 + 3] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 8 + 3] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 8 + 3] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 8 + 3])]];                  \
-    w[i * 8 + 4] = IT[0][S[(unsigned char)(w[i * 8 + 4] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 8 + 4] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 8 + 4] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 8 + 4])]];                  \
-    w[i * 8 + 5] = IT[0][S[(unsigned char)(w[i * 8 + 5] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 8 + 5] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 8 + 5] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 8 + 5])]];                  \
-    w[i * 8 + 6] = IT[0][S[(unsigned char)(w[i * 8 + 6] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 8 + 6] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 8 + 6] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 8 + 6])]];                  \
-    w[i * 8 + 7] = IT[0][S[(unsigned char)(w[i * 8 + 7] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 8 + 7] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 8 + 7] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 8 + 7])]];
+    w[i * 8] = IT[0][S[static_cast<unsigned char>(w[i * 8] >> 24)]]            \
+               ^ IT[1][S[(static_cast<unsigned char>(w[i * 8] >> 16))]]        \
+               ^ IT[2][S[static_cast<unsigned char>(w[i * 8] >> 8)]]           \
+               ^ IT[3][S[static_cast<unsigned char>(w[i * 8])]];               \
+    w[i * 8 + 1]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 8 + 1] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 8 + 1] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 8 + 1] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 8 + 1])]];                \
+    w[i * 8 + 2]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 8 + 2] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 8 + 2] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 8 + 2] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 8 + 2])]];                \
+    w[i * 8 + 3]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 8 + 3] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 8 + 3] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 8 + 3] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 8 + 3])]];                \
+    w[i * 8 + 4]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 8 + 4] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 8 + 4] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 8 + 4] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 8 + 4])]];                \
+    w[i * 8 + 5]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 8 + 5] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 8 + 5] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 8 + 5] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 8 + 5])]];                \
+    w[i * 8 + 6]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 8 + 6] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 8 + 6] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 8 + 6] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 8 + 6])]];                \
+    w[i * 8 + 7]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 8 + 7] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 8 + 7] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 8 + 7] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 8 + 7])]];
 
 #define ROUND256(r)                                                            \
-    t0 = W_[r * 8 + 0] ^ T[0][(unsigned char)(s0 >> 24)]                       \
-         ^ T[1][(unsigned char)(s1 >> 16)] ^ T[2][(unsigned char)(s3 >> 8)]    \
-         ^ T[3][(unsigned char)(s4)];                                          \
-    t1 = W_[r * 8 + 1] ^ T[0][(unsigned char)(s1 >> 24)]                       \
-         ^ T[1][(unsigned char)(s2 >> 16)] ^ T[2][(unsigned char)(s4 >> 8)]    \
-         ^ T[3][(unsigned char)(s5)];                                          \
-    t2 = W_[r * 8 + 2] ^ T[0][(unsigned char)(s2 >> 24)]                       \
-         ^ T[1][(unsigned char)(s3 >> 16)] ^ T[2][(unsigned char)(s5 >> 8)]    \
-         ^ T[3][(unsigned char)(s6)];                                          \
-    t3 = W_[r * 8 + 3] ^ T[0][(unsigned char)(s3 >> 24)]                       \
-         ^ T[1][(unsigned char)(s4 >> 16)] ^ T[2][(unsigned char)(s6 >> 8)]    \
-         ^ T[3][(unsigned char)(s7)];                                          \
-    t4 = W_[r * 8 + 4] ^ T[0][(unsigned char)(s4 >> 24)]                       \
-         ^ T[1][(unsigned char)(s5 >> 16)] ^ T[2][(unsigned char)(s7 >> 8)]    \
-         ^ T[3][(unsigned char)(s0)];                                          \
-    t5 = W_[r * 8 + 5] ^ T[0][(unsigned char)(s5 >> 24)]                       \
-         ^ T[1][(unsigned char)(s6 >> 16)] ^ T[2][(unsigned char)(s0 >> 8)]    \
-         ^ T[3][(unsigned char)(s1)];                                          \
-    t6 = W_[r * 8 + 6] ^ T[0][(unsigned char)(s6 >> 24)]                       \
-         ^ T[1][(unsigned char)(s7 >> 16)] ^ T[2][(unsigned char)(s1 >> 8)]    \
-         ^ T[3][(unsigned char)(s2)];                                          \
-    t7 = W_[r * 8 + 7] ^ T[0][(unsigned char)(s7 >> 24)]                       \
-         ^ T[1][(unsigned char)(s0 >> 16)] ^ T[2][(unsigned char)(s2 >> 8)]    \
-         ^ T[3][(unsigned char)(s3)];                                          \
+    t0 = W_[r * 8 + 0] ^ T[0][static_cast<unsigned char>(s0 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s1 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s3 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s4)];                               \
+    t1 = W_[r * 8 + 1] ^ T[0][static_cast<unsigned char>(s1 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s2 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s4 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s5)];                               \
+    t2 = W_[r * 8 + 2] ^ T[0][static_cast<unsigned char>(s2 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s3 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s5 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s6)];                               \
+    t3 = W_[r * 8 + 3] ^ T[0][static_cast<unsigned char>(s3 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s4 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s6 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s7)];                               \
+    t4 = W_[r * 8 + 4] ^ T[0][static_cast<unsigned char>(s4 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s5 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s7 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s0)];                               \
+    t5 = W_[r * 8 + 5] ^ T[0][static_cast<unsigned char>(s5 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s6 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s0 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s1)];                               \
+    t6 = W_[r * 8 + 6] ^ T[0][static_cast<unsigned char>(s6 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s7 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s1 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s2)];                               \
+    t7 = W_[r * 8 + 7] ^ T[0][static_cast<unsigned char>(s7 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s0 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s2 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s3)];                               \
     s0 = t0;                                                                   \
     s1 = t1;                                                                   \
     s2 = t2;                                                                   \
@@ -1488,40 +1547,56 @@ void rijndael128_160::clear()
     s7 = W_[r * 8 + 7] ^ uint32_t(S[t7 >> 24]) << 24                           \
          ^ uint32_t(S[(t0 >> 16) & 0xff]) << 16                                \
          ^ uint32_t(S[(t2 >> 8) & 0xff]) << 8 ^ uint32_t(S[t3 & 0xff]);        \
-    *(uint32_t*)out = swap_uint32(s0);                                         \
-    *(uint32_t*)(out + 4) = swap_uint32(s1);                                   \
-    *(uint32_t*)(out + 8) = swap_uint32(s2);                                   \
-    *(uint32_t*)(out + 12) = swap_uint32(s3);                                  \
-    *(uint32_t*)(out + 16) = swap_uint32(s4);                                  \
-    *(uint32_t*)(out + 20) = swap_uint32(s5);                                  \
-    *(uint32_t*)(out + 24) = swap_uint32(s6);                                  \
-    *(uint32_t*)(out + 28) = swap_uint32(s7);
+    uint32_t tmp = swap_uint32(s0);                                            \
+    memcpy(out, &tmp, sizeof(tmp));                                            \
+    tmp = swap_uint32(s1);                                                     \
+    memcpy(out + 4, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s2);                                                     \
+    memcpy(out + 8, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s3);                                                     \
+    memcpy(out + 12, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s4);                                                     \
+    memcpy(out + 16, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s5);                                                     \
+    memcpy(out + 20, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s6);                                                     \
+    memcpy(out + 24, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s7);                                                     \
+    memcpy(out + 28, &tmp, sizeof(tmp));
 
 #define IROUND256(r)                                                           \
-    t0 = W_[r * 8 + 0] ^ IT[0][(unsigned char)(s0 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s7 >> 16)] ^ IT[2][(unsigned char)(s5 >> 8)]  \
-         ^ IT[3][(unsigned char)(s4)];                                         \
-    t1 = W_[r * 8 + 1] ^ IT[0][(unsigned char)(s1 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s0 >> 16)] ^ IT[2][(unsigned char)(s6 >> 8)]  \
-         ^ IT[3][(unsigned char)(s5)];                                         \
-    t2 = W_[r * 8 + 2] ^ IT[0][(unsigned char)(s2 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s1 >> 16)] ^ IT[2][(unsigned char)(s7 >> 8)]  \
-         ^ IT[3][(unsigned char)(s6)];                                         \
-    t3 = W_[r * 8 + 3] ^ IT[0][(unsigned char)(s3 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s2 >> 16)] ^ IT[2][(unsigned char)(s0 >> 8)]  \
-         ^ IT[3][(unsigned char)(s7)];                                         \
-    t4 = W_[r * 8 + 4] ^ IT[0][(unsigned char)(s4 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s3 >> 16)] ^ IT[2][(unsigned char)(s1 >> 8)]  \
-         ^ IT[3][(unsigned char)(s0)];                                         \
-    t5 = W_[r * 8 + 5] ^ IT[0][(unsigned char)(s5 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s4 >> 16)] ^ IT[2][(unsigned char)(s2 >> 8)]  \
-         ^ IT[3][(unsigned char)(s1)];                                         \
-    t6 = W_[r * 8 + 6] ^ IT[0][(unsigned char)(s6 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s5 >> 16)] ^ IT[2][(unsigned char)(s3 >> 8)]  \
-         ^ IT[3][(unsigned char)(s2)];                                         \
-    t7 = W_[r * 8 + 7] ^ IT[0][(unsigned char)(s7 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s6 >> 16)] ^ IT[2][(unsigned char)(s4 >> 8)]  \
-         ^ IT[3][(unsigned char)(s3)];                                         \
+    t0 = W_[r * 8 + 0] ^ IT[0][static_cast<unsigned char>(s0 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s7 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s5 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s4)];                              \
+    t1 = W_[r * 8 + 1] ^ IT[0][static_cast<unsigned char>(s1 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s0 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s6 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s5)];                              \
+    t2 = W_[r * 8 + 2] ^ IT[0][static_cast<unsigned char>(s2 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s1 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s7 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s6)];                              \
+    t3 = W_[r * 8 + 3] ^ IT[0][static_cast<unsigned char>(s3 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s2 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s0 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s7)];                              \
+    t4 = W_[r * 8 + 4] ^ IT[0][static_cast<unsigned char>(s4 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s3 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s1 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s0)];                              \
+    t5 = W_[r * 8 + 5] ^ IT[0][static_cast<unsigned char>(s5 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s4 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s2 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s1)];                              \
+    t6 = W_[r * 8 + 6] ^ IT[0][static_cast<unsigned char>(s6 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s5 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s3 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s2)];                              \
+    t7 = W_[r * 8 + 7] ^ IT[0][static_cast<unsigned char>(s7 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s6 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s4 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s3)];                              \
     s0 = t0;                                                                   \
     s1 = t1;                                                                   \
     s2 = t2;                                                                   \
@@ -1556,24 +1631,41 @@ void rijndael128_160::clear()
     s7 = W_[r * 8 + 7] ^ uint32_t(IS[t7 >> 24]) << 24                          \
          ^ uint32_t(IS[(t6 >> 16) & 0xff]) << 16                               \
          ^ uint32_t(IS[(t4 >> 8) & 0xff]) << 8 ^ uint32_t(IS[t3 & 0xff]);      \
-    *(uint32_t*)out = swap_uint32(s0);                                         \
-    *(uint32_t*)(out + 4) = swap_uint32(s1);                                   \
-    *(uint32_t*)(out + 8) = swap_uint32(s2);                                   \
-    *(uint32_t*)(out + 12) = swap_uint32(s3);                                  \
-    *(uint32_t*)(out + 16) = swap_uint32(s4);                                  \
-    *(uint32_t*)(out + 20) = swap_uint32(s5);                                  \
-    *(uint32_t*)(out + 24) = swap_uint32(s6);                                  \
-    *(uint32_t*)(out + 28) = swap_uint32(s7);
+    uint32_t tmp = swap_uint32(s0);                                            \
+    memcpy(out, &tmp, sizeof(tmp));                                            \
+    tmp = swap_uint32(s1);                                                     \
+    memcpy(out + 4, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s2);                                                     \
+    memcpy(out + 8, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s3);                                                     \
+    memcpy(out + 12, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s4);                                                     \
+    memcpy(out + 16, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s5);                                                     \
+    memcpy(out + 20, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s6);                                                     \
+    memcpy(out + 24, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s7);                                                     \
+    memcpy(out + 28, &tmp, sizeof(tmp));
 
 #define FROUND256()                                                            \
-    uint32_t s0 = swap_uint32(*(uint32_t*)in);                                 \
-    uint32_t s1 = swap_uint32(*(uint32_t*)(in + 4));                           \
-    uint32_t s2 = swap_uint32(*(uint32_t*)(in + 8));                           \
-    uint32_t s3 = swap_uint32(*(uint32_t*)(in + 12));                          \
-    uint32_t s4 = swap_uint32(*(uint32_t*)(in + 16));                          \
-    uint32_t s5 = swap_uint32(*(uint32_t*)(in + 20));                          \
-    uint32_t s6 = swap_uint32(*(uint32_t*)(in + 24));                          \
-    uint32_t s7 = swap_uint32(*(uint32_t*)(in + 28));                          \
+    uint32_t val;                                                              \
+    memcpy(&val, in, sizeof(val));                                             \
+    uint32_t s0 = swap_uint32(val);                                            \
+    memcpy(&val, in + 4, sizeof(val));                                         \
+    uint32_t s1 = swap_uint32(val);                                            \
+    memcpy(&val, in + 8, sizeof(val));                                         \
+    uint32_t s2 = swap_uint32(val);                                            \
+    memcpy(&val, in + 12, sizeof(val));                                        \
+    uint32_t s3 = swap_uint32(val);                                            \
+    memcpy(&val, in + 16, sizeof(val));                                        \
+    uint32_t s4 = swap_uint32(val);                                            \
+    memcpy(&val, in + 20, sizeof(val));                                        \
+    uint32_t s5 = swap_uint32(val);                                            \
+    memcpy(&val, in + 24, sizeof(val));                                        \
+    uint32_t s6 = swap_uint32(val);                                            \
+    memcpy(&val, in + 28, sizeof(val));                                        \
+    uint32_t s7 = swap_uint32(val);                                            \
     s0 ^= W_[0];                                                               \
     s1 ^= W_[1];                                                               \
     s2 ^= W_[2];                                                               \
@@ -1601,23 +1693,27 @@ bool rijndael256_256::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 8 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 8 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0; i < 14; i++) {
-        w[8] = w[0] ^ (uint32_t(S[(unsigned char)(w[7] >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(w[7])]) << 8)
-               ^ (uint32_t(S[(unsigned char)(w[7] >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(w[7] >> 16)]) << 24) ^ RC[i];
+        w[8] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7])]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 16)]) << 24)
+               ^ RC[i];
         w[9] = w[1] ^ w[8];
         w[10] = w[2] ^ w[9];
         w[11] = w[3] ^ w[10];
 
-        w[12] = w[4] ^ (uint32_t(S[(unsigned char)(w[11])]))
-                ^ (uint32_t(S[(unsigned char)(w[11] >> 8)]) << 8)
-                ^ (uint32_t(S[(unsigned char)(w[11] >> 16)]) << 16)
-                ^ (uint32_t(S[(unsigned char)(w[11] >> 24)]) << 24);
+        w[12] = w[4] ^ (uint32_t(S[static_cast<unsigned char>(w[11])]))
+                ^ (uint32_t(S[static_cast<unsigned char>(w[11] >> 8)]) << 8)
+                ^ (uint32_t(S[static_cast<unsigned char>(w[11] >> 16)]) << 16)
+                ^ (uint32_t(S[static_cast<unsigned char>(w[11] >> 24)]) << 24);
         w[13] = w[5] ^ w[12];
         w[14] = w[6] ^ w[13];
         w[15] = w[7] ^ w[14];
@@ -1726,16 +1822,20 @@ bool rijndael256_128::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 4 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 4 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0; i < 29; i++) {
         uint32_t temp = w[3];
-        w[4] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[4] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[5] = w[1] ^ w[4];
         w[6] = w[2] ^ w[5];
         w[7] = w[3] ^ w[6];
@@ -1783,15 +1883,19 @@ bool rijndael256_224::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 7 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 7 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0;; i++) {
-        w[7] = w[0] ^ (uint32_t(S[(unsigned char)(w[6] >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(w[6])]) << 8)
-               ^ (uint32_t(S[(unsigned char)(w[6] >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(w[6] >> 16)]) << 24) ^ RC[i];
+        w[7] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6])]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 16)]) << 24)
+               ^ RC[i];
 
         if (i == 16) break;
 
@@ -1800,10 +1904,10 @@ bool rijndael256_224::init(const unsigned char* key,
         w[10] = w[3] ^ w[9];
 
         uint32_t temp = w[10];
-        w[11] = w[4] ^ (uint32_t(S[(unsigned char)(temp)]))
-                ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 8)
-                ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 16)
-                ^ (uint32_t(S[(unsigned char)(temp >> 24)]) << 24);
+        w[11] = w[4] ^ (uint32_t(S[static_cast<unsigned char>(temp)]))
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 8)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 16)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]) << 24);
         w[12] = w[5] ^ w[11];
         w[13] = w[6] ^ w[12];
         w += 7;
@@ -1851,16 +1955,20 @@ bool rijndael256_160::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 5 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 5 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0; i < 23; i++) {
         uint32_t temp = w[4];
-        w[5] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[5] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[6] = w[1] ^ w[5];
         w[7] = w[2] ^ w[6];
         w[8] = w[3] ^ w[7];
@@ -1910,16 +2018,20 @@ bool rijndael256_192::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 6 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 6 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0; i < 19; i++) {
         uint32_t temp = w[5];
-        w[6] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[6] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[7] = w[1] ^ w[6];
         w[8] = w[2] ^ w[7];
         w[9] = w[3] ^ w[8];
@@ -1966,50 +2078,61 @@ rijndael256_192::rijndael256_192()
 }
 
 #define KEYIMC192(i)                                                           \
-    w[i * 6] = IT[0][S[(unsigned char)(w[i * 6] >> 24)]]                       \
-               ^ IT[1][S[((unsigned char)(w[i * 6] >> 16))]]                   \
-               ^ IT[2][S[(unsigned char)(w[i * 6] >> 8)]]                      \
-               ^ IT[3][S[(unsigned char)(w[i * 6])]];                          \
-    w[i * 6 + 1] = IT[0][S[(unsigned char)(w[i * 6 + 1] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 6 + 1] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 6 + 1] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 6 + 1])]];                  \
-    w[i * 6 + 2] = IT[0][S[(unsigned char)(w[i * 6 + 2] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 6 + 2] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 6 + 2] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 6 + 2])]];                  \
-    w[i * 6 + 3] = IT[0][S[(unsigned char)(w[i * 6 + 3] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 6 + 3] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 6 + 3] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 6 + 3])]];                  \
-    w[i * 6 + 4] = IT[0][S[(unsigned char)(w[i * 6 + 4] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 6 + 4] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 6 + 4] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 6 + 4])]];                  \
-    w[i * 6 + 5] = IT[0][S[(unsigned char)(w[i * 6 + 5] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 6 + 5] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 6 + 5] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 6 + 5])]];
+    w[i * 6] = IT[0][S[static_cast<unsigned char>(w[i * 6] >> 24)]]            \
+               ^ IT[1][S[(static_cast<unsigned char>(w[i * 6] >> 16))]]        \
+               ^ IT[2][S[static_cast<unsigned char>(w[i * 6] >> 8)]]           \
+               ^ IT[3][S[static_cast<unsigned char>(w[i * 6])]];               \
+    w[i * 6 + 1]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 6 + 1] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 6 + 1] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 6 + 1] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 6 + 1])]];                \
+    w[i * 6 + 2]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 6 + 2] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 6 + 2] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 6 + 2] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 6 + 2])]];                \
+    w[i * 6 + 3]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 6 + 3] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 6 + 3] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 6 + 3] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 6 + 3])]];                \
+    w[i * 6 + 4]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 6 + 4] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 6 + 4] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 6 + 4] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 6 + 4])]];                \
+    w[i * 6 + 5]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 6 + 5] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 6 + 5] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 6 + 5] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 6 + 5])]];
 
 #define ROUND192(r)                                                            \
-    t0 = W_[r * 6 + 0] ^ T[0][(unsigned char)(s0 >> 24)]                       \
-         ^ T[1][(unsigned char)(s1 >> 16)] ^ T[2][(unsigned char)(s2 >> 8)]    \
-         ^ T[3][(unsigned char)(s3)];                                          \
-    t1 = W_[r * 6 + 1] ^ T[0][(unsigned char)(s1 >> 24)]                       \
-         ^ T[1][(unsigned char)(s2 >> 16)] ^ T[2][(unsigned char)(s3 >> 8)]    \
-         ^ T[3][(unsigned char)(s4)];                                          \
-    t2 = W_[r * 6 + 2] ^ T[0][(unsigned char)(s2 >> 24)]                       \
-         ^ T[1][(unsigned char)(s3 >> 16)] ^ T[2][(unsigned char)(s4 >> 8)]    \
-         ^ T[3][(unsigned char)(s5)];                                          \
-    t3 = W_[r * 6 + 3] ^ T[0][(unsigned char)(s3 >> 24)]                       \
-         ^ T[1][(unsigned char)(s4 >> 16)] ^ T[2][(unsigned char)(s5 >> 8)]    \
-         ^ T[3][(unsigned char)(s0)];                                          \
-    t4 = W_[r * 6 + 4] ^ T[0][(unsigned char)(s4 >> 24)]                       \
-         ^ T[1][(unsigned char)(s5 >> 16)] ^ T[2][(unsigned char)(s0 >> 8)]    \
-         ^ T[3][(unsigned char)(s1)];                                          \
-    t5 = W_[r * 6 + 5] ^ T[0][(unsigned char)(s5 >> 24)]                       \
-         ^ T[1][(unsigned char)(s0 >> 16)] ^ T[2][(unsigned char)(s1 >> 8)]    \
-         ^ T[3][(unsigned char)(s2)];                                          \
+    t0 = W_[r * 6 + 0] ^ T[0][static_cast<unsigned char>(s0 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s1 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s2 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s3)];                               \
+    t1 = W_[r * 6 + 1] ^ T[0][static_cast<unsigned char>(s1 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s2 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s3 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s4)];                               \
+    t2 = W_[r * 6 + 2] ^ T[0][static_cast<unsigned char>(s2 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s3 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s4 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s5)];                               \
+    t3 = W_[r * 6 + 3] ^ T[0][static_cast<unsigned char>(s3 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s4 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s5 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s0)];                               \
+    t4 = W_[r * 6 + 4] ^ T[0][static_cast<unsigned char>(s4 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s5 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s0 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s1)];                               \
+    t5 = W_[r * 6 + 5] ^ T[0][static_cast<unsigned char>(s5 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s0 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s1 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s2)];                               \
     s0 = t0;                                                                   \
     s1 = t1;                                                                   \
     s2 = t2;                                                                   \
@@ -2036,32 +2159,44 @@ rijndael256_192::rijndael256_192()
     s5 = W_[r * 6 + 5] ^ uint32_t(S[t5 >> 24]) << 24                           \
          ^ uint32_t(S[(t0 >> 16) & 0xff]) << 16                                \
          ^ uint32_t(S[(t1 >> 8) & 0xff]) << 8 ^ uint32_t(S[t2 & 0xff]);        \
-    *(uint32_t*)out = swap_uint32(s0);                                         \
-    *(uint32_t*)(out + 4) = swap_uint32(s1);                                   \
-    *(uint32_t*)(out + 8) = swap_uint32(s2);                                   \
-    *(uint32_t*)(out + 12) = swap_uint32(s3);                                  \
-    *(uint32_t*)(out + 16) = swap_uint32(s4);                                  \
-    *(uint32_t*)(out + 20) = swap_uint32(s5);
+    uint32_t tmp = swap_uint32(s0);                                            \
+    memcpy(out, &tmp, sizeof(tmp));                                            \
+    tmp = swap_uint32(s1);                                                     \
+    memcpy(out + 4, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s2);                                                     \
+    memcpy(out + 8, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s3);                                                     \
+    memcpy(out + 12, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s4);                                                     \
+    memcpy(out + 16, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s5);                                                     \
+    memcpy(out + 20, &tmp, sizeof(tmp));
 
 #define IROUND192(r)                                                           \
-    t0 = W_[r * 6 + 0] ^ IT[0][(unsigned char)(s0 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s5 >> 16)] ^ IT[2][(unsigned char)(s4 >> 8)]  \
-         ^ IT[3][(unsigned char)(s3)];                                         \
-    t1 = W_[r * 6 + 1] ^ IT[0][(unsigned char)(s1 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s0 >> 16)] ^ IT[2][(unsigned char)(s5 >> 8)]  \
-         ^ IT[3][(unsigned char)(s4)];                                         \
-    t2 = W_[r * 6 + 2] ^ IT[0][(unsigned char)(s2 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s1 >> 16)] ^ IT[2][(unsigned char)(s0 >> 8)]  \
-         ^ IT[3][(unsigned char)(s5)];                                         \
-    t3 = W_[r * 6 + 3] ^ IT[0][(unsigned char)(s3 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s2 >> 16)] ^ IT[2][(unsigned char)(s1 >> 8)]  \
-         ^ IT[3][(unsigned char)(s0)];                                         \
-    t4 = W_[r * 6 + 4] ^ IT[0][(unsigned char)(s4 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s3 >> 16)] ^ IT[2][(unsigned char)(s2 >> 8)]  \
-         ^ IT[3][(unsigned char)(s1)];                                         \
-    t5 = W_[r * 6 + 5] ^ IT[0][(unsigned char)(s5 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s4 >> 16)] ^ IT[2][(unsigned char)(s3 >> 8)]  \
-         ^ IT[3][(unsigned char)(s2)];                                         \
+    t0 = W_[r * 6 + 0] ^ IT[0][static_cast<unsigned char>(s0 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s5 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s4 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s3)];                              \
+    t1 = W_[r * 6 + 1] ^ IT[0][static_cast<unsigned char>(s1 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s0 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s5 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s4)];                              \
+    t2 = W_[r * 6 + 2] ^ IT[0][static_cast<unsigned char>(s2 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s1 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s0 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s5)];                              \
+    t3 = W_[r * 6 + 3] ^ IT[0][static_cast<unsigned char>(s3 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s2 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s1 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s0)];                              \
+    t4 = W_[r * 6 + 4] ^ IT[0][static_cast<unsigned char>(s4 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s3 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s2 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s1)];                              \
+    t5 = W_[r * 6 + 5] ^ IT[0][static_cast<unsigned char>(s5 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s4 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s3 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s2)];                              \
     s0 = t0;                                                                   \
     s1 = t1;                                                                   \
     s2 = t2;                                                                   \
@@ -2088,20 +2223,33 @@ rijndael256_192::rijndael256_192()
     s5 = W_[r * 6 + 5] ^ uint32_t(IS[t5 >> 24]) << 24                          \
          ^ uint32_t(IS[(t4 >> 16) & 0xff]) << 16                               \
          ^ uint32_t(IS[(t3 >> 8) & 0xff]) << 8 ^ uint32_t(IS[t2 & 0xff]);      \
-    *(uint32_t*)out = swap_uint32(s0);                                         \
-    *(uint32_t*)(out + 4) = swap_uint32(s1);                                   \
-    *(uint32_t*)(out + 8) = swap_uint32(s2);                                   \
-    *(uint32_t*)(out + 12) = swap_uint32(s3);                                  \
-    *(uint32_t*)(out + 16) = swap_uint32(s4);                                  \
-    *(uint32_t*)(out + 20) = swap_uint32(s5);
+    uint32_t tmp = swap_uint32(s0);                                            \
+    memcpy(out, &tmp, sizeof(tmp));                                            \
+    tmp = swap_uint32(s1);                                                     \
+    memcpy(out + 4, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s2);                                                     \
+    memcpy(out + 8, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s3);                                                     \
+    memcpy(out + 12, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s4);                                                     \
+    memcpy(out + 16, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s5);                                                     \
+    memcpy(out + 20, &tmp, sizeof(tmp));
 
 #define FROUND192()                                                            \
-    uint32_t s0 = swap_uint32(*(uint32_t*)in);                                 \
-    uint32_t s1 = swap_uint32(*(uint32_t*)(in + 4));                           \
-    uint32_t s2 = swap_uint32(*(uint32_t*)(in + 8));                           \
-    uint32_t s3 = swap_uint32(*(uint32_t*)(in + 12));                          \
-    uint32_t s4 = swap_uint32(*(uint32_t*)(in + 16));                          \
-    uint32_t s5 = swap_uint32(*(uint32_t*)(in + 20));                          \
+    uint32_t val;                                                              \
+    memcpy(&val, in, sizeof(val));                                             \
+    uint32_t s0 = swap_uint32(val);                                            \
+    memcpy(&val, in + 4, sizeof(val));                                         \
+    uint32_t s1 = swap_uint32(val);                                            \
+    memcpy(&val, in + 8, sizeof(val));                                         \
+    uint32_t s2 = swap_uint32(val);                                            \
+    memcpy(&val, in + 12, sizeof(val));                                        \
+    uint32_t s3 = swap_uint32(val);                                            \
+    memcpy(&val, in + 16, sizeof(val));                                        \
+    uint32_t s4 = swap_uint32(val);                                            \
+    memcpy(&val, in + 20, sizeof(val));                                        \
+    uint32_t s5 = swap_uint32(val);                                            \
     s0 ^= W_[0];                                                               \
     s1 ^= W_[1];                                                               \
     s2 ^= W_[2];                                                               \
@@ -2125,16 +2273,20 @@ bool rijndael192_128::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 4 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 4 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0; i < 19; i++) {
         uint32_t temp = w[3];
-        w[4] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[4] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[5] = w[1] ^ w[4];
 
         if (i == 18) break;
@@ -2235,16 +2387,20 @@ bool rijndael192_160::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 5 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 5 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0;; i++) {
         uint32_t temp = w[4];
-        w[5] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[5] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[6] = w[1] ^ w[5];
         w[7] = w[2] ^ w[6];
 
@@ -2346,16 +2502,20 @@ bool rijndael192_192::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 6 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 6 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0; i < 12; i++) {
         uint32_t temp = w[5];
-        w[6] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[6] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[7] = w[1] ^ w[6];
         w[8] = w[2] ^ w[7];
         w[9] = w[3] ^ w[8];
@@ -2455,24 +2615,28 @@ bool rijndael192_224::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 7 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 7 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0; i < 11; i++) {
-        w[7] = w[0] ^ (uint32_t(S[(unsigned char)(w[6] >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(w[6])]) << 8)
-               ^ (uint32_t(S[(unsigned char)(w[6] >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(w[6] >> 16)]) << 24) ^ RC[i];
+        w[7] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6])]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 16)]) << 24)
+               ^ RC[i];
         w[8] = w[1] ^ w[7];
         w[9] = w[2] ^ w[8];
         w[10] = w[3] ^ w[9];
 
         uint32_t temp = w[10];
-        w[11] = w[4] ^ (uint32_t(S[(unsigned char)(temp)]))
-                ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 8)
-                ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 16)
-                ^ (uint32_t(S[(unsigned char)(temp >> 24)]) << 24);
+        w[11] = w[4] ^ (uint32_t(S[static_cast<unsigned char>(temp)]))
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 8)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 16)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]) << 24);
         w[12] = w[5] ^ w[11];
         w[13] = w[6] ^ w[12];
         w += 7;
@@ -2572,15 +2736,19 @@ bool rijndael192_256::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 8 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 8 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0;; i++) {
-        w[8] = w[0] ^ (uint32_t(S[(unsigned char)(w[7] >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(w[7])]) << 8)
-               ^ (uint32_t(S[(unsigned char)(w[7] >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(w[7] >> 16)]) << 24) ^ RC[i];
+        w[8] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7])]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 16)]) << 24)
+               ^ RC[i];
         w[9] = w[1] ^ w[8];
 
         if (i == 10) break;
@@ -2589,10 +2757,10 @@ bool rijndael192_256::init(const unsigned char* key,
         w[11] = w[3] ^ w[10];
 
         uint32_t temp = w[11];
-        w[12] = w[4] ^ (uint32_t(S[(unsigned char)(temp)]))
-                ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 8)
-                ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 16)
-                ^ (uint32_t(S[(unsigned char)(temp >> 24)]) << 24);
+        w[12] = w[4] ^ (uint32_t(S[static_cast<unsigned char>(temp)]))
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 8)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 16)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]) << 24);
         w[13] = w[5] ^ w[12];
         w[14] = w[6] ^ w[13];
         w[15] = w[7] ^ w[14];
@@ -2692,43 +2860,52 @@ void rijndael192_256::clear()
 }
 
 #define KEYIMC160(i)                                                           \
-    w[i * 5] = IT[0][S[(unsigned char)(w[i * 5] >> 24)]]                       \
-               ^ IT[1][S[((unsigned char)(w[i * 5] >> 16))]]                   \
-               ^ IT[2][S[(unsigned char)(w[i * 5] >> 8)]]                      \
-               ^ IT[3][S[(unsigned char)(w[i * 5])]];                          \
-    w[i * 5 + 1] = IT[0][S[(unsigned char)(w[i * 5 + 1] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 5 + 1] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 5 + 1] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 5 + 1])]];                  \
-    w[i * 5 + 2] = IT[0][S[(unsigned char)(w[i * 5 + 2] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 5 + 2] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 5 + 2] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 5 + 2])]];                  \
-    w[i * 5 + 3] = IT[0][S[(unsigned char)(w[i * 5 + 3] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 5 + 3] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 5 + 3] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 5 + 3])]];                  \
-    w[i * 5 + 4] = IT[0][S[(unsigned char)(w[i * 5 + 4] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 5 + 4] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 5 + 4] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 5 + 4])]];
+    w[i * 5] = IT[0][S[static_cast<unsigned char>(w[i * 5] >> 24)]]            \
+               ^ IT[1][S[(static_cast<unsigned char>(w[i * 5] >> 16))]]        \
+               ^ IT[2][S[static_cast<unsigned char>(w[i * 5] >> 8)]]           \
+               ^ IT[3][S[static_cast<unsigned char>(w[i * 5])]];               \
+    w[i * 5 + 1]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 5 + 1] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 5 + 1] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 5 + 1] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 5 + 1])]];                \
+    w[i * 5 + 2]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 5 + 2] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 5 + 2] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 5 + 2] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 5 + 2])]];                \
+    w[i * 5 + 3]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 5 + 3] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 5 + 3] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 5 + 3] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 5 + 3])]];                \
+    w[i * 5 + 4]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 5 + 4] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 5 + 4] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 5 + 4] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 5 + 4])]];
 
 #define ROUND160(r)                                                            \
-    t0 = W_[r * 5 + 0] ^ T[0][(unsigned char)(s0 >> 24)]                       \
-         ^ T[1][(unsigned char)(s1 >> 16)] ^ T[2][(unsigned char)(s2 >> 8)]    \
-         ^ T[3][(unsigned char)(s3)];                                          \
-    t1 = W_[r * 5 + 1] ^ T[0][(unsigned char)(s1 >> 24)]                       \
-         ^ T[1][(unsigned char)(s2 >> 16)] ^ T[2][(unsigned char)(s3 >> 8)]    \
-         ^ T[3][(unsigned char)(s4)];                                          \
-    t2 = W_[r * 5 + 2] ^ T[0][(unsigned char)(s2 >> 24)]                       \
-         ^ T[1][(unsigned char)(s3 >> 16)] ^ T[2][(unsigned char)(s4 >> 8)]    \
-         ^ T[3][(unsigned char)(s0)];                                          \
-    t3 = W_[r * 5 + 3] ^ T[0][(unsigned char)(s3 >> 24)]                       \
-         ^ T[1][(unsigned char)(s4 >> 16)] ^ T[2][(unsigned char)(s0 >> 8)]    \
-         ^ T[3][(unsigned char)(s1)];                                          \
-    t4 = W_[r * 5 + 4] ^ T[0][(unsigned char)(s4 >> 24)]                       \
-         ^ T[1][(unsigned char)(s0 >> 16)] ^ T[2][(unsigned char)(s1 >> 8)]    \
-         ^ T[3][(unsigned char)(s2)];                                          \
+    t0 = W_[r * 5 + 0] ^ T[0][static_cast<unsigned char>(s0 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s1 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s2 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s3)];                               \
+    t1 = W_[r * 5 + 1] ^ T[0][static_cast<unsigned char>(s1 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s2 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s3 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s4)];                               \
+    t2 = W_[r * 5 + 2] ^ T[0][static_cast<unsigned char>(s2 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s3 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s4 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s0)];                               \
+    t3 = W_[r * 5 + 3] ^ T[0][static_cast<unsigned char>(s3 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s4 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s0 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s1)];                               \
+    t4 = W_[r * 5 + 4] ^ T[0][static_cast<unsigned char>(s4 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s0 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s1 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s2)];                               \
     s0 = t0;                                                                   \
     s1 = t1;                                                                   \
     s2 = t2;                                                                   \
@@ -2751,28 +2928,38 @@ void rijndael192_256::clear()
     s4 = W_[r * 5 + 4] ^ uint32_t(S[t4 >> 24]) << 24                           \
          ^ uint32_t(S[(t0 >> 16) & 0xff]) << 16                                \
          ^ uint32_t(S[(t1 >> 8) & 0xff]) << 8 ^ uint32_t(S[t2 & 0xff]);        \
-    *(uint32_t*)out = swap_uint32(s0);                                         \
-    *(uint32_t*)(out + 4) = swap_uint32(s1);                                   \
-    *(uint32_t*)(out + 8) = swap_uint32(s2);                                   \
-    *(uint32_t*)(out + 12) = swap_uint32(s3);                                  \
-    *(uint32_t*)(out + 16) = swap_uint32(s4);
+    uint32_t tmp = swap_uint32(s0);                                            \
+    memcpy(out, &tmp, sizeof(tmp));                                            \
+    tmp = swap_uint32(s1);                                                     \
+    memcpy(out + 4, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s2);                                                     \
+    memcpy(out + 8, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s3);                                                     \
+    memcpy(out + 12, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s4);                                                     \
+    memcpy(out + 16, &tmp, sizeof(tmp));
 
 #define IROUND160(r)                                                           \
-    t0 = W_[r * 5 + 0] ^ IT[0][(unsigned char)(s0 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s4 >> 16)] ^ IT[2][(unsigned char)(s3 >> 8)]  \
-         ^ IT[3][(unsigned char)(s2)];                                         \
-    t1 = W_[r * 5 + 1] ^ IT[0][(unsigned char)(s1 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s0 >> 16)] ^ IT[2][(unsigned char)(s4 >> 8)]  \
-         ^ IT[3][(unsigned char)(s3)];                                         \
-    t2 = W_[r * 5 + 2] ^ IT[0][(unsigned char)(s2 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s1 >> 16)] ^ IT[2][(unsigned char)(s0 >> 8)]  \
-         ^ IT[3][(unsigned char)(s4)];                                         \
-    t3 = W_[r * 5 + 3] ^ IT[0][(unsigned char)(s3 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s2 >> 16)] ^ IT[2][(unsigned char)(s1 >> 8)]  \
-         ^ IT[3][(unsigned char)(s0)];                                         \
-    t4 = W_[r * 5 + 4] ^ IT[0][(unsigned char)(s4 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s3 >> 16)] ^ IT[2][(unsigned char)(s2 >> 8)]  \
-         ^ IT[3][(unsigned char)(s1)];                                         \
+    t0 = W_[r * 5 + 0] ^ IT[0][static_cast<unsigned char>(s0 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s4 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s3 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s2)];                              \
+    t1 = W_[r * 5 + 1] ^ IT[0][static_cast<unsigned char>(s1 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s0 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s4 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s3)];                              \
+    t2 = W_[r * 5 + 2] ^ IT[0][static_cast<unsigned char>(s2 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s1 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s0 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s4)];                              \
+    t3 = W_[r * 5 + 3] ^ IT[0][static_cast<unsigned char>(s3 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s2 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s1 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s0)];                              \
+    t4 = W_[r * 5 + 4] ^ IT[0][static_cast<unsigned char>(s4 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s3 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s2 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s1)];                              \
     s0 = t0;                                                                   \
     s1 = t1;                                                                   \
     s2 = t2;                                                                   \
@@ -2795,18 +2982,29 @@ void rijndael192_256::clear()
     s4 = W_[r * 5 + 4] ^ uint32_t(IS[t4 >> 24]) << 24                          \
          ^ uint32_t(IS[(t3 >> 16) & 0xff]) << 16                               \
          ^ uint32_t(IS[(t2 >> 8) & 0xff]) << 8 ^ uint32_t(IS[t1 & 0xff]);      \
-    *(uint32_t*)out = swap_uint32(s0);                                         \
-    *(uint32_t*)(out + 4) = swap_uint32(s1);                                   \
-    *(uint32_t*)(out + 8) = swap_uint32(s2);                                   \
-    *(uint32_t*)(out + 12) = swap_uint32(s3);                                  \
-    *(uint32_t*)(out + 16) = swap_uint32(s4);
+    uint32_t tmp = swap_uint32(s0);                                            \
+    memcpy(out, &tmp, sizeof(tmp));                                            \
+    tmp = swap_uint32(s1);                                                     \
+    memcpy(out + 4, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s2);                                                     \
+    memcpy(out + 8, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s3);                                                     \
+    memcpy(out + 12, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s4);                                                     \
+    memcpy(out + 16, &tmp, sizeof(tmp));
 
 #define FROUND160()                                                            \
-    uint32_t s0 = swap_uint32(*(uint32_t*)in);                                 \
-    uint32_t s1 = swap_uint32(*(uint32_t*)(in + 4));                           \
-    uint32_t s2 = swap_uint32(*(uint32_t*)(in + 8));                           \
-    uint32_t s3 = swap_uint32(*(uint32_t*)(in + 12));                          \
-    uint32_t s4 = swap_uint32(*(uint32_t*)(in + 16));                          \
+    uint32_t val;                                                              \
+    memcpy(&val, in, sizeof(val));                                             \
+    uint32_t s0 = swap_uint32(val);                                            \
+    memcpy(&val, in + 4, sizeof(val));                                         \
+    uint32_t s1 = swap_uint32(val);                                            \
+    memcpy(&val, in + 8, sizeof(val));                                         \
+    uint32_t s2 = swap_uint32(val);                                            \
+    memcpy(&val, in + 12, sizeof(val));                                        \
+    uint32_t s3 = swap_uint32(val);                                            \
+    memcpy(&val, in + 16, sizeof(val));                                        \
+    uint32_t s4 = swap_uint32(val);                                            \
     s0 ^= W_[0];                                                               \
     s1 ^= W_[1];                                                               \
     s2 ^= W_[2];                                                               \
@@ -2828,16 +3026,20 @@ bool rijndael160_128::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 4 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 4 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0; i < 14; i++) {
         uint32_t temp = w[3];
-        w[4] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[4] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[5] = w[1] ^ w[4];
         w[6] = w[2] ^ w[5];
         w[7] = w[3] ^ w[6];
@@ -2932,16 +3134,20 @@ bool rijndael160_160::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 5 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 5 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0; i < 11; i++) {
         uint32_t temp = w[4];
-        w[5] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[5] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[6] = w[1] ^ w[5];
         w[7] = w[2] ^ w[6];
         w[8] = w[3] ^ w[7];
@@ -3037,16 +3243,20 @@ bool rijndael160_192::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 6 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 6 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0;; i++) {
         uint32_t temp = w[5];
-        w[6] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[6] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[7] = w[1] ^ w[6];
         w[8] = w[2] ^ w[7];
         w[9] = w[3] ^ w[8];
@@ -3147,24 +3357,28 @@ bool rijndael160_224::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 7 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 7 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0; i < 9; i++) {
-        w[7] = w[0] ^ (uint32_t(S[(unsigned char)(w[6] >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(w[6])]) << 8)
-               ^ (uint32_t(S[(unsigned char)(w[6] >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(w[6] >> 16)]) << 24) ^ RC[i];
+        w[7] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6])]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 16)]) << 24)
+               ^ RC[i];
         w[8] = w[1] ^ w[7];
         w[9] = w[2] ^ w[8];
         w[10] = w[3] ^ w[9];
 
         uint32_t temp = w[10];
-        w[11] = w[4] ^ (uint32_t(S[(unsigned char)(temp)]))
-                ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 8)
-                ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 16)
-                ^ (uint32_t(S[(unsigned char)(temp >> 24)]) << 24);
+        w[11] = w[4] ^ (uint32_t(S[static_cast<unsigned char>(temp)]))
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 8)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 16)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]) << 24);
         w[12] = w[5] ^ w[11];
         w[13] = w[6] ^ w[12];
         w += 7;
@@ -3264,15 +3478,19 @@ bool rijndael160_256::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 8 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 8 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0;; i++) {
-        w[8] = w[0] ^ (uint32_t(S[(unsigned char)(w[7] >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(w[7])]) << 8)
-               ^ (uint32_t(S[(unsigned char)(w[7] >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(w[7] >> 16)]) << 24) ^ RC[i];
+        w[8] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7])]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 16)]) << 24)
+               ^ RC[i];
         w[9] = w[1] ^ w[8];
         w[10] = w[2] ^ w[9];
 
@@ -3281,10 +3499,10 @@ bool rijndael160_256::init(const unsigned char* key,
         w[11] = w[3] ^ w[10];
 
         uint32_t temp = w[11];
-        w[12] = w[4] ^ (uint32_t(S[(unsigned char)(temp)]))
-                ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 8)
-                ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 16)
-                ^ (uint32_t(S[(unsigned char)(temp >> 24)]) << 24);
+        w[12] = w[4] ^ (uint32_t(S[static_cast<unsigned char>(temp)]))
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 8)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 16)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]) << 24);
         w[13] = w[5] ^ w[12];
         w[14] = w[6] ^ w[13];
         w[15] = w[7] ^ w[14];
@@ -3384,57 +3602,70 @@ void rijndael160_256::clear()
 }
 
 #define KEYIMC224(i)                                                           \
-    w[i * 7] = IT[0][S[(unsigned char)(w[i * 7] >> 24)]]                       \
-               ^ IT[1][S[((unsigned char)(w[i * 7] >> 16))]]                   \
-               ^ IT[2][S[(unsigned char)(w[i * 7] >> 8)]]                      \
-               ^ IT[3][S[(unsigned char)(w[i * 7])]];                          \
-    w[i * 7 + 1] = IT[0][S[(unsigned char)(w[i * 7 + 1] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 7 + 1] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 7 + 1] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 7 + 1])]];                  \
-    w[i * 7 + 2] = IT[0][S[(unsigned char)(w[i * 7 + 2] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 7 + 2] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 7 + 2] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 7 + 2])]];                  \
-    w[i * 7 + 3] = IT[0][S[(unsigned char)(w[i * 7 + 3] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 7 + 3] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 7 + 3] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 7 + 3])]];                  \
-    w[i * 7 + 4] = IT[0][S[(unsigned char)(w[i * 7 + 4] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 7 + 4] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 7 + 4] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 7 + 4])]];                  \
-    w[i * 7 + 5] = IT[0][S[(unsigned char)(w[i * 7 + 5] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 7 + 5] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 7 + 5] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 7 + 5])]];                  \
-    w[i * 7 + 6] = IT[0][S[(unsigned char)(w[i * 7 + 6] >> 24)]]               \
-                   ^ IT[1][S[((unsigned char)(w[i * 7 + 6] >> 16))]]           \
-                   ^ IT[2][S[(unsigned char)(w[i * 7 + 6] >> 8)]]              \
-                   ^ IT[3][S[(unsigned char)(w[i * 7 + 6])]];
+    w[i * 7] = IT[0][S[static_cast<unsigned char>(w[i * 7] >> 24)]]            \
+               ^ IT[1][S[(static_cast<unsigned char>(w[i * 7] >> 16))]]        \
+               ^ IT[2][S[static_cast<unsigned char>(w[i * 7] >> 8)]]           \
+               ^ IT[3][S[static_cast<unsigned char>(w[i * 7])]];               \
+    w[i * 7 + 1]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 7 + 1] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 7 + 1] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 7 + 1] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 7 + 1])]];                \
+    w[i * 7 + 2]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 7 + 2] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 7 + 2] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 7 + 2] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 7 + 2])]];                \
+    w[i * 7 + 3]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 7 + 3] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 7 + 3] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 7 + 3] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 7 + 3])]];                \
+    w[i * 7 + 4]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 7 + 4] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 7 + 4] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 7 + 4] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 7 + 4])]];                \
+    w[i * 7 + 5]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 7 + 5] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 7 + 5] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 7 + 5] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 7 + 5])]];                \
+    w[i * 7 + 6]                                                               \
+        = IT[0][S[static_cast<unsigned char>(w[i * 7 + 6] >> 24)]]             \
+          ^ IT[1][S[(static_cast<unsigned char>(w[i * 7 + 6] >> 16))]]         \
+          ^ IT[2][S[static_cast<unsigned char>(w[i * 7 + 6] >> 8)]]            \
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 7 + 6])]];
 
 #define ROUND224(r)                                                            \
-    t0 = W_[r * 7 + 0] ^ T[0][(unsigned char)(s0 >> 24)]                       \
-         ^ T[1][(unsigned char)(s1 >> 16)] ^ T[2][(unsigned char)(s2 >> 8)]    \
-         ^ T[3][(unsigned char)(s4)];                                          \
-    t1 = W_[r * 7 + 1] ^ T[0][(unsigned char)(s1 >> 24)]                       \
-         ^ T[1][(unsigned char)(s2 >> 16)] ^ T[2][(unsigned char)(s3 >> 8)]    \
-         ^ T[3][(unsigned char)(s5)];                                          \
-    t2 = W_[r * 7 + 2] ^ T[0][(unsigned char)(s2 >> 24)]                       \
-         ^ T[1][(unsigned char)(s3 >> 16)] ^ T[2][(unsigned char)(s4 >> 8)]    \
-         ^ T[3][(unsigned char)(s6)];                                          \
-    t3 = W_[r * 7 + 3] ^ T[0][(unsigned char)(s3 >> 24)]                       \
-         ^ T[1][(unsigned char)(s4 >> 16)] ^ T[2][(unsigned char)(s5 >> 8)]    \
-         ^ T[3][(unsigned char)(s0)];                                          \
-    t4 = W_[r * 7 + 4] ^ T[0][(unsigned char)(s4 >> 24)]                       \
-         ^ T[1][(unsigned char)(s5 >> 16)] ^ T[2][(unsigned char)(s6 >> 8)]    \
-         ^ T[3][(unsigned char)(s1)];                                          \
-    t5 = W_[r * 7 + 5] ^ T[0][(unsigned char)(s5 >> 24)]                       \
-         ^ T[1][(unsigned char)(s6 >> 16)] ^ T[2][(unsigned char)(s0 >> 8)]    \
-         ^ T[3][(unsigned char)(s2)];                                          \
-    t6 = W_[r * 7 + 6] ^ T[0][(unsigned char)(s6 >> 24)]                       \
-         ^ T[1][(unsigned char)(s0 >> 16)] ^ T[2][(unsigned char)(s1 >> 8)]    \
-         ^ T[3][(unsigned char)(s3)];                                          \
+    t0 = W_[r * 7 + 0] ^ T[0][static_cast<unsigned char>(s0 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s1 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s2 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s4)];                               \
+    t1 = W_[r * 7 + 1] ^ T[0][static_cast<unsigned char>(s1 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s2 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s3 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s5)];                               \
+    t2 = W_[r * 7 + 2] ^ T[0][static_cast<unsigned char>(s2 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s3 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s4 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s6)];                               \
+    t3 = W_[r * 7 + 3] ^ T[0][static_cast<unsigned char>(s3 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s4 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s5 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s0)];                               \
+    t4 = W_[r * 7 + 4] ^ T[0][static_cast<unsigned char>(s4 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s5 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s6 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s1)];                               \
+    t5 = W_[r * 7 + 5] ^ T[0][static_cast<unsigned char>(s5 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s6 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s0 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s2)];                               \
+    t6 = W_[r * 7 + 6] ^ T[0][static_cast<unsigned char>(s6 >> 24)]            \
+         ^ T[1][static_cast<unsigned char>(s0 >> 16)]                          \
+         ^ T[2][static_cast<unsigned char>(s1 >> 8)]                           \
+         ^ T[3][static_cast<unsigned char>(s3)];                               \
     s0 = t0;                                                                   \
     s1 = t1;                                                                   \
     s2 = t2;                                                                   \
@@ -3465,36 +3696,50 @@ void rijndael160_256::clear()
     s6 = W_[r * 7 + 6] ^ uint32_t(S[t6 >> 24]) << 24                           \
          ^ uint32_t(S[(t0 >> 16) & 0xff]) << 16                                \
          ^ uint32_t(S[(t1 >> 8) & 0xff]) << 8 ^ uint32_t(S[t3 & 0xff]);        \
-    *(uint32_t*)out = swap_uint32(s0);                                         \
-    *(uint32_t*)(out + 4) = swap_uint32(s1);                                   \
-    *(uint32_t*)(out + 8) = swap_uint32(s2);                                   \
-    *(uint32_t*)(out + 12) = swap_uint32(s3);                                  \
-    *(uint32_t*)(out + 16) = swap_uint32(s4);                                  \
-    *(uint32_t*)(out + 20) = swap_uint32(s5);                                  \
-    *(uint32_t*)(out + 24) = swap_uint32(s6);
+    uint32_t tmp = swap_uint32(s0);                                            \
+    memcpy(out, &tmp, sizeof(tmp));                                            \
+    tmp = swap_uint32(s1);                                                     \
+    memcpy(out + 4, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s2);                                                     \
+    memcpy(out + 8, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s3);                                                     \
+    memcpy(out + 12, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s4);                                                     \
+    memcpy(out + 16, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s5);                                                     \
+    memcpy(out + 20, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s6);                                                     \
+    memcpy(out + 24, &tmp, sizeof(tmp));
 
 #define IROUND224(r)                                                           \
-    t0 = W_[r * 7 + 0] ^ IT[0][(unsigned char)(s0 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s6 >> 16)] ^ IT[2][(unsigned char)(s5 >> 8)]  \
-         ^ IT[3][(unsigned char)(s3)];                                         \
-    t1 = W_[r * 7 + 1] ^ IT[0][(unsigned char)(s1 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s0 >> 16)] ^ IT[2][(unsigned char)(s6 >> 8)]  \
-         ^ IT[3][(unsigned char)(s4)];                                         \
-    t2 = W_[r * 7 + 2] ^ IT[0][(unsigned char)(s2 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s1 >> 16)] ^ IT[2][(unsigned char)(s0 >> 8)]  \
-         ^ IT[3][(unsigned char)(s5)];                                         \
-    t3 = W_[r * 7 + 3] ^ IT[0][(unsigned char)(s3 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s2 >> 16)] ^ IT[2][(unsigned char)(s1 >> 8)]  \
-         ^ IT[3][(unsigned char)(s6)];                                         \
-    t4 = W_[r * 7 + 4] ^ IT[0][(unsigned char)(s4 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s3 >> 16)] ^ IT[2][(unsigned char)(s2 >> 8)]  \
-         ^ IT[3][(unsigned char)(s0)];                                         \
-    t5 = W_[r * 7 + 5] ^ IT[0][(unsigned char)(s5 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s4 >> 16)] ^ IT[2][(unsigned char)(s3 >> 8)]  \
-         ^ IT[3][(unsigned char)(s1)];                                         \
-    t6 = W_[r * 7 + 6] ^ IT[0][(unsigned char)(s6 >> 24)]                      \
-         ^ IT[1][(unsigned char)(s5 >> 16)] ^ IT[2][(unsigned char)(s4 >> 8)]  \
-         ^ IT[3][(unsigned char)(s2)];                                         \
+    t0 = W_[r * 7 + 0] ^ IT[0][static_cast<unsigned char>(s0 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s6 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s5 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s3)];                              \
+    t1 = W_[r * 7 + 1] ^ IT[0][static_cast<unsigned char>(s1 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s0 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s6 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s4)];                              \
+    t2 = W_[r * 7 + 2] ^ IT[0][static_cast<unsigned char>(s2 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s1 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s0 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s5)];                              \
+    t3 = W_[r * 7 + 3] ^ IT[0][static_cast<unsigned char>(s3 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s2 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s1 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s6)];                              \
+    t4 = W_[r * 7 + 4] ^ IT[0][static_cast<unsigned char>(s4 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s3 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s2 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s0)];                              \
+    t5 = W_[r * 7 + 5] ^ IT[0][static_cast<unsigned char>(s5 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s4 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s3 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s1)];                              \
+    t6 = W_[r * 7 + 6] ^ IT[0][static_cast<unsigned char>(s6 >> 24)]           \
+         ^ IT[1][static_cast<unsigned char>(s5 >> 16)]                         \
+         ^ IT[2][static_cast<unsigned char>(s4 >> 8)]                          \
+         ^ IT[3][static_cast<unsigned char>(s2)];                              \
     s0 = t0;                                                                   \
     s1 = t1;                                                                   \
     s2 = t2;                                                                   \
@@ -3525,22 +3770,37 @@ void rijndael160_256::clear()
     s6 = W_[r * 7 + 6] ^ uint32_t(IS[t6 >> 24]) << 24                          \
          ^ uint32_t(IS[(t5 >> 16) & 0xff]) << 16                               \
          ^ uint32_t(IS[(t4 >> 8) & 0xff]) << 8 ^ uint32_t(IS[t2 & 0xff]);      \
-    *(uint32_t*)out = swap_uint32(s0);                                         \
-    *(uint32_t*)(out + 4) = swap_uint32(s1);                                   \
-    *(uint32_t*)(out + 8) = swap_uint32(s2);                                   \
-    *(uint32_t*)(out + 12) = swap_uint32(s3);                                  \
-    *(uint32_t*)(out + 16) = swap_uint32(s4);                                  \
-    *(uint32_t*)(out + 20) = swap_uint32(s5);                                  \
-    *(uint32_t*)(out + 24) = swap_uint32(s6);
+    uint32_t tmp = swap_uint32(s0);                                            \
+    memcpy(out, &tmp, sizeof(tmp));                                            \
+    tmp = swap_uint32(s1);                                                     \
+    memcpy(out + 4, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s2);                                                     \
+    memcpy(out + 8, &tmp, sizeof(tmp));                                        \
+    tmp = swap_uint32(s3);                                                     \
+    memcpy(out + 12, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s4);                                                     \
+    memcpy(out + 16, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s5);                                                     \
+    memcpy(out + 20, &tmp, sizeof(tmp));                                       \
+    tmp = swap_uint32(s6);                                                     \
+    memcpy(out + 24, &tmp, sizeof(tmp));
 
 #define FROUND224()                                                            \
-    uint32_t s0 = swap_uint32(*(uint32_t*)in);                                 \
-    uint32_t s1 = swap_uint32(*(uint32_t*)(in + 4));                           \
-    uint32_t s2 = swap_uint32(*(uint32_t*)(in + 8));                           \
-    uint32_t s3 = swap_uint32(*(uint32_t*)(in + 12));                          \
-    uint32_t s4 = swap_uint32(*(uint32_t*)(in + 16));                          \
-    uint32_t s5 = swap_uint32(*(uint32_t*)(in + 20));                          \
-    uint32_t s6 = swap_uint32(*(uint32_t*)(in + 24));                          \
+    uint32_t val;                                                              \
+    memcpy(&val, in, sizeof(val));                                             \
+    uint32_t s0 = swap_uint32(val);                                            \
+    memcpy(&val, in + 4, sizeof(val));                                         \
+    uint32_t s1 = swap_uint32(val);                                            \
+    memcpy(&val, in + 8, sizeof(val));                                         \
+    uint32_t s2 = swap_uint32(val);                                            \
+    memcpy(&val, in + 12, sizeof(val));                                        \
+    uint32_t s3 = swap_uint32(val);                                            \
+    memcpy(&val, in + 16, sizeof(val));                                        \
+    uint32_t s4 = swap_uint32(val);                                            \
+    memcpy(&val, in + 20, sizeof(val));                                        \
+    uint32_t s5 = swap_uint32(val);                                            \
+    memcpy(&val, in + 24, sizeof(val));                                        \
+    uint32_t s6 = swap_uint32(val);                                            \
     s0 ^= W_[0];                                                               \
     s1 ^= W_[1];                                                               \
     s2 ^= W_[2];                                                               \
@@ -3566,16 +3826,20 @@ bool rijndael224_128::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 4 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 4 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0;; i++) {
         uint32_t temp = w[3];
-        w[4] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[4] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[5] = w[1] ^ w[4];
         if (i == 23) break;
         w[6] = w[2] ^ w[5];
@@ -3612,16 +3876,20 @@ bool rijndael224_160::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 5 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 5 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0;; i++) {
         uint32_t temp = w[4];
-        w[5] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[5] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[6] = w[1] ^ w[5];
         w[7] = w[2] ^ w[6];
 
@@ -3661,16 +3929,20 @@ bool rijndael224_192::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 6 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 6 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0;; i++) {
         uint32_t temp = w[5];
-        w[6] = w[0] ^ (uint32_t(S[(unsigned char)(temp >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(temp)]) << 8)
-               ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 24) ^ RC[i];
+        w[6] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(temp)]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 24)
+               ^ RC[i];
         w[7] = w[1] ^ w[6];
 
         if (i == 15) break;
@@ -3711,24 +3983,28 @@ bool rijndael224_224::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 7 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 7 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0; i < 13; i++) {
-        w[7] = w[0] ^ (uint32_t(S[(unsigned char)(w[6] >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(w[6])]) << 8)
-               ^ (uint32_t(S[(unsigned char)(w[6] >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(w[6] >> 16)]) << 24) ^ RC[i];
+        w[7] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6])]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[6] >> 16)]) << 24)
+               ^ RC[i];
         w[8] = w[1] ^ w[7];
         w[9] = w[2] ^ w[8];
         w[10] = w[3] ^ w[9];
 
         uint32_t temp = w[10];
-        w[11] = w[4] ^ (uint32_t(S[(unsigned char)(temp)]))
-                ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 8)
-                ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 16)
-                ^ (uint32_t(S[(unsigned char)(temp >> 24)]) << 24);
+        w[11] = w[4] ^ (uint32_t(S[static_cast<unsigned char>(temp)]))
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 8)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 16)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]) << 24);
         w[12] = w[5] ^ w[11];
         w[13] = w[6] ^ w[12];
         w += 7;
@@ -3865,15 +4141,19 @@ bool rijndael224_256::init(const unsigned char* key,
 {
     if (impl_) return impl_->init(key, direction);
 
-    for (int i = 0; i < 8 /* Nk */; i++)
-        W_[i] = swap_uint32(*(uint32_t*)(key + 4 * i));
+    for (int i = 0; i < 8 /* Nk */; i++) {
+        uint32_t val;
+        memcpy(&val, key + 4 * i, sizeof(val));
+        W_[i] = swap_uint32(val);
+    }
 
     uint32_t* w = W_;
     for (int i = 0;; i++) {
-        w[8] = w[0] ^ (uint32_t(S[(unsigned char)(w[7] >> 24)]))
-               ^ (uint32_t(S[(unsigned char)(w[7])]) << 8)
-               ^ (uint32_t(S[(unsigned char)(w[7] >> 8)]) << 16)
-               ^ (uint32_t(S[(unsigned char)(w[7] >> 16)]) << 24) ^ RC[i];
+        w[8] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 24)]))
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7])]) << 8)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 8)]) << 16)
+               ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 16)]) << 24)
+               ^ RC[i];
 
         if (i == 12) break;
 
@@ -3882,10 +4162,10 @@ bool rijndael224_256::init(const unsigned char* key,
         w[11] = w[3] ^ w[10];
 
         uint32_t temp = w[11];
-        w[12] = w[4] ^ (uint32_t(S[(unsigned char)(temp)]))
-                ^ (uint32_t(S[(unsigned char)(temp >> 8)]) << 8)
-                ^ (uint32_t(S[(unsigned char)(temp >> 16)]) << 16)
-                ^ (uint32_t(S[(unsigned char)(temp >> 24)]) << 24);
+        w[12] = w[4] ^ (uint32_t(S[static_cast<unsigned char>(temp)]))
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 8)]) << 8)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 16)]) << 16)
+                ^ (uint32_t(S[static_cast<unsigned char>(temp >> 24)]) << 24);
         w[13] = w[5] ^ w[12];
         w[14] = w[6] ^ w[13];
         w[15] = w[7] ^ w[14];

@@ -3,9 +3,6 @@ This code is written by kerukuro for cppcrypto library
 (http://cppcrypto.sourceforge.net/) and released into public domain.
 */
 
-#ifndef INCLUDE_PORTABILITY_H
-#define INCLUDE_PORTABILITY_H
-
 #ifndef CPPCRYPTO_PORTABILITY_H
 #define CPPCRYPTO_PORTABILITY_H
 
@@ -139,7 +136,7 @@ static inline void* aligned_allocate(size_t a, size_t b)
 
 static inline void zero_memory(void* v, size_t n)
 {
-    volatile unsigned char* p = (volatile unsigned char*)v;
+    volatile unsigned char* p = static_cast<volatile unsigned char*>(v);
     while (n--) { *p++ = 0; }
 }
 
@@ -192,6 +189,4 @@ static inline uint64_t byteswap(uint64_t val)
 }
 } // namespace cppcrypto
 
-#endif
-
-#endif /* INCLUDE_PORTABILITY_H */
+#endif /* CPPCRYPTO_PORTABILITY_H */
