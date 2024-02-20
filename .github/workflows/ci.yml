@@ -146,7 +146,7 @@ jobs:
 
       - name: Install static analyzers
         if: matrix.os == 'ubuntu-22.04'
-        run: >-
+        run: |
           sudo apt-get install cppcheck -y -q
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
