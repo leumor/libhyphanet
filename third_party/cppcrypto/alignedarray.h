@@ -6,9 +6,6 @@ This code is written by kerukuro for cppcrypto library
 #ifndef CPPCRYPTO_ALIGNEDARRAY_H
 #define CPPCRYPTO_ALIGNEDARRAY_H
 
-#ifndef CPPCRYPTO_ALIGNED_ARRAY_H
-#define CPPCRYPTO_ALIGNED_ARRAY_H
-
 #include "portability.h"
 #include <algorithm>
 #include <memory.h>
@@ -37,8 +34,7 @@ private:
 template<typename T, size_t N, size_t A>
 aligned_pod_array<T, N, A>::aligned_pod_array(): t(0)
 {
-    auto size = (sizeof(T) * N / A + 1) * A;
-    t = static_cast<T*>(aligned_allocate(A, size));
+    t = static_cast<T*>(aligned_allocate(sizeof(T) * N, A));
 }
 
 template<typename T, size_t N, size_t A>
@@ -173,7 +169,5 @@ aligned_impl_ptr<T, A>::operator=(aligned_impl_ptr<T, A>&& other)
 #endif
 
 } // namespace cppcrypto
-
-#endif
 
 #endif /* CPPCRYPTO_ALIGNEDARRAY_H */

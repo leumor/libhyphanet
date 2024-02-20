@@ -84,10 +84,16 @@ jobs:
 
     runs-on: ubuntu-22.04
 
-    env: { CXX: g++-13 }
+    env: { CXX: clang++-18 }
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Install Clang 18
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          echo -ne '\n' | sudo ./llvm.sh 18 all
 
       - name: Install autoconf-archive
         run: |

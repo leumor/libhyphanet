@@ -3,8 +3,8 @@ This code is written by kerukuro for cppcrypto library
 (http://cppcrypto.sourceforge.net/) and released into public domain.
 */
 
-#ifndef INCLUDE_RIJNDAEL_H
-#define INCLUDE_RIJNDAEL_H
+#ifndef CPPCRYPTO_RIJNDAEL_H
+#define CPPCRYPTO_RIJNDAEL_H
 
 #include "alignedarray.h"
 #include "block_cipher.h"
@@ -530,4 +530,4 @@ private:
 
 } // namespace cppcrypto
 
-#endif
+#endif /* CPPCRYPTO_RIJNDAEL_H */
