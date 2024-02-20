@@ -12,7 +12,8 @@
 #include <fmt/format.h>
 #include <string>
 
-std::array<std::byte, 32> chars_to_bytes(const std::array<char, 32>& chars)
+std::array<std::byte, 32>
+chars_to_bytes(const std::array<signed char, 32>& chars)
 {
     std::array<std::byte, 32> bytes{};
     std::ranges::transform(chars, std::begin(bytes),
