@@ -51,8 +51,9 @@ std::string encode(const std::vector<std::byte>& bytes, bool equals_pad,
 
     if (!equals_pad) { params = params(Name::Pad(), false); }
 
+    std::array<CryptoPP::byte, 65> alphabet_bytes{};
     if (alphabet) {
-        const auto alphabet_bytes = alphabet_str_to_bytes(*alphabet);
+        alphabet_bytes = alphabet_str_to_bytes(*alphabet);
         const byte* alphabet_ptr = alphabet_bytes.data();
         params
             = params(Name::EncodingLookupArray(), std::as_const(alphabet_ptr));
@@ -80,8 +81,8 @@ std::vector<std::byte> decode(std::string_view encoded,
     Base64Decoder decoder;
     AlgorithmParameters params;
 
+    std::array<int, 256> lookup{};
     if (alphabet) {
-        std::array<int, 256> lookup{};
         const auto alphabet_bytes = alphabet_str_to_bytes(*alphabet);
         Base64Decoder::InitializeDecodingLookupArray(
             lookup.data(), alphabet_bytes.data(), 64, false);
