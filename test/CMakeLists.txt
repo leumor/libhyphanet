@@ -33,11 +33,14 @@ target_include_directories(
 )
 
 find_package(cryptopp CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+
 target_link_libraries(
   libhyphanet_test PRIVATE
   libhyphanet::libhyphanet
   Catch2::Catch2WithMain
   cryptopp::cryptopp
+  fmt::fmt
 )
 target_compile_features(libhyphanet_test PRIVATE cxx_std_20)
 
