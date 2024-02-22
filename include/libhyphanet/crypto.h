@@ -8,6 +8,7 @@
 #include <cryptopp/integer.h>
 #include <cryptopp/queue.h>
 #include <cstddef>
+#include <libhyphanet/libhyphanet_export.h>
 #include <vector>
 
 /**
@@ -35,7 +36,7 @@ namespace crypto {
  *
  * @return The encrypted data as a 32-byte array.
  */
-[[nodiscard]] std::array<std::byte, 32>
+LIBHYPHANET_EXPORT [[nodiscard]] std::array<std::byte, 32>
 rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
                         const std::array<std::byte, 32>& input);
 
@@ -53,7 +54,7 @@ rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
  *
  * @return The decrypted data as a 32-byte array.
  */
-[[nodiscard]] std::array<std::byte, 32>
+LIBHYPHANET_EXPORT [[nodiscard]] std::array<std::byte, 32>
 rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
                         const std::array<std::byte, 32>& input);
 
@@ -64,7 +65,7 @@ rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
  * This class provides functionality to compute SHA-256 hashes of input data. It
  * supports updating the hash with multiple inputs before finalizing the digest.
  */
-class Sha256 {
+class LIBHYPHANET_EXPORT Sha256 {
 public:
     Sha256() = default;
     Sha256(const Sha256& other) = delete;
@@ -110,7 +111,8 @@ namespace dsa {
     /**
      * @brief Exception for invalid private key errors.
      */
-    class Invalid_priv_key_error : public std::runtime_error {
+    class LIBHYPHANET_EXPORT Invalid_priv_key_error
+        : public std::runtime_error {
     public:
         using std::runtime_error::runtime_error;
     };
@@ -118,7 +120,7 @@ namespace dsa {
     /**
      * @brief Exception for invalid public key errors.
      */
-    class Invalid_pub_key_error : public std::runtime_error {
+    class LIBHYPHANET_EXPORT Invalid_pub_key_error : public std::runtime_error {
     public:
         using std::runtime_error::runtime_error;
     };
@@ -134,7 +136,7 @@ namespace dsa {
      *
      * @return The private key in PKCS#8 format as a byte vector.
      */
-    [[nodiscard]] std::vector<std::byte>
+    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
     priv_key_bytes_to_pkcs8(const std::vector<std::byte>& key_bytes);
 
     /**
@@ -148,7 +150,7 @@ namespace dsa {
      *
      * @return The public key in X.509 format as a byte vector.
      */
-    [[nodiscard]] std::vector<std::byte>
+    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
     pub_key_bytes_to_x509(const std::vector<std::byte>& key_bytes);
 
     /**
@@ -164,6 +166,7 @@ namespace dsa {
      * big-endian encoded `x` values, and the public key bytes are big-endian
      * encoded `y` values.
      */
+    LIBHYPHANET_EXPORT
     [[nodiscard]] std::pair<std::vector<std::byte>, std::vector<std::byte>>
     generate_keys();
 
@@ -180,6 +183,7 @@ namespace dsa {
      * @return A pair of vectors, where the first vector is the private key
      * bytes and the second is the public key bytes.
      */
+    LIBHYPHANET_EXPORT
     [[nodiscard]] std::pair<std::vector<std::byte>, std::vector<std::byte>>
     generate_keys(CryptoPP::RandomNumberGenerator& rng);
 
@@ -195,23 +199,23 @@ namespace dsa {
      *
      * @return The public key bytes.
      */
-    [[nodiscard]] std::vector<std::byte>
+    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
     make_pub_key(const std::vector<std::byte>& priv_key_bytes);
 
     /**
      * @brief Signs a message using a DSA private key.
      *
      * @details
-     * This function signs a given message using a DSA private key and returns
-     * the signature.
+     * This function signs a given message using a DSA private key and
+     * returns the signature.
      *
-     * @param priv_key_bytes The private key bytes. The private key bytes are
-     * big-endian encoded `x` values.
+     * @param priv_key_bytes The private key bytes. The private key bytes
+     * are big-endian encoded `x` values.
      * @param message_bytes The message to sign.
      *
      * @return The signature as a byte vector.
      */
-    [[nodiscard]] std::vector<std::byte>
+    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
     sign(const std::vector<std::byte>& priv_key_bytes,
          const std::vector<std::byte>& message_bytes);
 
@@ -219,8 +223,8 @@ namespace dsa {
      * @brief Verifies a signature using a DSA public key.
      *
      * @details
-     * This function verifies a given signature against a message using a DSA
-     * public key.
+     * This function verifies a given signature against a message using a
+     * DSA public key.
      *
      * @param pub_key_bytes The public key bytes. The public key bytes are
      * big-endian encoded `y` values.
@@ -229,49 +233,54 @@ namespace dsa {
      *
      * @return `true` if the signature is valid, `false` otherwise.
      */
-    [[nodiscard]] bool verify(const std::vector<std::byte>& pub_key_bytes,
-                              const std::vector<std::byte>& message_bytes,
-                              const std::vector<std::byte>& signature);
+    LIBHYPHANET_EXPORT [[nodiscard]] bool
+    verify(const std::vector<std::byte>& pub_key_bytes,
+           const std::vector<std::byte>& message_bytes,
+           const std::vector<std::byte>& signature);
 
     /**
      * @brief Converts private key bytes to MPI (Multiple Precision Integer)
      * format.
      *
      * @details
-     * This function converts private key bytes into MPI format, which is useful
-     * for cryptographic operations requiring large integer representations.
+     * This function converts private key bytes into MPI format, which is
+     * useful for cryptographic operations requiring large integer
+     * representations.
      *
      * @param priv_key_bytes The private key bytes.
      *
      * @return The private key in MPI format as a byte vector.
      */
-    [[nodiscard]] std::vector<std::byte>
+    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
     priv_key_bytes_to_mpi_bytes(const std::vector<std::byte>& priv_key_bytes);
 
     /**
-     * @brief Converts DSA group parameters to MPI (Multiple Precision Integer)
-     * format.
+     * @brief Converts DSA group parameters to MPI (Multiple Precision
+     * Integer) format.
      *
      * @details
-     * This function converts DSA group parameters (p, q, g) into MPI format.
+     * This function converts DSA group parameters (p, q, g) into MPI
+     * format.
      *
      * @return The DSA group parameters in MPI format as a byte vector.
      */
-    [[nodiscard]] std::vector<std::byte> group_to_mpi_bytes();
+    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
+    group_to_mpi_bytes();
 
     /**
      * @brief Converts public key bytes to MPI (Multiple Precision Integer)
      * format.
      *
      * @details
-     * This function converts public key bytes into MPI format, which is useful
-     * for cryptographic operations requiring large integer representations.
+     * This function converts public key bytes into MPI format, which is
+     * useful for cryptographic operations requiring large integer
+     * representations.
      *
      * @param pub_key_bytes The public key bytes.
      *
      * @return The public key in MPI format as a byte vector.
      */
-    [[nodiscard]] std::vector<std::byte>
+    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
     pub_key_bytes_to_mpi_bytes(const std::vector<std::byte>& pub_key_bytes);
 
     /**
@@ -285,7 +294,7 @@ namespace dsa {
      *
      * @return The SHA-256 hash of the public key as a 32-byte array.
      */
-    [[nodiscard]] std::array<std::byte, 32>
+    LIBHYPHANET_EXPORT [[nodiscard]] std::array<std::byte, 32>
     pub_key_hash(const std::vector<std::byte>& pub_key_bytes);
 
 } // namespace dsa

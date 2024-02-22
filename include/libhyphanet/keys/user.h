@@ -37,7 +37,7 @@ namespace keys::user {
  *                   routing key. But it usually can be converted to a
  *                   Client %Key by some algorithm.
  */
-class Key {
+class LIBHYPHANET_EXPORT Key {
 protected:
     /**
      * @brief A protected token to prevent constructors from being publicly
@@ -338,7 +338,7 @@ private:
  * level does not know about, but which are in the URI - usually the second
  * part, after the comma.
  */
-class Client {
+class LIBHYPHANET_EXPORT Client {
 public:
     Client() = default;
     Client(const Client& other) = default;
@@ -362,7 +362,7 @@ public:
  * A Insertable key contains a private key from the [Key](#Key) owner, so
  * a user can use it to insert new versions of data.
  */
-class Insertable {
+class LIBHYPHANET_EXPORT Insertable {
 public:
     /**
      * @brief Constructs an Insertable object with a specified private key.
@@ -430,7 +430,7 @@ private:
  * key](#node::Node_key#routing_key_).
  *
  */
-class Subspace_key : public Key {
+class LIBHYPHANET_EXPORT Subspace_key : public Key {
 public:
     /**
      * @brief Constructs a Subspace_key object with specified key parameters and
@@ -569,7 +569,7 @@ class Usk;
  * of Hyphanet's data storage and retrieval system, allowing for secure,
  * anonymous, and verifiable updates to content.
  */
-class Ssk : public Subspace_key, public Client {
+class LIBHYPHANET_EXPORT Ssk : public Subspace_key, public Client {
 public:
     /**
      * @brief The character to separate the site name from the edition
@@ -723,7 +723,7 @@ private:
  * network. They are crucial for maintaining mutable content where the owner
  * wishes to update the content securely.
  */
-class Insertable_ssk : public Ssk, public Insertable {
+class LIBHYPHANET_EXPORT Insertable_ssk : public Ssk, public Insertable {
 public:
     /**
      * @brief Constructs an Insertable_ssk object with specified key parameters,
@@ -805,7 +805,7 @@ protected:
  * - [Document name](#Subspace_key#docname_).
  * - [Document edition number](#suggested_edition_).
  */
-class Usk : public Subspace_key {
+class LIBHYPHANET_EXPORT Usk : public Subspace_key {
 public:
     Usk(Key_params key, std::string_view docname, long suggested_edition = -1)
         : Subspace_key{std::move(key), docname},
@@ -907,7 +907,7 @@ private:
  * data versions but with the added functionality of USKs for dynamic content
  * updates.
  */
-class Insertable_usk : public Usk, public Insertable {
+class LIBHYPHANET_EXPORT Insertable_usk : public Usk, public Insertable {
 public:
     /**
      * @brief Constructs an Insertable_usk object from an existing Usk object
@@ -947,7 +947,7 @@ protected:
  * human-readable string. They are less secure than SSKs or USKs but offer a
  * straightforward way to share and access static content.
  */
-class Ksk : public Insertable_ssk {
+class LIBHYPHANET_EXPORT Ksk : public Insertable_ssk {
 public:
     explicit Ksk(std::string keyword);
 
@@ -983,7 +983,7 @@ private:
  * was originally inserted. CHks are fundamental to Hyphanet's goal of
  * censorship-resistant storage.
  */
-class Chk : public Key, public Client {
+class LIBHYPHANET_EXPORT Chk : public Key, public Client {
 public:
     /**
      * @brief Construct a new **Content Hash %Key** (CHK) object.

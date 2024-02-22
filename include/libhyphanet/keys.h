@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <gsl/assert>
 #include <gsl/gsl>
+#include <libhyphanet/libhyphanet_export.h>
 #include <map>
 #include <memory>
 #include <optional>
@@ -21,7 +22,7 @@ namespace exception {
     /**
      * @brief Exception class for malformed URIs.
      */
-    class Malformed_uri : public std::runtime_error {
+    class LIBHYPHANET_EXPORT Malformed_uri : public std::runtime_error {
     public:
         using std::runtime_error::runtime_error;
     };
@@ -47,7 +48,7 @@ hypha:test.html
 @endverbatim
  *
  */
-enum class Uri_type {
+enum class LIBHYPHANET_EXPORT Uri_type {
     usk, ///< [Updatable Subspace Key](#user::Usk)
     ssk, ///< [Signed Subspace Key](#user::Ssk)
     ksk, ///< [Keyword Signed Key](#user::Ksk)
@@ -57,22 +58,23 @@ enum class Uri_type {
 /**
  * @brief Mapping from Uri_type to string representation.
  */
-static const std::map<Uri_type, std::string> uri_type_to_string = {
-    {Uri_type::usk, "USK"},
-    {Uri_type::ssk, "SSK"},
-    {Uri_type::chk, "CHK"},
-    {Uri_type::ksk, "KSK"},
+LIBHYPHANET_EXPORT static const std::map<Uri_type, std::string>
+    uri_type_to_string = {
+        {Uri_type::usk, "USK"},
+        {Uri_type::ssk, "SSK"},
+        {Uri_type::chk, "CHK"},
+        {Uri_type::ksk, "KSK"},
 };
 
 /**
  * @brief Length of the cryptographic key.
  */
-static const size_t crypto_key_length = 32;
+LIBHYPHANET_EXPORT static const size_t crypto_key_length = 32;
 
 /**
  * @brief Struct to hold parameters for constructing a Uri object.
  */
-struct Uri_params {
+struct LIBHYPHANET_EXPORT Uri_params {
     Uri_type uri_type{Uri_type::usk};
     std::vector<std::byte> routing_key;
     std::optional<std::array<std::byte, crypto_key_length>> crypto_key;
@@ -117,7 +119,7 @@ namespace user {
  * For **CHK** keys, it is legal to have a `.extension` tail
  * (e.g. `CHK@blahblahblah.html`). The constructor will remove it.
  */
-class Uri {
+class LIBHYPHANET_EXPORT Uri {
     friend class user::Ssk;
     friend class user::Insertable_ssk;
     friend class user::Usk;
@@ -431,7 +433,7 @@ private:
 };
 
 namespace node {
-    class Node_key {
+    class LIBHYPHANET_EXPORT Node_key {
     private:
         /**
          * @brief Node Routing Key.
@@ -455,7 +457,7 @@ namespace node {
         std::vector<std::byte> node_routing_key_;
     };
 
-    class Node_ssk : public Node_key {
+    class LIBHYPHANET_EXPORT Node_ssk : public Node_key {
     public:
         static const std::byte ssk_version = std::byte{1};
     };
