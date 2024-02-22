@@ -31,7 +31,7 @@ LIBHYPHANET_EXPORT static const std::string base64_alphabet_freenet{
  *
  * @return The encoded string.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] std::string
+[[nodiscard]] LIBHYPHANET_EXPORT std::string
 encode(const std::vector<std::byte>& bytes, bool equals_pad,
        std::optional<std::string_view> alphabet);
 
@@ -49,7 +49,7 @@ encode(const std::vector<std::byte>& bytes, bool equals_pad,
  *
  * @return the encoded string.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] inline std::string
+[[nodiscard]] LIBHYPHANET_EXPORT inline std::string
 encode_freenet(const std::vector<std::byte>& bytes)
 {
     return encode(bytes, false, base64_alphabet_freenet);
@@ -63,7 +63,7 @@ encode_freenet(const std::vector<std::byte>& bytes)
  * @return The encoded string.
  * encoding.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] inline std::string
+[[nodiscard]] LIBHYPHANET_EXPORT inline std::string
 encode_standard(const std::vector<std::byte>& bytes)
 {
     return encode(bytes, true, std::nullopt);
@@ -81,7 +81,7 @@ encode_standard(const std::vector<std::byte>& bytes)
  *
  * @return The encoded base64 string.
  */
-template<concepts::CharOrChar8_t T> LIBHYPHANET_EXPORT [[nodiscard]] std::string
+template<concepts::CharOrChar8_t T> [[nodiscard]] LIBHYPHANET_EXPORT std::string
 encode_basicstr_freenet(std::basic_string_view<T> str, bool equals_pad)
 {
     auto bytes = util::basicstr_to_bytes(str);
@@ -98,7 +98,7 @@ encode_basicstr_freenet(std::basic_string_view<T> str, bool equals_pad)
  *
  * @return The encoded string.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] inline std::string
+[[nodiscard]] LIBHYPHANET_EXPORT inline std::string
 encode_str_freenet(std::string_view str, bool equals_pad = false)
 {
     return encode_basicstr_freenet(str, equals_pad);
@@ -113,7 +113,7 @@ encode_str_freenet(std::string_view str, bool equals_pad = false)
  *
  * @return The encoded string.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] inline std::string
+[[nodiscard]] LIBHYPHANET_EXPORT inline std::string
 encode_u8str_freenet(std::u8string_view str, bool equals_pad = false)
 {
     return encode_basicstr_freenet(str, equals_pad);
@@ -129,7 +129,7 @@ encode_u8str_freenet(std::u8string_view str, bool equals_pad = false)
  *
  * @return The encoded string.
  */
-template<concepts::CharOrChar8_t T> LIBHYPHANET_EXPORT [[nodiscard]] std::string
+template<concepts::CharOrChar8_t T> [[nodiscard]] LIBHYPHANET_EXPORT std::string
 encode_basicstr_standard(std::basic_string_view<T> str)
 {
     auto bytes = util::basicstr_to_bytes(str);
@@ -144,7 +144,7 @@ encode_basicstr_standard(std::basic_string_view<T> str)
  *
  * @return The encoded string.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] inline std::string
+[[nodiscard]] LIBHYPHANET_EXPORT inline std::string
 encode_str_standard(std::string_view str)
 {
     return encode_basicstr_standard(str);
@@ -157,7 +157,7 @@ encode_str_standard(std::string_view str)
  *
  * @return The encoded string.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] inline std::string
+[[nodiscard]] LIBHYPHANET_EXPORT inline std::string
 encode_u8str_standard(std::u8string_view str)
 {
     return encode_basicstr_standard(str);
@@ -172,7 +172,7 @@ encode_u8str_standard(std::u8string_view str)
  *
  * @return The decoded bytes.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
+[[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
 decode(std::string_view encoded, std::optional<std::string_view> alphabet);
 
 /**
@@ -183,7 +183,7 @@ decode(std::string_view encoded, std::optional<std::string_view> alphabet);
  *
  * @return The decoded bytes.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] inline std::vector<std::byte>
+[[nodiscard]] LIBHYPHANET_EXPORT inline std::vector<std::byte>
 decode_freenet(std::string_view encoded)
 {
     return decode(encoded, base64_alphabet_freenet);
@@ -196,7 +196,7 @@ decode_freenet(std::string_view encoded)
  *
  * @return The decoded bytes.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] inline std::vector<std::byte>
+[[nodiscard]] LIBHYPHANET_EXPORT inline std::vector<std::byte>
 decode_standard(std::string_view encoded)
 {
     return decode(encoded, std::nullopt);
@@ -230,7 +230,7 @@ template<concepts::CharOrChar8_t T> LIBHYPHANET_EXPORT
  *
  * @return The decoded string.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] inline std::string
+[[nodiscard]] LIBHYPHANET_EXPORT inline std::string
 decode_str_freenet(std::string_view encoded)
 {
     return decode_basicstr_freenet<char>(encoded);
@@ -244,7 +244,7 @@ decode_str_freenet(std::string_view encoded)
  *
  * @return The decoded std::u8string.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] inline std::u8string
+[[nodiscard]] LIBHYPHANET_EXPORT inline std::u8string
 decode_u8str_freenet(std::string_view encoded)
 {
     return decode_basicstr_freenet<char8_t>(encoded);
@@ -276,7 +276,7 @@ template<concepts::CharOrChar8_t T> LIBHYPHANET_EXPORT
  *
  * @return The decoded string.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] inline std::string
+[[nodiscard]] LIBHYPHANET_EXPORT inline std::string
 decode_str_standard(std::string_view encoded)
 {
     return decode_basicstr_standard<char>(encoded);
@@ -289,7 +289,7 @@ decode_str_standard(std::string_view encoded)
  *
  * @return The decoded std::u8string.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] inline std::u8string
+[[nodiscard]] LIBHYPHANET_EXPORT inline std::u8string
 decode_u8str_standard(std::string_view encoded)
 {
     return decode_basicstr_standard<char8_t>(encoded);

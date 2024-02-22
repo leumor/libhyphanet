@@ -36,7 +36,7 @@ namespace crypto {
  *
  * @return The encrypted data as a 32-byte array.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] std::array<std::byte, 32>
+[[nodiscard]] LIBHYPHANET_EXPORT std::array<std::byte, 32>
 rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
                         const std::array<std::byte, 32>& input);
 
@@ -54,7 +54,7 @@ rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
  *
  * @return The decrypted data as a 32-byte array.
  */
-LIBHYPHANET_EXPORT [[nodiscard]] std::array<std::byte, 32>
+[[nodiscard]] LIBHYPHANET_EXPORT std::array<std::byte, 32>
 rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
                         const std::array<std::byte, 32>& input);
 
@@ -136,7 +136,7 @@ namespace dsa {
      *
      * @return The private key in PKCS#8 format as a byte vector.
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
     priv_key_bytes_to_pkcs8(const std::vector<std::byte>& key_bytes);
 
     /**
@@ -150,7 +150,7 @@ namespace dsa {
      *
      * @return The public key in X.509 format as a byte vector.
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
     pub_key_bytes_to_x509(const std::vector<std::byte>& key_bytes);
 
     /**
@@ -199,7 +199,7 @@ namespace dsa {
      *
      * @return The public key bytes.
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
     make_pub_key(const std::vector<std::byte>& priv_key_bytes);
 
     /**
@@ -215,7 +215,7 @@ namespace dsa {
      *
      * @return The signature as a byte vector.
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
     sign(const std::vector<std::byte>& priv_key_bytes,
          const std::vector<std::byte>& message_bytes);
 
@@ -233,7 +233,7 @@ namespace dsa {
      *
      * @return `true` if the signature is valid, `false` otherwise.
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] bool
+    [[nodiscard]] LIBHYPHANET_EXPORT bool
     verify(const std::vector<std::byte>& pub_key_bytes,
            const std::vector<std::byte>& message_bytes,
            const std::vector<std::byte>& signature);
@@ -251,7 +251,7 @@ namespace dsa {
      *
      * @return The private key in MPI format as a byte vector.
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
     priv_key_bytes_to_mpi_bytes(const std::vector<std::byte>& priv_key_bytes);
 
     /**
@@ -264,7 +264,7 @@ namespace dsa {
      *
      * @return The DSA group parameters in MPI format as a byte vector.
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
     group_to_mpi_bytes();
 
     /**
@@ -280,7 +280,7 @@ namespace dsa {
      *
      * @return The public key in MPI format as a byte vector.
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
     pub_key_bytes_to_mpi_bytes(const std::vector<std::byte>& pub_key_bytes);
 
     /**
@@ -294,7 +294,7 @@ namespace dsa {
      *
      * @return The SHA-256 hash of the public key as a 32-byte array.
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] std::array<std::byte, 32>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::array<std::byte, 32>
     pub_key_hash(const std::vector<std::byte>& pub_key_bytes);
 
 } // namespace dsa

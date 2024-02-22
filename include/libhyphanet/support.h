@@ -108,7 +108,7 @@ namespace util {
      *
      * @return a copy of the trimmed string
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] inline std::string_view
+    [[nodiscard]] LIBHYPHANET_EXPORT inline std::string_view
     ltrim_copy(std::string_view s, std::string_view chars = " \t\r\v\n")
     {
         ltrim(s, chars);
@@ -124,7 +124,7 @@ namespace util {
      *
      * @return a copy of the trimmed string
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] inline std::string_view
+    [[nodiscard]] LIBHYPHANET_EXPORT inline std::string_view
     rtrim_copy(std::string_view s,
 
                std::string_view chars = " \t\r\v\n")
@@ -142,7 +142,7 @@ namespace util {
      *
      * @return a copy of the trimmed string
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] inline std::string_view
+    [[nodiscard]] LIBHYPHANET_EXPORT inline std::string_view
     trim_copy(std::string_view s, std::string_view chars = " \t\r\v\n")
     {
         trim(s, chars);
@@ -159,7 +159,7 @@ namespace util {
      *
      * @return bool true if the two underlying values are equal
      */
-    template<concepts::EnumWithInt E> LIBHYPHANET_EXPORT [[nodiscard]] bool
+    template<concepts::EnumWithInt E> [[nodiscard]] LIBHYPHANET_EXPORT bool
     compare_byte_enum(std::byte byte_value, E enum_value)
     {
         // Convert the enum class item to its underlying type using
@@ -184,7 +184,7 @@ namespace util {
      */
     template<typename T, typename R>
     requires concepts::RangeWithUnderlyingType<T, R>
-    LIBHYPHANET_EXPORT [[nodiscard]] bool in_range(const T& val, const R& arr)
+    [[nodiscard]] LIBHYPHANET_EXPORT bool in_range(const T& val, const R& arr)
     {
         auto it = std::ranges::find(arr, val);
         return it != arr.end();
@@ -219,7 +219,7 @@ namespace util {
      *
      * @return A vector of bytes representing the string.
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] inline std::vector<std::byte>
+    [[nodiscard]] LIBHYPHANET_EXPORT inline std::vector<std::byte>
     str_to_bytes(std::string_view str)
     {
         return basicstr_to_bytes(str);
@@ -232,7 +232,7 @@ namespace util {
      *
      * @return a vector of bytes representing the std::u8string
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] inline std::vector<std::byte>
+    [[nodiscard]] LIBHYPHANET_EXPORT inline std::vector<std::byte>
     u8str_to_bytes(std::u8string_view str)
     {
         return basicstr_to_bytes(str);
@@ -265,7 +265,7 @@ namespace util {
      *
      * @return the converted string
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] inline std::string
+    [[nodiscard]] LIBHYPHANET_EXPORT inline std::string
     bytes_to_str(const std::vector<std::byte>& bytes)
     {
         return bytes_to_basicstr<char>(bytes);
@@ -278,7 +278,7 @@ namespace util {
      *
      * @return the converted std::u8string
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] inline std::u8string
+    [[nodiscard]] LIBHYPHANET_EXPORT inline std::u8string
     bytes_to_u8str(const std::vector<std::byte>& bytes)
     {
         return bytes_to_basicstr<char8_t>(bytes);
@@ -291,7 +291,7 @@ namespace util {
      *
      * @return The converted std::u8string.
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] std::u8string
+    [[nodiscard]] LIBHYPHANET_EXPORT std::u8string
     str_to_u8str(std::string_view str);
 
     /**
@@ -301,16 +301,16 @@ namespace util {
      *
      * @return The converted std::string..
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] std::string
+    [[nodiscard]] LIBHYPHANET_EXPORT std::string
     u8str_to_str(std::u8string_view u8str);
 
-    LIBHYPHANET_EXPORT [[nodiscard]] std::array<unsigned char, 32>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::array<unsigned char, 32>
     bytes_to_chars(const std::array<std::byte, 32>& bytes);
 
-    LIBHYPHANET_EXPORT [[nodiscard]] std::array<std::byte, 32>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::array<std::byte, 32>
     chars_to_bytes(const std::array<unsigned char, 32>& chars);
 
-    LIBHYPHANET_EXPORT [[nodiscard]] std::vector<std::byte>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
     hex_to_bytes(std::string_view hex);
 
     template<typename T, std::size_t N> LIBHYPHANET_EXPORT
@@ -330,7 +330,7 @@ namespace util {
         return vec;
     }
 
-    template<class T, std::size_t N> LIBHYPHANET_EXPORT [[nodiscard]] bool
+    template<class T, std::size_t N> [[nodiscard]] LIBHYPHANET_EXPORT bool
     equal(const std::vector<T>& v, const std::array<T, N>& a)
     {
         if (v.size() != N) { return false; }
@@ -370,14 +370,14 @@ namespace url {
      *
      * @return std::string the translated utf-8 String.
      */
-    LIBHYPHANET_EXPORT [[nodiscard]] std::string
+    [[nodiscard]] LIBHYPHANET_EXPORT std::string
     url_decode(std::string_view str, bool tolerant = false);
 
     static const std::string safe_url_characters{
         "*-_./"
         "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"};
 
-    LIBHYPHANET_EXPORT [[nodiscard]] std::string
+    [[nodiscard]] LIBHYPHANET_EXPORT std::string
     url_encode(std::string_view uri, bool ascii, std::string_view force = "",
                std::string_view extra_safe_chars = "");
 } // namespace url
