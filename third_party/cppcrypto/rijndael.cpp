@@ -569,9 +569,9 @@ static const uint32_t IT[4][256] = {
     uint32_t t0, t1, t2, t3;
 
 bool rijndael128_128::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 4 /* Nk */; i++) {
         uint32_t val;
@@ -593,7 +593,7 @@ bool rijndael128_128::init(const unsigned char* key,
         w += 4;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
         KEYSWAP(10);
         KEYIMC(1);
@@ -962,9 +962,9 @@ void rijndael128_128::clear()
 }
 
 bool rijndael128_192::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 6 /* Nk */; i++) {
         uint32_t val;
@@ -991,7 +991,7 @@ bool rijndael128_192::init(const unsigned char* key,
         w += 6;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP(12);
@@ -1079,9 +1079,9 @@ void rijndael128_192::clear()
 }
 
 bool rijndael128_256::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 8 /* Nk */; i++) {
         uint32_t val;
@@ -1113,7 +1113,7 @@ bool rijndael128_256::init(const unsigned char* key,
         w += 8;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP(14);
@@ -1206,9 +1206,9 @@ void rijndael128_256::clear()
 }
 
 bool rijndael128_224::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 7 /* Nk */; i++) {
         uint32_t val;
@@ -1237,7 +1237,7 @@ bool rijndael128_224::init(const unsigned char* key,
         w += 7;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP(13);
@@ -1327,9 +1327,9 @@ void rijndael128_224::clear()
 }
 
 bool rijndael128_160::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 5 /* Nk */; i++) {
         uint32_t val;
@@ -1355,7 +1355,7 @@ bool rijndael128_160::init(const unsigned char* key,
         w += 5;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP(11);
@@ -1689,9 +1689,9 @@ void rijndael128_160::clear()
     }
 
 bool rijndael256_256::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 8 /* Nk */; i++) {
         uint32_t val;
@@ -1720,7 +1720,7 @@ bool rijndael256_256::init(const unsigned char* key,
         w += 8;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP256(14);
@@ -1818,9 +1818,9 @@ rijndael256_256::rijndael256_256()
 }
 
 bool rijndael256_128::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 4 /* Nk */; i++) {
         uint32_t val;
@@ -1842,7 +1842,7 @@ bool rijndael256_128::init(const unsigned char* key,
         w += 4;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP256(14);
@@ -1879,9 +1879,9 @@ rijndael256_128::rijndael256_128()
 }
 
 bool rijndael256_224::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 7 /* Nk */; i++) {
         uint32_t val;
@@ -1913,7 +1913,7 @@ bool rijndael256_224::init(const unsigned char* key,
         w += 7;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP256(14);
@@ -1951,9 +1951,9 @@ rijndael256_224::rijndael256_224()
 }
 
 bool rijndael256_160::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 5 /* Nk */; i++) {
         uint32_t val;
@@ -1976,7 +1976,7 @@ bool rijndael256_160::init(const unsigned char* key,
         w += 5;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP256(14);
@@ -2014,9 +2014,9 @@ rijndael256_160::rijndael256_160()
 }
 
 bool rijndael256_192::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 6 /* Nk */; i++) {
         uint32_t val;
@@ -2040,7 +2040,7 @@ bool rijndael256_192::init(const unsigned char* key,
         w += 6;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP256(14);
@@ -2269,9 +2269,9 @@ rijndael256_192::rijndael256_192()
     }
 
 bool rijndael192_128::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 4 /* Nk */; i++) {
         uint32_t val;
@@ -2296,7 +2296,7 @@ bool rijndael192_128::init(const unsigned char* key,
         w += 4;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
         KEYSWAP192(12);
         KEYIMC192(1);
@@ -2383,9 +2383,9 @@ void rijndael192_128::clear()
 }
 
 bool rijndael192_160::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 5 /* Nk */; i++) {
         uint32_t val;
@@ -2411,7 +2411,7 @@ bool rijndael192_160::init(const unsigned char* key,
         w += 5;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
         KEYSWAP192(12);
         KEYIMC192(1);
@@ -2498,9 +2498,9 @@ void rijndael192_160::clear()
 }
 
 bool rijndael192_192::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 6 /* Nk */; i++) {
         uint32_t val;
@@ -2524,7 +2524,7 @@ bool rijndael192_192::init(const unsigned char* key,
         w += 6;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
         KEYSWAP192(12);
         KEYIMC192(1);
@@ -2611,9 +2611,9 @@ void rijndael192_192::clear()
 }
 
 bool rijndael192_224::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 7 /* Nk */; i++) {
         uint32_t val;
@@ -2642,7 +2642,7 @@ bool rijndael192_224::init(const unsigned char* key,
         w += 7;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
         KEYSWAP192(13);
         KEYIMC192(1);
@@ -2732,9 +2732,9 @@ void rijndael192_224::clear()
 }
 
 bool rijndael192_256::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 8 /* Nk */; i++) {
         uint32_t val;
@@ -2767,7 +2767,7 @@ bool rijndael192_256::init(const unsigned char* key,
         w += 8;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
         KEYSWAP192(14);
         KEYIMC192(1);
@@ -3022,9 +3022,9 @@ void rijndael192_256::clear()
     }
 
 bool rijndael160_128::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 4 /* Nk */; i++) {
         uint32_t val;
@@ -3046,7 +3046,7 @@ bool rijndael160_128::init(const unsigned char* key,
         w += 4;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
         KEYSWAP160(11);
         KEYIMC160(1);
@@ -3130,9 +3130,9 @@ void rijndael160_128::clear()
 }
 
 bool rijndael160_160::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 5 /* Nk */; i++) {
         uint32_t val;
@@ -3155,7 +3155,7 @@ bool rijndael160_160::init(const unsigned char* key,
         w += 5;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
         KEYSWAP160(11);
         KEYIMC160(1);
@@ -3239,9 +3239,9 @@ void rijndael160_160::clear()
 }
 
 bool rijndael160_192::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 6 /* Nk */; i++) {
         uint32_t val;
@@ -3266,7 +3266,7 @@ bool rijndael160_192::init(const unsigned char* key,
         w += 6;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
         KEYSWAP160(12);
         KEYIMC160(1);
@@ -3353,9 +3353,9 @@ void rijndael160_192::clear()
 }
 
 bool rijndael160_224::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 7 /* Nk */; i++) {
         uint32_t val;
@@ -3384,7 +3384,7 @@ bool rijndael160_224::init(const unsigned char* key,
         w += 7;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
         KEYSWAP160(13);
         KEYIMC160(1);
@@ -3474,9 +3474,9 @@ void rijndael160_224::clear()
 }
 
 bool rijndael160_256::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 8 /* Nk */; i++) {
         uint32_t val;
@@ -3509,7 +3509,7 @@ bool rijndael160_256::init(const unsigned char* key,
         w += 8;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
         KEYSWAP160(14);
         KEYIMC160(1);
@@ -3822,9 +3822,9 @@ void rijndael160_256::clear()
     }
 
 bool rijndael224_128::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 4 /* Nk */; i++) {
         uint32_t val;
@@ -3847,7 +3847,7 @@ bool rijndael224_128::init(const unsigned char* key,
         w += 4;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP224(13);
@@ -3872,9 +3872,9 @@ bool rijndael224_128::init(const unsigned char* key,
 }
 
 bool rijndael224_160::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 5 /* Nk */; i++) {
         uint32_t val;
@@ -3900,7 +3900,7 @@ bool rijndael224_160::init(const unsigned char* key,
         w += 5;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP224(13);
@@ -3925,9 +3925,9 @@ bool rijndael224_160::init(const unsigned char* key,
 }
 
 bool rijndael224_192::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 6 /* Nk */; i++) {
         uint32_t val;
@@ -3954,7 +3954,7 @@ bool rijndael224_192::init(const unsigned char* key,
         w += 6;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP224(13);
@@ -3979,9 +3979,9 @@ bool rijndael224_192::init(const unsigned char* key,
 }
 
 bool rijndael224_224::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 7 /* Nk */; i++) {
         uint32_t val;
@@ -4010,7 +4010,7 @@ bool rijndael224_224::init(const unsigned char* key,
         w += 7;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP224(13);
@@ -4137,9 +4137,9 @@ rijndael224_192::rijndael224_192()
 }
 
 bool rijndael224_256::init(const unsigned char* key,
-                           block_cipher::direction direction)
+                           block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, direction);
+    if (impl_) return impl_->init(key, dir);
 
     for (int i = 0; i < 8 /* Nk */; i++) {
         uint32_t val;
@@ -4172,7 +4172,7 @@ bool rijndael224_256::init(const unsigned char* key,
         w += 8;
     }
 
-    if (direction == block_cipher::decryption) {
+    if (dir == block_cipher::decryption) {
         w = W_;
 
         KEYSWAP224(14);

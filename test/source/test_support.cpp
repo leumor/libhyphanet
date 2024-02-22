@@ -8,7 +8,6 @@
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <cstddef>
 #include <fmt/core.h>
-#include <fmt/format.h>
 #include <string>
 #include <string_view>
 #include <unicode/unistr.h>
@@ -51,7 +50,7 @@ bool are_correctly_encoded_decoded(
     return true;
 }
 
-TEST_CASE("url can be encoded and decoded", "[library][support]")
+TEST_CASE("url can be encoded and decoded", "[library][support]") // NOLINT
 {
     SECTION("simple decoding")
     {

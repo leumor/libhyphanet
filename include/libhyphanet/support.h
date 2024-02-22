@@ -317,7 +317,7 @@ namespace util {
         [[nodiscard]] std::array<T, N>
         vector_to_array(const std::vector<T>& vec)
     {
-        std::array<T, N> arr;
+        std::array<T, N> arr{};
         std::copy_n(vec.begin(), N, arr.begin());
         return arr;
     }

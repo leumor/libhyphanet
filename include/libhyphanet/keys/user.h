@@ -86,11 +86,12 @@ public:
         /**
          * @brief The cryptographic key for encrypting/decrypting content.
          */
-        std::array<std::byte, crypto_key_length> crypto_key;
+        std::array<std::byte, crypto_key_length> crypto_key{};
         /**
          * @brief The cryptographic algorithm used for encryption/decryption.
          */
-        Crypto_algorithm crypto_algorithm;
+        Crypto_algorithm crypto_algorithm{
+            Crypto_algorithm::algo_aes_pcfb_256_sha_256};
         /**
          * @brief Meta strings associated with the Key object.
          */

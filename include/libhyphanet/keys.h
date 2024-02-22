@@ -5,6 +5,7 @@
 #include <cryptopp/dsa.h>
 #include <cryptopp/gfpcrypt.h>
 #include <cstddef>
+#include <cstdint>
 #include <gsl/assert>
 #include <gsl/gsl>
 #include <libhyphanet/libhyphanet_export.h>
@@ -48,7 +49,7 @@ hypha:test.html
 @endverbatim
  *
  */
-enum class LIBHYPHANET_EXPORT Uri_type {
+enum class LIBHYPHANET_EXPORT Uri_type : std::uint8_t {
     usk, ///< [Updatable Subspace Key](#user::Usk)
     ssk, ///< [Signed Subspace Key](#user::Ssk)
     ksk, ///< [Keyword Signed Key](#user::Ksk)

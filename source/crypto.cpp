@@ -13,8 +13,6 @@
 #include <cryptopp/osrng.h>
 #include <cryptopp/queue.h>
 #include <cstddef>
-#include <fmt/core.h>
-#include <fmt/format.h>
 #include <iterator>
 #include <memory>
 #include <string>

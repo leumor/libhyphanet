@@ -6,7 +6,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cryptopp/gfpcrypt.h>
 #include <cryptopp/integer.h>
-#include <cryptopp/queue.h>
 #include <cstddef>
 #include <fmt/core.h>
 #include <fmt/format.h>
