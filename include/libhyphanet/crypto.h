@@ -166,9 +166,9 @@ namespace dsa {
      * big-endian encoded `x` values, and the public key bytes are big-endian
      * encoded `y` values.
      */
-    LIBHYPHANET_EXPORT
-    [[nodiscard]] std::pair<std::vector<std::byte>, std::vector<std::byte>>
-    generate_keys();
+    [[nodiscard]] LIBHYPHANET_EXPORT
+        std::pair<std::vector<std::byte>, std::vector<std::byte>>
+        generate_keys();
 
     /**
      * @brief Generates a pair of DSA private and public keys using a specified
@@ -183,9 +183,9 @@ namespace dsa {
      * @return A pair of vectors, where the first vector is the private key
      * bytes and the second is the public key bytes.
      */
-    LIBHYPHANET_EXPORT
-    [[nodiscard]] std::pair<std::vector<std::byte>, std::vector<std::byte>>
-    generate_keys(CryptoPP::RandomNumberGenerator& rng);
+    [[nodiscard]] LIBHYPHANET_EXPORT
+        std::pair<std::vector<std::byte>, std::vector<std::byte>>
+        generate_keys(CryptoPP::RandomNumberGenerator& rng);
 
     /**
      * @brief Creates a public key from a given private key bytes.
