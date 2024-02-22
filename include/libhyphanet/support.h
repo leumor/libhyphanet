@@ -82,7 +82,7 @@ namespace util {
                                          std::string_view chars = " \t\r\v\n")
     {
         s.remove_suffix(
-            std::min(s.size() - s.find_last_not_of(chars) - 1, s.size()));
+            (std::min)(s.size() - s.find_last_not_of(chars) - 1, s.size()));
     }
 
     /**
@@ -341,7 +341,7 @@ namespace util {
 } // namespace util
 
 namespace compressor {
-    enum class LIBHYPHANET_EXPORT Compressor_type {
+    enum class LIBHYPHANET_EXPORT Compressor_type : std::int8_t {
         nocomp = -1,
         gzip = 0,
         bzip2 = 1,
