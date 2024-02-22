@@ -2,6 +2,8 @@
 #define LIBHYPHANET_SUPPORT_H
 
 #include <algorithm>
+#include <array>
+#include <bit>
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
@@ -66,7 +68,7 @@ namespace util {
     LIBHYPHANET_EXPORT inline void ltrim(std::string_view& s,
                                          std::string_view chars = " \t\r\v\n")
     {
-        s.remove_prefix(std::min(s.find_first_not_of(chars), s.size()));
+        s.remove_prefix((std::min)(s.find_first_not_of(chars), s.size()));
     }
 
     /**

@@ -199,7 +199,7 @@ namespace dsa {
          * large prime numbers that define the finite field and subgroup used
          * for DSA operations.
          */
-        struct GroupParameters {
+        struct Group_parameters {
             CryptoPP::Integer p; ///< The prime modulus p.
             CryptoPP::Integer q; ///< The prime divisor q.
             CryptoPP::Integer g; ///< The base generator g.
@@ -213,7 +213,7 @@ namespace dsa {
          * specific DSA group. These parameters are used to initialize DSA key
          * objects for cryptographic operations.
          */
-        const GroupParameters group_big_a_params{
+        const Group_parameters group_big_a_params{
             CryptoPP::Integer{
                 "0x008608ac4f55361337f2a3e38ab1864ff3c98d66411d8d2afc9c526320c5"
                 "41f65078e86bc78494a5d73e4a9a67583f941f2993ed6c97dbc795dd88f091"

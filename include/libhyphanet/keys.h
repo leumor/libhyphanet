@@ -59,18 +59,17 @@ enum class LIBHYPHANET_EXPORT Uri_type : std::uint8_t {
 /**
  * @brief Mapping from Uri_type to string representation.
  */
-LIBHYPHANET_EXPORT static const std::map<Uri_type, std::string>
-    uri_type_to_string = {
-        {Uri_type::usk, "USK"},
-        {Uri_type::ssk, "SSK"},
-        {Uri_type::chk, "CHK"},
-        {Uri_type::ksk, "KSK"},
+static const std::map<Uri_type, std::string> uri_type_to_string = {
+    {Uri_type::usk, "USK"},
+    {Uri_type::ssk, "SSK"},
+    {Uri_type::chk, "CHK"},
+    {Uri_type::ksk, "KSK"},
 };
 
 /**
  * @brief Length of the cryptographic key.
  */
-LIBHYPHANET_EXPORT static const size_t crypto_key_length = 32;
+static const size_t crypto_key_length = 32;
 
 /**
  * @brief Struct to hold parameters for constructing a Uri object.

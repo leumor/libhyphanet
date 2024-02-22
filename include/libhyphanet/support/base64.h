@@ -6,12 +6,13 @@
 #include <optional>
 #include <string_view>
 #include <vector>
+
 namespace support::base64 {
 
 /**
  * @brief Freenet specific base64 alphabet
  */
-LIBHYPHANET_EXPORT static const std::string base64_alphabet_freenet{
+static const std::string base64_alphabet_freenet{
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012"
     "3456789~-"};
 
