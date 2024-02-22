@@ -111,8 +111,8 @@ find_package(Boost REQUIRED COMPONENTS)
 # target_link_libraries(libhyphanet_libhyphanet PRIVATE Boost::algorithm)
 target_include_directories(libhyphanet_libhyphanet PRIVATE ${Boost_INCLUDE_DIRS})
 
-find_package(ICU REQUIRED COMPONENTS i18n uc)
-target_link_libraries(libhyphanet_libhyphanet PRIVATE ICU::i18n ICU::uc)
+find_package(ICU REQUIRED COMPONENTS i18n uc data)
+target_link_libraries(libhyphanet_libhyphanet PRIVATE ICU::i18n ICU::uc ICU::data)
 
 # ---- Install rules ----
 if(NOT CMAKE_SKIP_INSTALL_RULES)
