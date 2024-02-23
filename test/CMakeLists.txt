@@ -14,6 +14,10 @@ endif()
 find_package(Catch2 REQUIRED)
 include(Catch)
 
+if(BUILD_SHARED_LIBS)
+  add_compile_definitions(libhyphanet_libhyphanet_EXPORTS)
+endif()
+
 # ---- Tests ----
 add_executable(libhyphanet_test
   source/libhyphanet_test.cpp
@@ -41,6 +45,8 @@ target_link_libraries(
   Catch2::Catch2WithMain
   cryptopp::cryptopp
   fmt::fmt
+  ICU::i18n ICU::uc ICU::data
+  objlib_cppcrypto
 )
 target_compile_features(libhyphanet_test PRIVATE cxx_std_20)
 
