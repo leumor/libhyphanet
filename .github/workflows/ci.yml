@@ -163,7 +163,7 @@ jobs:
         if: matrix.os == 'macos-14'
         run: |
           brew update
-          brew install autoconf-archive
+          brew install autoconf-archive pkg-config
 
       - name: Install vcpkg
         uses: friendlyanon/setup-vcpkg@v1
