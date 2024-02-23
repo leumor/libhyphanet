@@ -47,8 +47,9 @@ jobs:
     # edit the "<name>" placeholder to your GitHub name.
     # If you do not wish to use codecov, then simply delete this job from the
     # workflow.
-    if: github.repository_owner == '<name>'
-      && false
+    if: github.repository_owner == 'leumor'
+
+    env: { CXX: g++-13 }
 
     steps:
       - uses: actions/checkout@v3
@@ -56,6 +57,11 @@ jobs:
       - name: Install LCov
         run: sudo apt-get update -q
           && sudo apt-get install lcov -q -y
+
+      - name: Install autoconf-archive
+        run: |
+          sudo apt update
+          sudo apt install autoconf-archive
 
       - name: Install vcpkg
         uses: friendlyanon/setup-vcpkg@v1
