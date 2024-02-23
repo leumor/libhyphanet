@@ -160,7 +160,7 @@ jobs:
           sudo apt install autoconf-archive
 
       - name: Install autoconf-archive
-        if: matrix.os == 'macos-14-arm64'
+        if: matrix.os == 'macos-14'
         run: |
           brew update
           brew install autoconf-archive
