@@ -202,9 +202,9 @@ namespace util {
      *
      * @return a vector of bytes representing the string
      */
-    template<concepts::CharOrChar8_t T> LIBHYPHANET_EXPORT
-        [[nodiscard]] std::vector<std::byte>
-        basicstr_to_bytes(std::basic_string_view<T> str)
+    template<concepts::CharOrChar8_t T>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
+    basicstr_to_bytes(std::basic_string_view<T> str)
     {
         std::vector<std::byte> bytes;
         bytes.reserve(str.size());
@@ -249,9 +249,9 @@ namespace util {
      * @param bytes the vector of bytes to convert
      * @return std::string the converted string
      */
-    template<concepts::CharOrChar8_t T> LIBHYPHANET_EXPORT
-        [[nodiscard]] std::basic_string<T>
-        bytes_to_basicstr(const std::vector<std::byte>& bytes)
+    template<concepts::CharOrChar8_t T>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::basic_string<T>
+    bytes_to_basicstr(const std::vector<std::byte>& bytes)
     {
         std::basic_string<T> str;
         str.reserve(bytes.size());
@@ -315,18 +315,18 @@ namespace util {
     [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
     hex_to_bytes(std::string_view hex);
 
-    template<typename T, std::size_t N> LIBHYPHANET_EXPORT
-        [[nodiscard]] std::array<T, N>
-        vector_to_array(const std::vector<T>& vec)
+    template<typename T, std::size_t N>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::array<T, N>
+    vector_to_array(const std::vector<T>& vec)
     {
         std::array<T, N> arr{};
         std::copy_n(vec.begin(), N, arr.begin());
         return arr;
     }
 
-    template<typename T, std::size_t N> LIBHYPHANET_EXPORT
-        [[nodiscard]] std::vector<T>
-        array_to_vector(const std::array<T, N>& arr)
+    template<typename T, std::size_t N>
+    [[nodiscard]] LIBHYPHANET_EXPORT std::vector<T>
+    array_to_vector(const std::array<T, N>& arr)
     {
         std::vector<T> vec(arr.begin(), arr.end());
         return vec;

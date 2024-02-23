@@ -214,9 +214,9 @@ decode_standard(std::string_view encoded)
  *
  * @return The decoded basic string.
  */
-template<concepts::CharOrChar8_t T> LIBHYPHANET_EXPORT
-    [[nodiscard]] std::basic_string<T>
-    decode_basicstr_freenet(std::string_view encoded)
+template<concepts::CharOrChar8_t T>
+[[nodiscard]] LIBHYPHANET_EXPORT std::basic_string<T>
+decode_basicstr_freenet(std::string_view encoded)
 {
     auto decoded = decode_freenet(encoded);
 
@@ -261,9 +261,9 @@ decode_u8str_freenet(std::string_view encoded)
  *
  * @return The decoded basic string.
  */
-template<concepts::CharOrChar8_t T> LIBHYPHANET_EXPORT
-    [[nodiscard]] std::basic_string<T>
-    decode_basicstr_standard(std::string_view encoded)
+template<concepts::CharOrChar8_t T>
+[[nodiscard]] LIBHYPHANET_EXPORT std::basic_string<T>
+decode_basicstr_standard(std::string_view encoded)
 {
     auto decoded = decode_standard(encoded);
 
