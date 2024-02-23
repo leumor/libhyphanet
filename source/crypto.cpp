@@ -430,13 +430,17 @@ namespace dsa {
         DSA::PrivateKey priv_key;
         DSA::PublicKey pub_key;
 
-        while (!priv_key.Validate(rng, 3)) {
+        while (true) {
             // Generate Private Key
             priv_key.Initialize(rng, group_big_a_params.p, group_big_a_params.q,
                                 group_big_a_params.g);
 
             // Generate Public Key
             pub_key.AssignFrom(priv_key);
+
+            if (priv_key.Validate(rng, 3) && pub_key.Validate(rng, 3)) {
+                break;
+            }
         }
 
         return {priv_key_to_bytes(priv_key), pub_key_to_bytes(pub_key)};

@@ -164,7 +164,10 @@
         "dev-mode",
         "vcpkg",
         "vcpkg-win64-static"
-      ]
+      ],
+      "environment": {
+        "PATH": "${sourceDir}/build/Debug;$penv{PATH}"
+      }
     }
   ]
 }
