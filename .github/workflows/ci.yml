@@ -55,8 +55,10 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install LCov
-        run: sudo apt-get update -q
-          && sudo apt-get install lcov -q -y
+        run: |
+          sudo apt-get update -q
+          wget https://launchpad.net/ubuntu/+archive/primary/+files/lcov_2.0-4ubuntu1_all.deb
+          sudo apt install ./lcov_2.0-4ubuntu1_all.deb
 
       - name: Install autoconf-archive
         run: |
