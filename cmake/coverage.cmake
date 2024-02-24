@@ -5,6 +5,7 @@
 set(
     COVERAGE_TRACE_COMMAND
     lcov -c -q
+    --gcov-tool /usr/bin/gcov-13
     -o "${PROJECT_BINARY_DIR}/coverage.info"
     -d "${PROJECT_BINARY_DIR}"
     --include "${PROJECT_SOURCE_DIR}/*"
@@ -23,7 +24,6 @@ set(
 )
 
 # ---- Coverage target ----
-
 add_custom_target(
     coverage
     COMMAND ${COVERAGE_TRACE_COMMAND}
