@@ -2,8 +2,6 @@
 This code is released under Simplified BSD License (see license.txt).
 ******************************************************************************/
 
-#ifndef INCLUDE_CPUINFO_H
-#define INCLUDE_CPUINFO_H
 #ifndef CPPCRYPTO_CPUINFO_H
 #define CPPCRYPTO_CPUINFO_H
 
@@ -48,6 +46,4 @@ private:
 
 } // namespace cppcrypto
 
-#endif
-
-#endif /* INCLUDE_CPUINFO_H */
+#endif /* CPPCRYPTO_CPUINFO_H */

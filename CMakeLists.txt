@@ -70,6 +70,10 @@ if(NOT BUILD_SHARED_LIBS)
   target_compile_definitions(libhyphanet_libhyphanet PUBLIC LIBHYPHANET_STATIC_DEFINE)
 endif()
 
+if(ENABLE_COVERAGE)
+  target_compile_options(libhyphanet_libhyphanet PRIVATE -fkeep-inline-functions -fkeep-static-functions)
+endif()
+
 set_target_properties(
   libhyphanet_libhyphanet PROPERTIES
   C_VISIBILITY_PRESET hidden
