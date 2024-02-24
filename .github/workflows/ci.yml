@@ -83,8 +83,9 @@ jobs:
         run: cmake --build build/coverage -t coverage
 
       - name: Submit to codecov.io
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@@v4.0.1
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           file: build/coverage/coverage.info
 
   sanitize:
