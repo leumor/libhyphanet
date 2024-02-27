@@ -82,6 +82,12 @@ if(ENABLE_COVERAGE)
   target_compile_options(libhyphanet_libhyphanet PRIVATE -fkeep-inline-functions -fkeep-static-functions)
 endif()
 
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+    target_compile_options(libhyphanet_libhyphanet PRIVATE -maes)
+  endif()
+endif()
+
 set_target_properties(
   libhyphanet_libhyphanet PROPERTIES
   C_VISIBILITY_PRESET hidden
