@@ -35,7 +35,7 @@ if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386" OR ${CMAKE_SYSTEM_PROCESSOR} STREQU
     third_party/cppcrypto/rijndael-impl-aesni.cpp
   )
 
-  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     target_compile_options(objlib_cppcrypto PRIVATE -maes -msse4.1)
   endif()
 endif()
