@@ -138,56 +138,56 @@ namespace detail {
             }
 
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[0],
+                &(reinterpret_cast<__m128i*>(out))[0],
                 _mm_aesenclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data1_0, data2_0, BLEND_MASK),
                         RIJNDAEL256_MASK),
                     rk[j * 2 + 0]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[1],
+                &(reinterpret_cast<__m128i*>(out))[1],
                 _mm_aesenclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data2_0, data1_0, BLEND_MASK),
                         RIJNDAEL256_MASK),
                     rk[j * 2 + 1]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[2],
+                &(reinterpret_cast<__m128i*>(out))[2],
                 _mm_aesenclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data1_1, data2_1, BLEND_MASK),
                         RIJNDAEL256_MASK),
                     rk[j * 2 + 0]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[3],
+                &(reinterpret_cast<__m128i*>(out))[3],
                 _mm_aesenclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data2_1, data1_1, BLEND_MASK),
                         RIJNDAEL256_MASK),
                     rk[j * 2 + 1]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[4],
+                &(reinterpret_cast<__m128i*>(out))[4],
                 _mm_aesenclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data1_2, data2_2, BLEND_MASK),
                         RIJNDAEL256_MASK),
                     rk[j * 2 + 0]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[5],
+                &(reinterpret_cast<__m128i*>(out))[5],
                 _mm_aesenclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data2_2, data1_2, BLEND_MASK),
                         RIJNDAEL256_MASK),
                     rk[j * 2 + 1]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[6],
+                &(reinterpret_cast<__m128i*>(out))[6],
                 _mm_aesenclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data1_3, data2_3, BLEND_MASK),
                         RIJNDAEL256_MASK),
                     rk[j * 2 + 0]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[7],
+                &(reinterpret_cast<__m128i*>(out))[7],
                 _mm_aesenclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data2_3, data1_3, BLEND_MASK),
@@ -237,8 +237,8 @@ namespace detail {
         tmp2 = _mm_shuffle_epi8(tmp2, RIJNDAEL256_MASK);
         tmp1 = _mm_aesenclast_si128(tmp1, rk[j * 2 + 0]);
         tmp2 = _mm_aesenclast_si128(tmp2, rk[j * 2 + 1]);
-        _mm_storeu_si128(&(reinterpret_cast<const __m128i*>(out))[0], tmp1);
-        _mm_storeu_si128(&(reinterpret_cast<const __m128i*>(out))[1], tmp2);
+        _mm_storeu_si128(&(reinterpret_cast<__m128i*>(out))[0], tmp1);
+        _mm_storeu_si128(&(reinterpret_cast<__m128i*>(out))[1], tmp2);
     }
 
     void rijndael256_256_impl_aesni::decrypt_blocks(const unsigned char* in,
@@ -318,56 +318,56 @@ namespace detail {
             }
 
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[0],
+                &(reinterpret_cast<__m128i*>(out))[0],
                 _mm_aesdeclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data1_0, data2_0, BLEND_MASK_INV),
                         RIJNDAEL256_MASK_INV),
                     rk[j * 2 + 0]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[1],
+                &(reinterpret_cast<__m128i*>(out))[1],
                 _mm_aesdeclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data2_0, data1_0, BLEND_MASK_INV),
                         RIJNDAEL256_MASK_INV),
                     rk[j * 2 + 1]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[2],
+                &(reinterpret_cast<__m128i*>(out))[2],
                 _mm_aesdeclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data1_1, data2_1, BLEND_MASK_INV),
                         RIJNDAEL256_MASK_INV),
                     rk[j * 2 + 0]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[3],
+                &(reinterpret_cast<__m128i*>(out))[3],
                 _mm_aesdeclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data2_1, data1_1, BLEND_MASK_INV),
                         RIJNDAEL256_MASK_INV),
                     rk[j * 2 + 1]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[4],
+                &(reinterpret_cast<__m128i*>(out))[4],
                 _mm_aesdeclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data1_2, data2_2, BLEND_MASK_INV),
                         RIJNDAEL256_MASK_INV),
                     rk[j * 2 + 0]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[5],
+                &(reinterpret_cast<__m128i*>(out))[5],
                 _mm_aesdeclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data2_2, data1_2, BLEND_MASK_INV),
                         RIJNDAEL256_MASK_INV),
                     rk[j * 2 + 1]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[6],
+                &(reinterpret_cast<__m128i*>(out))[6],
                 _mm_aesdeclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data1_3, data2_3, BLEND_MASK_INV),
                         RIJNDAEL256_MASK_INV),
                     rk[j * 2 + 0]));
             _mm_storeu_si128(
-                &(reinterpret_cast<const __m128i*>(out))[7],
+                &(reinterpret_cast<__m128i*>(out))[7],
                 _mm_aesdeclast_si128(
                     _mm_shuffle_epi8(
                         _mm_blendv_epi8(data2_3, data1_3, BLEND_MASK_INV),
@@ -417,8 +417,8 @@ namespace detail {
         tmp2 = _mm_shuffle_epi8(tmp2, RIJNDAEL256_MASK_INV);
         tmp1 = _mm_aesdeclast_si128(tmp1, rk[j * 2 + 0]);
         tmp2 = _mm_aesdeclast_si128(tmp2, rk[j * 2 + 1]);
-        _mm_storeu_si128(&(reinterpret_cast<const __m128i*>(out))[0], tmp1);
-        _mm_storeu_si128(&(reinterpret_cast<const __m128i*>(out))[1], tmp2);
+        _mm_storeu_si128(&(reinterpret_cast<__m128i*>(out))[0], tmp1);
+        _mm_storeu_si128(&(reinterpret_cast<__m128i*>(out))[1], tmp2);
     }
 
 } // namespace detail
