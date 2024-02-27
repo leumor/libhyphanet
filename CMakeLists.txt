@@ -36,7 +36,7 @@ if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386" OR ${CMAKE_SYSTEM_PROCESSOR} STREQU
   )
 
   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    target_compile_options(objlib_cppcrypto PRIVATE -maes)
+    target_compile_options(objlib_cppcrypto PRIVATE -maes -msse4.1)
   endif()
 endif()
 
