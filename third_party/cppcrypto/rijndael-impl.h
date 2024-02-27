@@ -50,7 +50,7 @@ namespace detail {
         void decrypt_blocks(const unsigned char* in, unsigned char* out,
                             size_t n) override;
     };
-#endif;
+#endif
 } // namespace detail
 } // namespace cppcrypto
 

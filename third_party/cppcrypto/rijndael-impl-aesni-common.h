@@ -45,24 +45,6 @@ namespace detail {
     KEY_256_ASSIST_2(&temp1, &temp3);                                          \
     rk[idx + 1] = temp3;
 
-    inline static __m128i mm_blend_int64(__m128i t1, __m128i t2, const int mask)
-    {
-        __m128d f1 = _mm_castsi128_pd(t1);
-        __m128d f2 = _mm_castsi128_pd(t2);
-        f1 = _mm_blend_pd(f1, f2, 1);
-        return _mm_castpd_si128(f1);
-    }
-
-    inline static __m128i mm_blend_shuffle_int64(__m128i t1, __m128i t2,
-                                                 const int mask)
-    {
-        __m128d f1 = _mm_castsi128_pd(t1);
-        __m128d f2 = _mm_castsi128_pd(t2);
-        f1 = _mm_blend_pd(f1, f2, 1);
-        f1 = _mm_shuffle_pd(f1, f1, 1);
-        return _mm_castpd_si128(f1);
-    }
-
 } // namespace detail
 } // namespace cppcrypto
 
