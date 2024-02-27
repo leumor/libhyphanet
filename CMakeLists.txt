@@ -34,6 +34,10 @@ if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386" OR ${CMAKE_SYSTEM_PROCESSOR} STREQU
     third_party/cppcrypto/rijndael-impl-aesni-common.h
     third_party/cppcrypto/rijndael-impl-aesni.cpp
   )
+
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    target_compile_options(objlib_cppcrypto PRIVATE -maes)
+  endif()
 endif()
 
 file(GLOB_RECURSE cppcrypto_files third_party/cppcrypto/*)
@@ -80,12 +84,6 @@ endif()
 
 if(ENABLE_COVERAGE)
   target_compile_options(libhyphanet_libhyphanet PRIVATE -fkeep-inline-functions -fkeep-static-functions)
-endif()
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-    target_compile_options(libhyphanet_libhyphanet PRIVATE -maes)
-  endif()
 endif()
 
 set_target_properties(
