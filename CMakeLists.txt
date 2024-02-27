@@ -30,7 +30,7 @@ add_library(objlib_cppcrypto OBJECT
 )
 
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386" OR ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-  target_sources(objlib_cppcrypto OBJECT
+  target_sources(objlib_cppcrypto PRIVATE
     third_party/cppcrypto/rijndael-impl-aesni-common.h
     third_party/cppcrypto/rijndael-impl-aesni.cpp
   )
