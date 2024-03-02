@@ -68,7 +68,7 @@ namespace util {
     LIBHYPHANET_EXPORT inline void ltrim(std::string_view& s,
                                          std::string_view chars = " \t\r\v\n")
     {
-        s.remove_prefix((std::min)(s.find_first_not_of(chars), s.size()));
+        s.remove_prefix(std::min(s.find_first_not_of(chars), s.size()));
     }
 
     /**
@@ -82,7 +82,7 @@ namespace util {
                                          std::string_view chars = " \t\r\v\n")
     {
         s.remove_suffix(
-            (std::min)(s.size() - s.find_last_not_of(chars) - 1, s.size()));
+            std::min(s.size() - s.find_last_not_of(chars) - 1, s.size()));
     }
 
     /**

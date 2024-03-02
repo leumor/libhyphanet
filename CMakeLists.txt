@@ -78,6 +78,9 @@ generate_export_header(
   CUSTOM_CONTENT_FROM_VARIABLE pragma_suppress_c4251
 )
 
+# Fix Windows build of std::min and std::max which has min/max macro by default
+target_compile_definitions(libhyphanet_libhyphanet PRIVATE NOMINMAX)
+
 if(NOT BUILD_SHARED_LIBS)
   target_compile_definitions(libhyphanet_libhyphanet PUBLIC LIBHYPHANET_STATIC_DEFINE)
 endif()
