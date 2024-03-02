@@ -50,6 +50,9 @@ target_link_libraries(
 )
 target_compile_features(libhyphanet_test PRIVATE cxx_std_20)
 
+# Fix Windows build of std::min and std::max which has min/max macro by default
+target_compile_definitions(libhyphanet_test PRIVATE NOMINMAX)
+
 catch_discover_tests(libhyphanet_test)
 
 # ---- End-of-file commands ----
