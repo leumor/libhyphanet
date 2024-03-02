@@ -10,8 +10,11 @@
 #include <cryptopp/filters.h>
 #include <cryptopp/gfpcrypt.h>
 #include <cryptopp/integer.h>
+#include <cryptopp/modes.h>
 #include <cryptopp/osrng.h>
 #include <cryptopp/queue.h>
+#include <cryptopp/secblock.h>
+#include <cryptopp/seckey.h>
 #include <cstddef>
 #include <iterator>
 #include <memory>
@@ -21,40 +24,6 @@
 #include <vector>
 
 namespace crypto {
-std::array<std::byte, 32>
-rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
-                        const std::array<std::byte, 32>& input)
-{
-    using namespace cppcrypto;
-    using namespace support::util;
-
-    auto rijndael = std::make_unique<rijndael256_256>();
-    rijndael->init(bytes_to_chars(key).data(),
-                   block_cipher::direction::encryption);
-
-    std::array<unsigned char, 32> output{};
-    rijndael->encrypt_block(bytes_to_chars(input).data(), output.data());
-
-    return chars_to_bytes(output);
-}
-
-std::array<std::byte, 32>
-rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
-                        const std::array<std::byte, 32>& input)
-{
-    using namespace cppcrypto;
-    using namespace support::util;
-
-    auto rijndael = std::make_unique<rijndael256_256>();
-    rijndael->init(bytes_to_chars(key).data(),
-                   block_cipher::direction::decryption);
-
-    std::array<unsigned char, 32> output{};
-    rijndael->decrypt_block(bytes_to_chars(input).data(), output.data());
-
-    return chars_to_bytes(output);
-}
-
 namespace {
     /**
      * @brief Converts a vector of CryptoPP bytes to a vector of std::byte.
@@ -67,7 +36,7 @@ namespace {
      *
      * @return A vector of std::byte.
      */
-    std::vector<std::byte>
+    [[nodiscard]] std::vector<std::byte>
     cryptoppbytes_to_bytes(const std::vector<CryptoPP::byte>& cryptopp_bytes)
     {
         std::vector<std::byte> std_bytes;
@@ -90,7 +59,7 @@ namespace {
      *
      * @return A vector of CryptoPP::byte.
      */
-    std::vector<CryptoPP::byte>
+    [[nodiscard]] std::vector<CryptoPP::byte>
     bytes_to_cryptoppbytes(const std::vector<std::byte>& bytes)
     {
         std::vector<CryptoPP::byte> cryptopp_bytes;
@@ -99,6 +68,25 @@ namespace {
             bytes, std::back_inserter(cryptopp_bytes),
             [](std::byte b) { return std::bit_cast<CryptoPP::byte>(b); });
         return cryptopp_bytes;
+    }
+
+    template<std::size_t N>
+    [[nodiscard]] std::array<std::byte, N> cryptoppbytearr_to_bytearr(
+        const std::array<CryptoPP::byte, N>& cryptopp_bytearr)
+    {
+        std::array<std::byte, N> bytearr;
+        std::ranges::copy(cryptopp_bytearr, bytearr.begin());
+        return bytearr;
+    }
+
+    template<std::size_t N> [[nodiscard]] std::array<CryptoPP::byte, N>
+    bytearr_to_cryptoppbytearr(const std::array<std::byte, N>& bytearr)
+    {
+        std::array<CryptoPP::byte, N> cryptopp_bytearr{};
+        std::ranges::transform(
+            bytearr, cryptopp_bytearr.begin(),
+            [](std::byte b) { return std::bit_cast<CryptoPP::byte>(b); });
+        return cryptopp_bytearr;
     }
 
     /**
@@ -113,7 +101,7 @@ namespace {
      *
      * @return A pointer to the converted CryptoPP::byte array.
      */
-    const CryptoPP::byte*
+    [[nodiscard]] const CryptoPP::byte*
     bytes_to_cryptoppbytes_ptr(const std::vector<std::byte>& bytes)
     {
         return std::bit_cast<const CryptoPP::byte*>(bytes.data());
@@ -130,7 +118,8 @@ namespace {
      *
      * @return A vector of std::byte.
      */
-    std::vector<std::byte> bytequeue_to_bytes(CryptoPP::ByteQueue& queue)
+    [[nodiscard]] std::vector<std::byte>
+    bytequeue_to_bytes(CryptoPP::ByteQueue& queue)
     {
         std::vector<CryptoPP::byte> cryptopp_bytes;
 
@@ -170,7 +159,235 @@ namespace {
         return cryptoppbytes_to_bytes(bytes);
     }
 
+    class Rijndael256_256_info : public CryptoPP::FixedBlockSize<32>,
+                                 public CryptoPP::FixedKeyLength<32> {
+    public:
+        static const char* CRYPTOPP_API StaticAlgorithmName() // NOLINT
+        {
+            return "Rijndael256_256";
+        }
+    };
+
+    class Rijndael256_256 : public Rijndael256_256_info,
+                            public CryptoPP::BlockCipherDocumentation {
+        class Base : public CryptoPP::BlockCipherImpl<Rijndael256_256_info> {
+        public:
+            void
+            UncheckedSetKey(const CryptoPP::byte* user_key,
+                            unsigned int key_length,
+                            const CryptoPP::NameValuePairs& /*unused*/) override
+            {
+                AssertValidKeyLength(key_length);
+                key_.Assign(user_key, key_length);
+            }
+        protected:
+            [[nodiscard]] const CryptoPP::SecByteBlock& get_key() const
+            {
+                return key_;
+            }
+        private:
+            CryptoPP::SecByteBlock key_;
+        };
+
+        class Enc : public Base {
+        public:
+            void ProcessAndXorBlock(const CryptoPP::byte* in_block,
+                                    const CryptoPP::byte* xor_block,
+                                    CryptoPP::byte* out_block) const override
+            {
+                auto key = get_key();
+                std::array<std::byte, 32> key_array{};
+                std::ranges::transform(key, key_array.begin(),
+                                       [](CryptoPP::byte b) {
+                                           return std::bit_cast<std::byte>(b);
+                                       });
+
+                std::array<std::byte, 32> input_array{};
+                std::transform(in_block, in_block + 32, input_array.begin(),
+                               [](CryptoPP::byte b) {
+                                   return std::bit_cast<std::byte>(b);
+                               });
+
+                auto encrypted
+                    = rijndael256_256_encrypt(key_array, input_array);
+
+                if (xor_block != nullptr) {
+                    std::transform(
+                        std::begin(encrypted),
+                        std::end(encrypted), // Range of elements to transform
+                        xor_block, // Start of second range or nullptr
+                        out_block, // Destination range
+                        [](auto enc,
+                           auto xor_val) { // Lambda to process each element
+                            auto b = std::bit_cast<CryptoPP::byte>(enc);
+                            return b ^ xor_val;
+                        });
+                }
+                else {
+                    std::transform(
+                        std::begin(encrypted),
+                        std::end(encrypted), // Range of elements to transform
+                        out_block, // Destination range
+                        [](auto enc) { // Lambda to process each element
+                            auto b = std::bit_cast<CryptoPP::byte>(enc);
+                            return b;
+                        });
+                }
+            }
+        };
+
+        class Dec : public Base {
+            void ProcessAndXorBlock(const CryptoPP::byte* in_block,
+                                    const CryptoPP::byte* xor_block,
+                                    CryptoPP::byte* out_block) const override
+            {
+                auto key = get_key();
+                std::array<std::byte, 32> key_array{};
+                std::ranges::transform(key, key_array.begin(),
+                                       [](CryptoPP::byte b) {
+                                           return std::bit_cast<std::byte>(b);
+                                       });
+
+                std::array<std::byte, 32> input_array{};
+                std::transform(in_block, in_block + 32, input_array.begin(),
+                               [](CryptoPP::byte b) {
+                                   return std::bit_cast<std::byte>(b);
+                               });
+
+                auto decrypted
+                    = rijndael256_256_decrypt(key_array, input_array);
+
+                if (xor_block != nullptr) {
+                    std::transform(
+                        std::begin(decrypted),
+                        std::end(decrypted), // Range of elements to transform
+                        xor_block, // Start of second range or nullptr
+                        out_block, // Destination range
+                        [xor_block](
+                            auto enc,
+                            auto xor_val) { // Lambda to process each element
+                            auto b = std::bit_cast<CryptoPP::byte>(enc);
+                            return b ^ xor_val;
+                        });
+                }
+                else {
+                    std::transform(
+                        std::begin(decrypted),
+                        std::end(decrypted), // Range of elements to transform
+                        out_block, // Destination range
+                        [](auto enc) { // Lambda to process each element
+                            auto b = std::bit_cast<CryptoPP::byte>(enc);
+                            return b;
+                        });
+                }
+            }
+        };
+    public:
+        using Encryption
+            = CryptoPP::BlockCipherFinal<CryptoPP::ENCRYPTION, Enc>;
+        using Decryption
+            = CryptoPP::BlockCipherFinal<CryptoPP::ENCRYPTION, Dec>;
+    };
+
 } // namespace
+
+std::array<std::byte, 32>
+rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
+                        const std::array<std::byte, 32>& input)
+{
+    using namespace cppcrypto;
+    using namespace support::util;
+
+    auto rijndael = std::make_unique<rijndael256_256>();
+    rijndael->init(bytes_to_chars(key).data(),
+                   block_cipher::direction::encryption);
+
+    std::array<unsigned char, 32> output{};
+    rijndael->encrypt_block(bytes_to_chars(input).data(), output.data());
+
+    return chars_to_bytes(output);
+}
+
+std::array<std::byte, 32>
+rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
+                        const std::array<std::byte, 32>& input)
+{
+    using namespace cppcrypto;
+    using namespace support::util;
+
+    auto rijndael = std::make_unique<rijndael256_256>();
+    rijndael->init(bytes_to_chars(key).data(),
+                   block_cipher::direction::decryption);
+
+    std::array<unsigned char, 32> output{};
+    rijndael->decrypt_block(bytes_to_chars(input).data(), output.data());
+
+    return chars_to_bytes(output);
+}
+
+std::vector<std::byte>
+rijndael256_256_pcfb_encrypt(const std::array<std::byte, 32>& key,
+                             const std::array<std::byte, 32>& iv,
+                             const std::vector<std::byte>& input)
+{
+    auto key_bytes = bytearr_to_cryptoppbytearr(key);
+    CryptoPP::SecByteBlock key_cryptopp{key_bytes.data(), key_bytes.size()};
+
+    auto iv_bytes = bytearr_to_cryptoppbytearr(iv);
+    std::vector<CryptoPP::byte> cipher;
+
+    try {
+        CryptoPP::CFB_Mode<Rijndael256_256>::Encryption enc;
+        enc.SetKeyWithIV(key_cryptopp, key_cryptopp.size(), iv_bytes.data(),
+                         iv_bytes.size());
+
+        auto input_cryptopp = bytes_to_cryptoppbytes_ptr(input);
+
+        const CryptoPP::ArraySource ss1(
+            input_cryptopp, input.size(), true,
+            new CryptoPP::StreamTransformationFilter(
+                enc,
+                new CryptoPP::VectorSink(cipher)) // StreamTransformationFilter
+        ); // StringSource
+    }
+    catch (CryptoPP::Exception& e) {
+        throw Encryption_error{e.what()};
+    }
+
+    return cryptoppbytes_to_bytes(cipher);
+}
+
+std::vector<std::byte>
+rijndael256_256_pcfb_decrypt(const std::array<std::byte, 32>& key,
+                             const std::array<std::byte, 32>& iv,
+                             const std::vector<std::byte>& input)
+{
+    auto key_bytes = bytearr_to_cryptoppbytearr(key);
+    CryptoPP::SecByteBlock key_cryptopp{key_bytes.data(), key_bytes.size()};
+
+    auto iv_bytes = bytearr_to_cryptoppbytearr(iv);
+    std::vector<CryptoPP::byte> plain;
+
+    try {
+        CryptoPP::CFB_Mode<Rijndael256_256>::Decryption dec;
+        dec.SetKeyWithIV(key_cryptopp, key_cryptopp.size(), iv_bytes.data(),
+                         iv_bytes.size());
+
+        auto input_cryptopp = bytes_to_cryptoppbytes_ptr(input);
+
+        const CryptoPP::ArraySource ss1(
+            input_cryptopp, input.size(), true,
+            new CryptoPP::StreamTransformationFilter(
+                dec,
+                new CryptoPP::VectorSink(plain)) // StreamTransformationFilter
+        ); // StringSource
+    }
+    catch (CryptoPP::Exception& e) {
+        throw Decryption_error{e.what()};
+    }
+
+    return cryptoppbytes_to_bytes(plain);
+}
 
 void Sha256::update(const std::vector<std::byte>& data)
 {

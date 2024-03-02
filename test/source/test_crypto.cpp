@@ -47,6 +47,35 @@ TEST_CASE("rijndael256_256", "[library][crypto]")
         = crypto::rijndael256_256_decrypt(key, cipher);
 
     REQUIRE(decrypted == plain);
+
+    auto pfcb_256_encrypt_key = support::util::vector_to_array<std::byte, 32>(
+        support::util::hex_to_bytes("603deb1015ca71be2b73aef0857d77811f352c"
+                                    "073b6108d72d9810a30914dff4"));
+    auto pfcb_256_encrypt_iv = support::util::vector_to_array<
+        std::byte, 32>(support::util::hex_to_bytes(
+        "f0f1f2f3f4f5f6f7f8f9fafbfcfdfefff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff"));
+
+    auto pcfb_256_encrypt_plaintext = support::util::hex_to_bytes(
+        "6bc1bee22e409f96e93d7e117393172aae2d8a571e03ac9c9eb76fac45af8e5130c81c"
+        "46a35ce411e5fbc1191a0a52eff69f2445df4f9b17ad2b417be66c3710");
+
+    auto pcfb_256_encrypt_ciphertext = support::util::hex_to_bytes(
+        "c964b00326e216214f1a68f5b08726081b403c92fe02898664a81f5bbbbf8341fc1d04"
+        "b2c1addfb826cca1eab68131272751b9d6cd536f78059b10b4867dbbd9");
+
+    auto cipher_text = crypto::rijndael256_256_pcfb_encrypt(
+        pfcb_256_encrypt_key, pfcb_256_encrypt_iv, pcfb_256_encrypt_plaintext);
+
+    fmt::println("PCFB 256 Cipher text: {:02x}", fmt::join(cipher_text, " "));
+
+    REQUIRE(cipher_text == pcfb_256_encrypt_ciphertext);
+
+    auto plain_text = crypto::rijndael256_256_pcfb_decrypt(
+        pfcb_256_encrypt_key, pfcb_256_encrypt_iv, cipher_text);
+
+    fmt::println("PCFB 256 Plain text: {:02x}", fmt::join(plain_text, " "));
+
+    REQUIRE(plain_text == pcfb_256_encrypt_plaintext);
 }
 
 TEST_CASE("DSA", "[library][crypto]")

@@ -3,8 +3,8 @@ This code is written by kerukuro for cppcrypto library
 (http://cppcrypto.sourceforge.net/) and released into public domain.
 */
 
-#ifndef INCLUDE_RIJNDAEL_IMPL_H
-#define INCLUDE_RIJNDAEL_IMPL_H
+#ifndef CPPCRYPTO_RIJNDAEL_IMPL_H
+#define CPPCRYPTO_RIJNDAEL_IMPL_H
 
 #include "block_cipher.h"
 #include <stdint.h>
@@ -54,4 +54,4 @@ namespace detail {
 } // namespace detail
 } // namespace cppcrypto
 
-#endif /* INCLUDE_RIJNDAEL_IMPL_H */
+#endif /* CPPCRYPTO_RIJNDAEL_IMPL_H */

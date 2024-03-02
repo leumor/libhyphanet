@@ -22,6 +22,16 @@
  */
 namespace crypto {
 
+class LIBHYPHANET_EXPORT Encryption_error : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+};
+
+class LIBHYPHANET_EXPORT Decryption_error : public std::runtime_error {
+public:
+    using std::runtime_error::runtime_error;
+};
+
 /**
  * @brief Encrypts data using the Rijndael algorithm with a 256-bit key and
  * block size.
@@ -58,12 +68,23 @@ rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
 rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
                         const std::array<std::byte, 32>& input);
 
+[[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
+rijndael256_256_pcfb_encrypt(const std::array<std::byte, 32>& key,
+                             const std::array<std::byte, 32>& iv,
+                             const std::vector<std::byte>& input);
+
+[[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
+rijndael256_256_pcfb_decrypt(const std::array<std::byte, 32>& key,
+                             const std::array<std::byte, 32>& iv,
+                             const std::vector<std::byte>& input);
+
 /**
  * @brief Class for computing SHA-256 hashes.
  *
  * @details
- * This class provides functionality to compute SHA-256 hashes of input data. It
- * supports updating the hash with multiple inputs before finalizing the digest.
+ * This class provides functionality to compute SHA-256 hashes of input
+ * data. It supports updating the hash with multiple inputs before
+ * finalizing the digest.
  */
 class LIBHYPHANET_EXPORT Sha256 {
 public:
