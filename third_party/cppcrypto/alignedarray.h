@@ -8,7 +8,7 @@ This code is written by kerukuro for cppcrypto library
 
 #include "portability.h"
 #include <algorithm>
-#include <memory>
+#include <cstring>
 #include <stdlib.h>
 
 namespace cppcrypto {

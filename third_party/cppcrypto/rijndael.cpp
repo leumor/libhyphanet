@@ -7,7 +7,7 @@ This code is written by kerukuro for cppcrypto library
 #include "cpuinfo.h"
 #include "portability.h"
 #include <algorithm>
-#include <memory>
+#include <cstring>
 #include <stdio.h>
 #include <stdlib.h>
 

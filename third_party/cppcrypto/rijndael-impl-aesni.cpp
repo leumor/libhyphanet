@@ -7,7 +7,7 @@ This code is written by kerukuro for cppcrypto library
 #include "portability.h"
 #include "rijndael-impl-aesni-common.h"
 #include "rijndael-impl.h"
-#include <memory>
+#include <cstring>
 #include <smmintrin.h>
 #include <wmmintrin.h>
 
