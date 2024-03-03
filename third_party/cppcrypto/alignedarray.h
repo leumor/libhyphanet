@@ -19,30 +19,22 @@ public:
         auto size = (sizeof(T) * N / A + 1) * A;
         t = static_cast<T*>(aligned_allocate(size, A));
     }
-    ~aligned_pod_array() { reset(); }
-    explicit(false) operator T*() { return t; }
-    T* get() { return t; }
-    const T* get() const { return t; }
-    void reset()
+    ~aligned_pod_array()
     {
         if (t) {
             aligned_deallocate(t);
             t = nullptr;
         }
     }
+
+    explicit(false) operator T*() { return t; }
+    T* get() { return t; }
+    const T* get() const { return t; }
     size_t size() const { return N; }
     size_t bytes() const { return sizeof(T) * N; }
 
-    aligned_pod_array(aligned_pod_array&& other) noexcept: t{other.t}
-    {
-        other.t = nullptr;
-    }
-
-    aligned_pod_array& operator=(aligned_pod_array&& other) noexcept
-    {
-        std::swap(t, other.t);
-        return *this;
-    }
+    aligned_pod_array(aligned_pod_array&& other) noexcept = default;
+    aligned_pod_array& operator=(aligned_pod_array&& other) noexcept = default;
 
     aligned_pod_array(const aligned_pod_array& other)
     {
