@@ -44,7 +44,7 @@ private:
         std::bitset<32> edx81_;
     };
 
-    static const cpu_info_impl impl_;
+    static inline const cpu_info_impl impl_;
 };
 
 static const uint32_t RC[]
