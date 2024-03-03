@@ -36,6 +36,8 @@ namespace detail {
         }
 
         [[nodiscard]] detail::rijndael_impl* get_impl() const { return impl_; }
+
+        void set_impl(detail::rijndael_impl* impl) { impl_ = impl; }
     private:
         aligned_pod_array<uint32_t, 120, 64> W_;
         detail::rijndael_impl* impl_{nullptr};
