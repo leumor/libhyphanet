@@ -43,7 +43,7 @@ static inline void KEY_256_ASSIST_2(const __m128i* temp1, __m128i* temp3)
     KEY_256_ASSIST_1(&temp1, &temp2);                                          \
     rk[idx] = temp1;                                                           \
     KEY_256_ASSIST_2(&temp1, &temp3);                                          \
-    rk[idx + 1] = temp3;
+    rk[idx + 1] = temp3
 
 } // namespace cppcrypto::detail
 
