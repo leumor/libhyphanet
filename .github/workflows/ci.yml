@@ -17,10 +17,10 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
-        with: { python-version: "3.8" }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
 
       - name: Install codespell
         run: pip3 install codespell
@@ -52,7 +52,7 @@ jobs:
     env: { CXX: g++-13 }
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install LCov
         run: |
@@ -96,7 +96,7 @@ jobs:
     env: { CXX: clang++-18 }
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install Clang 18
         run: |
@@ -146,7 +146,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set Environment Variables
         if: matrix.os == 'ubuntu-22.04'
@@ -226,10 +226,10 @@ jobs:
       && false
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v4
-        with: { python-version: "3.8" }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
 
       - name: Install m.css dependencies
         run: pip3 install jinja2 Pygments
