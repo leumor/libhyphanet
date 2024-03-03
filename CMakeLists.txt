@@ -22,7 +22,6 @@ add_library(objlib_cppcrypto OBJECT
   third_party/cppcrypto/alignedarray.h
   third_party/cppcrypto/block_cipher.cpp
   third_party/cppcrypto/block_cipher.h
-  third_party/cppcrypto/cpuinfo.h
   third_party/cppcrypto/portability.h
   third_party/cppcrypto/rijndael.h
   third_party/cppcrypto/rijndael.cpp

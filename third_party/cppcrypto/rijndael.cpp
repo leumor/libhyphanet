@@ -4,14 +4,49 @@ This code is written by kerukuro for cppcrypto library
 */
 
 #include "rijndael.h"
-#include "cpuinfo.h"
 #include "portability.h"
 #include <algorithm>
+#include <array>
+#include <bitset>
 #include <cstring>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
+#include <vector>
 
 namespace cppcrypto {
+class cpu_info {
+    class cpu_info_impl;
+public:
+    static bool sse2() { return impl_.edx1_[26]; }
+    static bool sse41() { return impl_.ecx1_[19]; }
+    static bool avx() { return impl_.ecx1_[28]; }
+    static bool avx2() { return impl_.ebx7_[5]; }
+    static bool bmi2() { return impl_.ebx7_[8]; }
+    static bool bmi1() { return impl_.ebx7_[3]; }
+    static bool ssse3() { return impl_.ecx1_[9]; }
+    static bool aesni() { return impl_.ecx1_[25]; }
+    static bool mmx() { return impl_.edx1_[23]; }
+    static bool pclmulqdq() { return impl_.ecx1_[1]; }
+private:
+    class cpu_info_impl {
+    public:
+        cpu_info_impl();
+
+        void enable();
+        void disable();
+
+        std::bitset<32> ecx1_;
+        std::bitset<32> edx1_;
+        std::bitset<32> ebx7_;
+        std::bitset<32> ecx7_;
+        std::bitset<32> ecx81_;
+        std::bitset<32> edx81_;
+    };
+
+    static const cpu_info_impl impl_;
+};
+
 static const uint32_t RC[]
     = {0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000, 0x20000000,
        0x40000000, 0x80000000, 0x1b000000, 0x36000000, 0x6c000000, 0xd8000000,
