@@ -33,12 +33,12 @@ private:
         void enable();
         void disable();
 
-        std::bitset<32> ecx1_;
-        std::bitset<32> edx1_;
-        std::bitset<32> ebx7_;
-        std::bitset<32> ecx7_;
-        std::bitset<32> ecx81_;
-        std::bitset<32> edx81_;
+        std::bitset<32> ecx1_{0};
+        std::bitset<32> edx1_{0};
+        std::bitset<32> ebx7_{0};
+        std::bitset<32> ecx7_{0};
+        std::bitset<32> ecx81_{0};
+        std::bitset<32> edx81_{0};
     };
 
     static const cpu_info_impl impl_;

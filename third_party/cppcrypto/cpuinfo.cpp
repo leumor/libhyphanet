@@ -17,7 +17,6 @@ namespace cppcrypto {
 const cpu_info::cpu_info_impl cpu_info::impl_;
 
 cpu_info::cpu_info_impl::cpu_info_impl()
-    : ecx1_{0}, edx1_{0}, ebx7_{0}, ecx7_{0}, ecx81_{0}, edx81_{0}
 {
     enable();
 }

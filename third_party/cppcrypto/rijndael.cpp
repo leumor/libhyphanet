@@ -814,8 +814,8 @@ namespace detail {
 rijndael256_256::rijndael256_256()
 {
     if (cpu_info::aesni() && cpu_info::sse41()) {
-        void* p
-            = aligned_allocate(sizeof(detail::rijndael256_256_impl_aesni), 32);
+        auto size = (sizeof(detail::rijndael256_256_impl_aesni) / 32 + 1) * 32;
+        void* p = aligned_allocate(size, 32);
         set_impl(new (p) detail::rijndael256_256_impl_aesni);
     }
 }
