@@ -33,8 +33,6 @@ public:
 
 #if defined(__i386__) || defined(__x86_64__)
 class rijndael256_256_impl_aesni : public rijndael_impl {
-protected:
-    __m128i rk[30];
 public:
     bool init(const unsigned char* key,
               block_cipher::direction direction) override;
@@ -45,6 +43,8 @@ public:
     void decrypt_blocks(const unsigned char* in, unsigned char* out,
                         size_t n) override;
 };
+private:
+__m128i rk[30];
 #endif
 } // namespace cppcrypto::detail
 

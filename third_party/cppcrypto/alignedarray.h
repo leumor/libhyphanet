@@ -46,7 +46,8 @@ public:
 
     aligned_pod_array(const aligned_pod_array& other)
     {
-        t = static_cast<T*>(aligned_allocate(sizeof(T) * N, A));
+        auto size = (sizeof(T) * N / A + 1) * A;
+        t = static_cast<T*>(aligned_allocate(size, A));
         *this = other;
     }
 

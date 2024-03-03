@@ -121,7 +121,7 @@ static inline uint64_t rotatel64(uint64_t x, unsigned n)
 static inline void* aligned_allocate(size_t a, size_t b)
 {
     void* aPtr;
-    if (posix_memalign(&aPtr, b, a)) aPtr = NULL;
+    if (posix_memalign(&aPtr, b, a)) aPtr = nullptr;
     return aPtr;
 }
 #define aligned_deallocate free
@@ -130,7 +130,7 @@ static inline void* aligned_allocate(size_t a, size_t b)
 
 static inline void zero_memory(void* v, size_t n)
 {
-    volatile unsigned char* p = static_cast<volatile unsigned char*>(v);
+    volatile auto* p = static_cast<volatile unsigned char*>(v);
     while (n--) { *p++ = 0; }
 }
 
