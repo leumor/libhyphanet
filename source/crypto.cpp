@@ -203,8 +203,9 @@ namespace {
                                        });
 
                 std::array<std::byte, 32> input_array{};
-                std::transform(in_block, in_block + 32, input_array.begin(),
-                               [](CryptoPP::byte b) {
+                std::transform(in_block,
+                               in_block + 32, // NOLINT
+                               input_array.begin(), [](CryptoPP::byte b) {
                                    return std::bit_cast<std::byte>(b);
                                });
 
@@ -249,8 +250,9 @@ namespace {
                                        });
 
                 std::array<std::byte, 32> input_array{};
-                std::transform(in_block, in_block + 32, input_array.begin(),
-                               [](CryptoPP::byte b) {
+                std::transform(in_block,
+                               in_block + 32, // NOLINT
+                               input_array.begin(), [](CryptoPP::byte b) {
                                    return std::bit_cast<std::byte>(b);
                                });
 
@@ -282,9 +284,9 @@ namespace {
             }
         };
     public:
-        using Encryption
+        using Encryption // NOLINT
             = CryptoPP::BlockCipherFinal<CryptoPP::ENCRYPTION, Enc>;
-        using Decryption
+        using Decryption // NOLINT
             = CryptoPP::BlockCipherFinal<CryptoPP::ENCRYPTION, Dec>;
     };
 

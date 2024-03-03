@@ -4,9 +4,9 @@
 #include <array>
 #include <cryptopp/algparam.h>
 #include <cryptopp/argnames.h>
-#include <cryptopp/base64.h>
+#include <cryptopp/base64.h> // NOLINT
 #include <cryptopp/config_int.h>
-#include <cryptopp/filters.h>
+#include <cryptopp/filters.h> // NOLINT
 #include <cstddef>
 #include <optional>
 #include <string>

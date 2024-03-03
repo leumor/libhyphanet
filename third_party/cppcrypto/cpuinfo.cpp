@@ -33,7 +33,7 @@ void cpu_info::cpu_info_impl::enable()
     __cpuid(cpui.data(), 0);
     int ids = cpui[0];
 #else
-    int ids = __get_cpuid_max(0, 0);
+    auto ids = __get_cpuid_max(0, nullptr);
 #endif
 
     if (ids >= 1) {
