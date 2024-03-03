@@ -11,9 +11,6 @@ This code is written by kerukuro for cppcrypto library
 #include <stdio.h>
 #include <stdlib.h>
 
-// #define CPPCRYPTO_DEBUG
-#define NO_OPTIMIZED_VERSIONS
-
 namespace cppcrypto {
 static const uint32_t RC[]
     = {0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000, 0x20000000,
@@ -810,7 +807,8 @@ namespace detail {
 
 } // namespace detail
 
-#ifndef NO_OPTIMIZED_VERSIONS
+#if !defined(NO_OPTIMIZED_VERSIONS)                                            \
+    && (defined(__i386__) || defined(__x86_64__))
 rijndael256_256::rijndael256_256()
 {
     if (cpu_info::aesni() && cpu_info::sse41()) {

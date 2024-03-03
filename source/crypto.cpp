@@ -263,9 +263,8 @@ namespace {
                         std::end(decrypted), // Range of elements to transform
                         xor_block, // Start of second range or nullptr
                         out_block, // Destination range
-                        [xor_block](
-                            auto enc,
-                            auto xor_val) { // Lambda to process each element
+                        [](auto enc,
+                           auto xor_val) { // Lambda to process each element
                             auto b = std::bit_cast<CryptoPP::byte>(enc);
                             return b ^ xor_val;
                         });
