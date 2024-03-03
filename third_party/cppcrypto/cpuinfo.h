@@ -25,8 +25,6 @@ public:
     static bool aesni() { return impl_.ecx1_[25]; }
     static bool mmx() { return impl_.edx1_[23]; }
     static bool pclmulqdq() { return impl_.ecx1_[1]; }
-
-    static const cpu_info_impl impl_;
 private:
     class cpu_info_impl {
     public:
@@ -42,6 +40,8 @@ private:
         std::bitset<32> ecx81_;
         std::bitset<32> edx81_;
     };
+
+    static const cpu_info_impl impl_;
 };
 
 } // namespace cppcrypto
