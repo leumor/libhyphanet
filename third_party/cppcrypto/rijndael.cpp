@@ -4,7 +4,9 @@ This code is written by kerukuro for cppcrypto library
 */
 
 #include "rijndael.h"
+#if defined(__i386__) || defined(__x86_64__)
 #include "cpuinfo.h"
+#endif
 #include "portability.h"
 #include <algorithm>
 #include <cstring>
