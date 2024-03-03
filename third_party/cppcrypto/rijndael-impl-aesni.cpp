@@ -63,8 +63,8 @@ void rijndael256_256_impl_aesni::encrypt_blocks(const unsigned char* in,
 {
     __m128i RIJNDAEL256_MASK
         = _mm_set_epi32(0x03020d0c, 0x0f0e0908, 0x0b0a0504, 0x07060100);
-    __m128i BLEND_MASK
-        = _mm_set_epi32(0x80000000, 0x80800000, 0x80800000, 0x80808000);
+    __m128i BLEND_MASK = _mm_set_epi32(static_cast<int>(0x80000000), 0x80800000,
+                                       0x80800000, 0x80808000);
 
     size_t x8 = n / 4;
     int j;
@@ -198,8 +198,8 @@ void rijndael256_256_impl_aesni::encrypt_block(const unsigned char* in,
     __m128i tmp1, tmp2, data1, data2;
     __m128i RIJNDAEL256_MASK
         = _mm_set_epi32(0x03020d0c, 0x0f0e0908, 0x0b0a0504, 0x07060100);
-    __m128i BLEND_MASK
-        = _mm_set_epi32(0x80000000, 0x80800000, 0x80800000, 0x80808000);
+    __m128i BLEND_MASK = _mm_set_epi32(static_cast<int>(0x80000000), 0x80800000,
+                                       0x80800000, 0x80808000);
     int j;
 
     data1 = _mm_loadu_si128(&(reinterpret_cast<const __m128i*>(in))[0]);
@@ -230,8 +230,8 @@ void rijndael256_256_impl_aesni::decrypt_blocks(const unsigned char* in,
 {
     __m128i RIJNDAEL256_MASK_INV
         = _mm_set_epi32(0x0b0a0d0c, 0x07060908, 0x03020504, 0x0f0e0100);
-    __m128i BLEND_MASK_INV
-        = _mm_set_epi32(0x80808000, 0x80800000, 0x80800000, 0x80000000);
+    __m128i BLEND_MASK_INV = _mm_set_epi32(0x80808000, 0x80800000, 0x80800000,
+                                           static_cast<int>(0x80000000));
 
     size_t x8 = n / 4;
     int j;
@@ -365,8 +365,8 @@ void rijndael256_256_impl_aesni::decrypt_block(const unsigned char* in,
     __m128i tmp1, tmp2, data1, data2;
     __m128i RIJNDAEL256_MASK_INV
         = _mm_set_epi32(0x0b0a0d0c, 0x07060908, 0x03020504, 0x0f0e0100);
-    __m128i BLEND_MASK_INV
-        = _mm_set_epi32(0x80808000, 0x80800000, 0x80800000, 0x80000000);
+    __m128i BLEND_MASK_INV = _mm_set_epi32(0x80808000, 0x80800000, 0x80800000,
+                                           static_cast<int>(0x80000000));
     int j;
 
     data1 = _mm_loadu_si128(&(reinterpret_cast<const __m128i*>(in))[0]);
