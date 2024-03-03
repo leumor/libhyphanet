@@ -706,15 +706,15 @@ void detail::rijndael256::decrypt_blocks(const unsigned char* in,
 bool rijndael256_256::init(const unsigned char* key,
                            block_cipher::direction dir)
 {
-    if (impl_) return impl_->init(key, dir);
+    if (get_impl()) return get_impl()->init(key, dir);
 
     for (int i = 0; i < 8 /* Nk */; i++) {
         uint32_t val;
         memcpy(&val, key + 4 * i, sizeof(val));
-        W_[i] = swap_uint32(val);
+        get_W()[i] = swap_uint32(val);
     }
 
-    uint32_t* w = W_;
+    uint32_t* w = get_W();
     for (int i = 0; i < 14; i++) {
         w[8] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 24)]))
                ^ (uint32_t(S[static_cast<unsigned char>(w[7])]) << 8)
@@ -736,7 +736,7 @@ bool rijndael256_256::init(const unsigned char* key,
     }
 
     if (dir == block_cipher::direction::decryption) {
-        w = W_;
+        w = get_W();
 
         KEYSWAP256(14);
         KEYIMC256(1);
@@ -825,7 +825,8 @@ rijndael256_256::rijndael256_256() = default;
 
 rijndael256_256::~rijndael256_256()
 {
-    zero_memory(W_, W_.bytes());
+    auto w = get_W();
+    zero_memory(w, w.bytes());
 }
 
 } // namespace cppcrypto

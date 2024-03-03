@@ -30,6 +30,13 @@ namespace detail {
         void decrypt_blocks(const unsigned char* in, unsigned char* out,
                             size_t n) override;
     protected:
+        [[nodiscard]] aligned_pod_array<uint32_t, 120, 64>& get_W()
+        {
+            return W_;
+        }
+
+        [[nodiscard]] detail::rijndael_impl* get_impl() const { return impl_; }
+    private:
         aligned_pod_array<uint32_t, 120, 64> W_;
         detail::rijndael_impl* impl_{nullptr};
     };
