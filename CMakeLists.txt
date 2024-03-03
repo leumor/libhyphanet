@@ -20,10 +20,8 @@ endif()
 # ---- Declare library ----
 add_library(objlib_cppcrypto OBJECT
   third_party/cppcrypto/alignedarray.h
-  third_party/cppcrypto/block_cipher.cpp
   third_party/cppcrypto/block_cipher.h
-  third_party/cppcrypto/cpuinfo.cpp
-  third_party/cppcrypto/cpuinfo.h
+  third_party/cppcrypto/block_cipher.cpp
   third_party/cppcrypto/portability.h
   third_party/cppcrypto/rijndael.h
   third_party/cppcrypto/rijndael.cpp
@@ -34,6 +32,8 @@ if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386" OR ${CMAKE_SYSTEM_PROCESSOR} STREQU
   target_sources(objlib_cppcrypto PRIVATE
     third_party/cppcrypto/rijndael-impl-aesni-common.h
     third_party/cppcrypto/rijndael-impl-aesni.cpp
+    third_party/cppcrypto/cpuinfo.h
+    third_party/cppcrypto/cpuinfo.cpp
   )
 
   if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
