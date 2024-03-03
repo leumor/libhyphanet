@@ -23,8 +23,6 @@ public:
 
     virtual size_t blocksize() const = 0;
     virtual size_t keysize() const = 0;
-    virtual block_cipher* clone() const = 0;
-    virtual void clear() = 0;
 
     virtual bool init(const unsigned char* key,
                       block_cipher::direction direction)

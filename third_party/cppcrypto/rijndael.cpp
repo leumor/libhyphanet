@@ -7,7 +7,7 @@ This code is written by kerukuro for cppcrypto library
 #include "cpuinfo.h"
 #include "portability.h"
 #include <algorithm>
-#include <memory.h>
+#include <memory>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -805,13 +805,7 @@ namespace detail {
 
     rijndael256::~rijndael256()
     {
-        clear();
         if (impl_) { aligned_deallocate(impl_); }
-    }
-
-    void rijndael256::clear()
-    {
-        zero_memory(W_, W_.bytes());
     }
 
 } // namespace detail
@@ -828,5 +822,10 @@ rijndael256_256::rijndael256_256()
 #else
 rijndael256_256::rijndael256_256() = default;
 #endif
+
+rijndael256_256::~rijndael256_256()
+{
+    zero_memory(W_, W_.bytes());
+}
 
 } // namespace cppcrypto

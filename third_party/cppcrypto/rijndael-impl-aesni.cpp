@@ -11,8 +11,6 @@ This code is written by kerukuro for cppcrypto library
 #include <smmintrin.h>
 #include <wmmintrin.h>
 
-// #define CPPCRYPTO_DEBUG
-
 namespace cppcrypto {
 namespace detail {
     bool rijndael256_256_impl_aesni::init(const unsigned char* key,

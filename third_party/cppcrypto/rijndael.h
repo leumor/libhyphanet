@@ -17,7 +17,6 @@ namespace detail {
     public:
         rijndael256() = default;
         ~rijndael256() override;
-        void clear() override;
 
         size_t blocksize() const override { return 256; }
 
@@ -39,9 +38,9 @@ namespace detail {
 class rijndael256_256 : public detail::rijndael256 {
 public:
     rijndael256_256();
+    ~rijndael256_256() override;
 
     size_t keysize() const override { return 256; }
-    rijndael256_256* clone() const override { return new rijndael256_256; }
 
     bool init(const unsigned char* key,
               block_cipher::direction direction) override;
