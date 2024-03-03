@@ -15,8 +15,8 @@ namespace cppcrypto {
 namespace detail {
     class rijndael256 : public block_cipher {
     public:
-        rijndael256();
-        ~rijndael256();
+        rijndael256() = default;
+        ~rijndael256() override;
         void clear() override;
 
         size_t blocksize() const override { return 256; }
@@ -32,7 +32,7 @@ namespace detail {
                             size_t n) override;
     protected:
         aligned_pod_array<uint32_t, 120, 64> W_;
-        detail::rijndael_impl* impl_;
+        detail::rijndael_impl* impl_{nullptr};
     };
 } // namespace detail
 

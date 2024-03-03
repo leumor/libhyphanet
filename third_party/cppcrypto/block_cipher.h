@@ -16,10 +16,10 @@ namespace cppcrypto {
 
 class block_cipher {
 public:
-    enum direction { encryption, decryption };
+    enum class direction { encryption, decryption };
 
-    block_cipher() {}
-    virtual ~block_cipher();
+    block_cipher() = default;
+    virtual ~block_cipher() = default;
 
     virtual size_t blocksize() const = 0;
     virtual size_t keysize() const = 0;

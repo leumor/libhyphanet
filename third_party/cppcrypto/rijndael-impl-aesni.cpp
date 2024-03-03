@@ -3,10 +3,11 @@ This code is written by kerukuro for cppcrypto library
 (http://cppcrypto.sourceforge.net/) and released into public domain.
 */
 
+#include "block_cipher.h"
 #include "portability.h"
 #include "rijndael-impl-aesni-common.h"
 #include "rijndael-impl.h"
-#include <memory.h>
+#include <memory>
 #include <smmintrin.h>
 #include <wmmintrin.h>
 
@@ -39,7 +40,7 @@ namespace detail {
         KEYGEN256STEP(26, 0xab);
         KEYGEN256STEP(28, 0x4d);
 
-        if (direction == block_cipher::decryption) {
+        if (direction == block_cipher::direction::decryption) {
             std::swap(rk[0], rk[28]);
             std::swap(rk[1], rk[29]);
             std::swap(rk[2], rk[26]);

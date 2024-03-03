@@ -490,7 +490,7 @@ void detail::rijndael256::decrypt_blocks(const unsigned char* in,
         = IT[0][S[static_cast<unsigned char>(w[i * 8 + 7] >> 24)]]             \
           ^ IT[1][S[(static_cast<unsigned char>(w[i * 8 + 7] >> 16))]]         \
           ^ IT[2][S[static_cast<unsigned char>(w[i * 8 + 7] >> 8)]]            \
-          ^ IT[3][S[static_cast<unsigned char>(w[i * 8 + 7])]];
+          ^ IT[3][S[static_cast<unsigned char>(w[i * 8 + 7])]]
 
 #define ROUND256(r)                                                            \
     t0 = W_[r * 8 + 0] ^ T[0][static_cast<unsigned char>(s0 >> 24)]            \
@@ -532,7 +532,7 @@ void detail::rijndael256::decrypt_blocks(const unsigned char* in,
     s4 = t4;                                                                   \
     s5 = t5;                                                                   \
     s6 = t6;                                                                   \
-    s7 = t7;
+    s7 = t7
 
 #define LROUND256(r)                                                           \
     s0 = W_[r * 8 + 0] ^ uint32_t(S[t0 >> 24]) << 24                           \
@@ -574,7 +574,7 @@ void detail::rijndael256::decrypt_blocks(const unsigned char* in,
     tmp = swap_uint32(s6);                                                     \
     memcpy(out + 24, &tmp, sizeof(tmp));                                       \
     tmp = swap_uint32(s7);                                                     \
-    memcpy(out + 28, &tmp, sizeof(tmp));
+    memcpy(out + 28, &tmp, sizeof(tmp))
 
 #define IROUND256(r)                                                           \
     t0 = W_[r * 8 + 0] ^ IT[0][static_cast<unsigned char>(s0 >> 24)]           \
@@ -616,7 +616,7 @@ void detail::rijndael256::decrypt_blocks(const unsigned char* in,
     s4 = t4;                                                                   \
     s5 = t5;                                                                   \
     s6 = t6;                                                                   \
-    s7 = t7;
+    s7 = t7
 
 #define ILROUND256(r)                                                          \
     s0 = W_[r * 8 + 0] ^ uint32_t(IS[t0 >> 24]) << 24                          \
@@ -658,7 +658,7 @@ void detail::rijndael256::decrypt_blocks(const unsigned char* in,
     tmp = swap_uint32(s6);                                                     \
     memcpy(out + 24, &tmp, sizeof(tmp));                                       \
     tmp = swap_uint32(s7);                                                     \
-    memcpy(out + 28, &tmp, sizeof(tmp));
+    memcpy(out + 28, &tmp, sizeof(tmp))
 
 #define FROUND256()                                                            \
     uint32_t val;                                                              \
@@ -686,19 +686,22 @@ void detail::rijndael256::decrypt_blocks(const unsigned char* in,
     s5 ^= W_[5];                                                               \
     s6 ^= W_[6];                                                               \
     s7 ^= W_[7];                                                               \
-    uint32_t t0, t1, t2, t3, t4, t5, t6, t7;
+    uint32_t t0, t1, t2, t3, t4, t5, t6, t7
 
 #define KEYSWAP256(Nr)                                                         \
-    for (int i = 0; i < 8 * Nr / 2; i += 8) {                                  \
-        std::swap(w[i + 0], w[8 * Nr + 0 - i]);                                \
-        std::swap(w[i + 1], w[8 * Nr + 1 - i]);                                \
-        std::swap(w[i + 2], w[8 * Nr + 2 - i]);                                \
-        std::swap(w[i + 3], w[8 * Nr + 3 - i]);                                \
-        std::swap(w[i + 4], w[8 * Nr + 4 - i]);                                \
-        std::swap(w[i + 5], w[8 * Nr + 5 - i]);                                \
-        std::swap(w[i + 6], w[8 * Nr + 6 - i]);                                \
-        std::swap(w[i + 7], w[8 * Nr + 7 - i]);                                \
-    }
+    do {                                                                       \
+        for (int i = 0; i < 8 * Nr / 2; i += 8) {                              \
+            std::swap(w[i + 0], w[8 * Nr + 0 - i]);                            \
+            std::swap(w[i + 1], w[8 * Nr + 1 - i]);                            \
+            std::swap(w[i + 2], w[8 * Nr + 2 - i]);                            \
+            std::swap(w[i + 3], w[8 * Nr + 3 - i]);                            \
+            std::swap(w[i + 4], w[8 * Nr + 4 - i]);                            \
+            std::swap(w[i + 5], w[8 * Nr + 5 - i]);                            \
+            std::swap(w[i + 6], w[8 * Nr + 6 - i]);                            \
+            std::swap(w[i + 7], w[8 * Nr + 7 - i]);                            \
+        }                                                                      \
+    }                                                                          \
+    while (0)
 
 bool rijndael256_256::init(const unsigned char* key,
                            block_cipher::direction dir)
@@ -732,7 +735,7 @@ bool rijndael256_256::init(const unsigned char* key,
         w += 8;
     }
 
-    if (dir == block_cipher::decryption) {
+    if (dir == block_cipher::direction::decryption) {
         w = W_;
 
         KEYSWAP256(14);
@@ -800,15 +803,10 @@ namespace detail {
         ILROUND256(14);
     }
 
-    rijndael256::rijndael256(): impl_(0) {}
-
     rijndael256::~rijndael256()
     {
         clear();
-        if (impl_) {
-            impl_->~rijndael_impl();
-            aligned_deallocate(impl_);
-        }
+        if (impl_) { aligned_deallocate(impl_); }
     }
 
     void rijndael256::clear()
@@ -818,15 +816,17 @@ namespace detail {
 
 } // namespace detail
 
+#ifndef NO_OPTIMIZED_VERSIONS
 rijndael256_256::rijndael256_256()
 {
-#ifndef NO_OPTIMIZED_VERSIONS
     if (cpu_info::aesni() && cpu_info::sse41()) {
         void* p
             = aligned_allocate(sizeof(detail::rijndael256_256_impl_aesni), 32);
         impl_ = new (p) detail::rijndael256_256_impl_aesni;
     }
-#endif
 }
+#else
+rijndael256_256::rijndael256_256() = default;
+#endif
 
 } // namespace cppcrypto
