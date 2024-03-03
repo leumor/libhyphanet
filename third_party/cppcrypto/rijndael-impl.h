@@ -42,9 +42,9 @@ public:
                         size_t n) override;
     void decrypt_blocks(const unsigned char* in, unsigned char* out,
                         size_t n) override;
-};
 private:
-__m128i rk[30];
+    __m128i rk[30];
+};
 #endif
 } // namespace cppcrypto::detail
 
