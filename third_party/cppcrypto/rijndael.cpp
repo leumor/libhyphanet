@@ -4,6 +4,7 @@ This code is written by kerukuro for cppcrypto library
 */
 
 #include "rijndael.h"
+#include <cstddef>
 #if defined(__i386__) || defined(__x86_64__)
 #include "cpuinfo.h"
 #endif
@@ -715,7 +716,7 @@ bool rijndael256_256::init(const unsigned char* key,
     }
 
     uint32_t* w = get_W();
-    for (int i = 0; i < 14; i++) {
+    for (size_t i = 0; i < 14; i++) {
         w[8] = w[0] ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 24)]))
                ^ (uint32_t(S[static_cast<unsigned char>(w[7])]) << 8)
                ^ (uint32_t(S[static_cast<unsigned char>(w[7] >> 8)]) << 16)
