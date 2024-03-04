@@ -42,8 +42,8 @@ void cpu_info::cpu_info_impl::enable()
 #else
         __cpuid_count(1, 0, cpui[0], cpui[1], cpui[2], cpui[3]);
 #endif
-        ecx1_ = cpui[2];
-        edx1_ = cpui[3];
+        ecx1_ = cpui[2u];
+        edx1_ = cpui[3u];
     }
 
     if (ids >= 7) {
@@ -52,15 +52,15 @@ void cpu_info::cpu_info_impl::enable()
 #else
         __cpuid_count(7, 0, cpui[0], cpui[1], cpui[2], cpui[3]);
 #endif
-        ebx7_ = cpui[1];
-        ecx7_ = cpui[2];
+        ebx7_ = cpui[1u];
+        ecx7_ = cpui[2u];
     }
 
 #ifdef _MSC_VER
     __cpuid(cpui.data(), 0x80000000);
-    unsigned int extended_ids = cpui[0];
+    unsigned int extended_ids = cpui[0u];
 #else
-    unsigned int extended_ids = __get_cpuid_max(0x80000000, 0);
+    auto extended_ids = __get_cpuid_max(0x80000000, nullptr);
 #endif
 
     if (extended_ids >= 0x80000001) {
@@ -69,8 +69,8 @@ void cpu_info::cpu_info_impl::enable()
 #else
         __cpuid_count(0x80000001, 0, cpui[0], cpui[1], cpui[2], cpui[3]);
 #endif
-        ecx81_ = cpui[2];
-        edx81_ = cpui[3];
+        ecx81_ = cpui[2u];
+        edx81_ = cpui[3u];
     }
 }
 

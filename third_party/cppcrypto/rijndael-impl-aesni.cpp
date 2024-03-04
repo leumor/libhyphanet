@@ -7,6 +7,7 @@ This code is written by kerukuro for cppcrypto library
 #include "portability.h"
 #include "rijndael-impl-aesni-common.h"
 #include "rijndael-impl.h"
+#include <cstddef>
 #include <cstring>
 #include <smmintrin.h>
 #include <wmmintrin.h>
@@ -52,7 +53,7 @@ bool rijndael256_256_impl_aesni::init(const unsigned char* key,
         std::swap(rk[12], rk[16]);
         std::swap(rk[13], rk[17]);
 
-        for (int i = 2; i < 28; i++) rk[i] = _mm_aesimc_si128(rk[i]);
+        for (size_t i = 2; i < 28; i++) rk[i] = _mm_aesimc_si128(rk[i]);
     }
 
     return true;
@@ -68,7 +69,7 @@ void rijndael256_256_impl_aesni::encrypt_blocks(const unsigned char* in,
         static_cast<int>(0x80800000), static_cast<int>(0x80808000));
 
     size_t x8 = n / 4;
-    int j;
+    size_t j;
 
     for (size_t i = 0; i < x8; i++) {
         __m128i data1_0
@@ -205,7 +206,7 @@ void rijndael256_256_impl_aesni::encrypt_block(const unsigned char* in,
     __m128i BLEND_MASK = _mm_set_epi32(
         static_cast<int>(0x80000000), static_cast<int>(0x80800000),
         static_cast<int>(0x80800000), static_cast<int>(0x80808000));
-    int j;
+    size_t j;
 
     data1 = _mm_loadu_si128(&(reinterpret_cast<const __m128i*>(in))[0]);
     data2 = _mm_loadu_si128(&(reinterpret_cast<const __m128i*>(in))[1]);
@@ -240,7 +241,7 @@ void rijndael256_256_impl_aesni::decrypt_blocks(const unsigned char* in,
         static_cast<int>(0x80800000), static_cast<int>(0x80000000));
 
     size_t x8 = n / 4;
-    int j;
+    size_t j;
 
     for (size_t i = 0; i < x8; i++) {
         __m128i data1_0
@@ -377,7 +378,7 @@ void rijndael256_256_impl_aesni::decrypt_block(const unsigned char* in,
     __m128i BLEND_MASK_INV = _mm_set_epi32(
         static_cast<int>(0x80808000), static_cast<int>(0x80800000),
         static_cast<int>(0x80800000), static_cast<int>(0x80000000));
-    int j;
+    size_t j;
 
     data1 = _mm_loadu_si128(&(reinterpret_cast<const __m128i*>(in))[0]);
     data2 = _mm_loadu_si128(&(reinterpret_cast<const __m128i*>(in))[1]);
