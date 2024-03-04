@@ -8,6 +8,7 @@ This code is written by kerukuro for cppcrypto library
 
 #include "block_cipher.h"
 #include <stdint.h>
+#include <array>
 
 #if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86)               \
     || defined(_M_X64)
@@ -45,7 +46,7 @@ public:
     void decrypt_blocks(const unsigned char* in, unsigned char* out,
                         size_t n) override;
 private:
-    __m128i rk[30];
+    std::array<__m128i, 30> rk;
 };
 #endif
 } // namespace cppcrypto::detail
