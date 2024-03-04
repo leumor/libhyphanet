@@ -9,7 +9,8 @@ This code is written by kerukuro for cppcrypto library
 #include "block_cipher.h"
 #include <stdint.h>
 
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86)               \
+    || defined(_M_X64)
 #include <emmintrin.h>
 #endif
 
@@ -31,7 +32,8 @@ public:
         = 0;
 };
 
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86)               \
+    || defined(_M_X64)
 class rijndael256_256_impl_aesni : public rijndael_impl {
 public:
     bool init(const unsigned char* key,

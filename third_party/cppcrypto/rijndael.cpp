@@ -5,7 +5,8 @@ This code is written by kerukuro for cppcrypto library
 
 #include "rijndael.h"
 #include <cstddef>
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__) || defined(_M_IX86)               \
+    || defined(_M_X64)
 #include "cpuinfo.h"
 #endif
 #include "portability.h"
@@ -812,7 +813,8 @@ namespace detail {
 } // namespace detail
 
 #if !defined(NO_OPTIMIZED_VERSIONS)                                            \
-    && (defined(__i386__) || defined(__x86_64__))
+    && (defined(__i386__) || defined(__x86_64__) || defined(_M_IX86)           \
+        || defined(_M_X64))
 rijndael256_256::rijndael256_256()
 {
     if (cpu_info::aesni() && cpu_info::sse41()) {
