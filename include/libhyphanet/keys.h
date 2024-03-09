@@ -72,6 +72,25 @@ static const std::map<Uri_type, std::string> uri_type_to_string = {
 static const size_t crypto_key_length = 32;
 
 /**
+ * @brief Enum class for specifying the cryptographic algorithm used.
+ */
+enum class Crypto_algorithm : std::underlying_type_t<std::byte> {
+    // Remmember to also modify valid_crypto_algorithms if you change this
+    /**
+     * AES-256 with
+     * [PCFB](https://csrc.nist.rip/groups/ST/toolkit/BCM/documents/proposedmodes/pcfb/pcfb-spec.pdf)
+     * (Propagating Cipher Feedback) mode, SHA-256 hashing.
+     */
+    algo_aes_pcfb_256_sha_256 = 2,
+    /**
+     * AES-256 with CTR (Counter) mode, SHA-256 hashing.
+     */
+    algo_aes_ctr_256_sha_256 = 3,
+};
+static constexpr std::array<std::byte, 2> valid_crypto_algorithms{std::byte{2},
+                                                                  std::byte{3}};
+
+/**
  * @brief Struct to hold parameters for constructing a Uri object.
  */
 struct LIBHYPHANET_EXPORT Uri_params {
@@ -431,37 +450,6 @@ private:
      */
     std::vector<std::string> meta_strings_;
 };
-
-namespace node {
-    class LIBHYPHANET_EXPORT Node_key {
-    private:
-        /**
-         * @brief Node Routing Key.
-         *
-         * @details
-         * The **Node Routing Key** is based on the hash of the data or the
-         * public key of the owner ([Client Routing
-         * Key](#user::Key#routing_key_)), and it determines how close a node is
-         * to the data. Nodes use the routing key to forward requests to the
-         * node that is most responsible for storing the data, or the closest
-         * one they know of.
-         *
-         * For [CHKs](#user::Chk), the routing key is the [public key
-         * hash](#user::Key#pub_key_hash_).
-         *
-         * For [Subspace Keys](#user::Subspace_key), it's a SHA-256 hash of the
-         * [Encrypted Hashed Document
-         * Name](#user::Ssk#encrypted_hashed_docname_) and the [public key
-         * hash](#user::Key#pub_key_hash_).
-         */
-        std::vector<std::byte> node_routing_key_;
-    };
-
-    class LIBHYPHANET_EXPORT Node_ssk : public Node_key {
-    public:
-        static const std::byte ssk_version = std::byte{1};
-    };
-} // namespace node
 
 } // namespace keys
 

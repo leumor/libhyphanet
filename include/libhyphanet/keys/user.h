@@ -2,6 +2,7 @@
 #define LIBHYPHANET_KEYS_USER_H
 
 #include "libhyphanet/keys.h"
+#include "libhyphanet/keys/node.h"
 #include "libhyphanet/support.h"
 #include <array>
 #include <cryptopp/dsa.h>
@@ -50,25 +51,6 @@ protected:
     friend class Insertable;
 public:
     /**
-     * @brief Enum class for specifying the cryptographic algorithm used.
-     */
-    enum class Crypto_algorithm : std::underlying_type_t<std::byte> {
-        // Remmember to also modify valid_crypto_algorithms if you change this
-        /**
-         * AES-256 with
-         * [PCFB](https://csrc.nist.rip/groups/ST/toolkit/BCM/documents/proposedmodes/pcfb/pcfb-spec.pdf)
-         * (Propagating Cipher Feedback) mode, SHA-256 hashing.
-         */
-        algo_aes_pcfb_256_sha_256 = 2,
-        /**
-         * AES-256 with CTR (Counter) mode, SHA-256 hashing.
-         */
-        algo_aes_ctr_256_sha_256 = 3,
-    };
-    static constexpr std::array<std::byte, 2> valid_crypto_algorithms{
-        std::byte{2}, std::byte{3}};
-
-    /**
      * @brief Struct containing parameters for initializing a Key object.
      *
      * @details
@@ -91,7 +73,7 @@ public:
          * @brief The cryptographic algorithm used for encryption/decryption.
          */
         Crypto_algorithm crypto_algorithm{
-            Crypto_algorithm::algo_aes_pcfb_256_sha_256};
+            Crypto_algorithm::algo_aes_ctr_256_sha_256};
         /**
          * @brief Meta strings associated with the Key object.
          */
@@ -353,7 +335,8 @@ public:
      *
      * @return The node key as a `node::Node_key` object.
      */
-    [[nodiscard]] virtual node::Node_key get_node_key() const = 0;
+    [[nodiscard]] virtual std::unique_ptr<node::Node_key> get_node_key() const
+        = 0;
 };
 
 /**
@@ -664,7 +647,7 @@ public:
      */
     [[nodiscard]] std::optional<Usk> to_usk() const;
 
-    [[nodiscard]] node::Node_key get_node_key() const override;
+    [[nodiscard]] std::unique_ptr<node::Node_key> get_node_key() const override;
 
     [[nodiscard]] std::optional<std::vector<std::byte>> get_pub_key() const
     {
@@ -701,7 +684,7 @@ private:
      * Ssk and is necessary for certain network operations, such as retrieving
      * the associated content.
      */
-    std::array<std::byte, 32> encrypted_hashed_docname_{};
+    std::array<std::byte, 32> encrypted_hashed_docname_;
 
     /**
      * @brief Optionally stores the public key associated with the Ssk.
@@ -1035,7 +1018,7 @@ public:
      *
      * @return The node::Node_key associated with this CHK.
      */
-    [[nodiscard]] node::Node_key get_node_key() const override;
+    [[nodiscard]] std::unique_ptr<node::Node_key> get_node_key() const override;
 
     /**
      * @brief The fixed length of the extra data segment in the URI for a Chk

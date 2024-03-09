@@ -1,6 +1,7 @@
 #include "libhyphanet/keys/user.h"
 #include "libhyphanet/crypto.h"
 #include "libhyphanet/keys.h"
+#include "libhyphanet/keys/node.h"
 #include "libhyphanet/support.h"
 #include <algorithm>
 #include <array>
@@ -261,10 +262,12 @@ std::optional<Usk> Ssk::to_usk() const
     return std::nullopt;
 }
 
-node::Node_key Ssk::get_node_key() const
+std::unique_ptr<node::Node_key> Ssk::get_node_key() const
 {
-    // TODO
-    return node::Node_key{};
+    // TODO Cache node key
+    return std::make_unique<node::Node_ssk>(get_routing_key(),
+                                            encrypted_hashed_docname_,
+                                            get_crypto_algorithm(), pub_key_);
 }
 
 // =============================================================================
@@ -572,10 +575,11 @@ Uri Chk::to_request_uri() const
     return this->to_uri();
 }
 
-node::Node_key Chk::get_node_key() const
+std::unique_ptr<node::Node_key> Chk::get_node_key() const
 {
-    // TODO
-    return node::Node_key{};
+    // TODO Cache node key
+    return std::make_unique<node::Node_chk>(get_routing_key(),
+                                            get_crypto_algorithm());
 }
 
 } // namespace keys::user
