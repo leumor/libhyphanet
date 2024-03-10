@@ -1,12 +1,12 @@
-#ifndef LIBHYPHANET_KEYS_NODE_H
-#define LIBHYPHANET_KEYS_NODE_H
+#ifndef LIBHYPHANET_KEY_NODE_H
+#define LIBHYPHANET_KEY_NODE_H
 
-#include "libhyphanet/keys.h"
+#include "libhyphanet/key.h"
 #include <cstddef>
 #include <libhyphanet/libhyphanet_export.h>
 #include <vector>
 
-namespace keys::node {
+namespace key::node {
 class LIBHYPHANET_EXPORT Node_key {
 protected:
     explicit Node_key(Crypto_algorithm algo): crypto_algorithm_(algo) {}
@@ -73,9 +73,9 @@ private:
                      const std::array<std::byte, 32>& encrypted_hashed_docname);
 
     std::array<std::byte, 32> user_routing_key_;
-    std::array<std::byte, 32> encrypted_hashed_docname_;
+    std::array<std::byte, 32> encrypted_hashed_docname_{};
     std::optional<std::vector<std::byte>> pub_key_;
 };
-} // namespace keys::node
+} // namespace key::node
 
-#endif /* LIBHYPHANET_KEYS_NODE_H */
+#endif /* LIBHYPHANET_KEY_NODE_H */

@@ -1,13 +1,15 @@
-#include "libhyphanet/keys/node.h"
+#include "libhyphanet/key/node.h"
 #include "libhyphanet/crypto.h"
-#include "libhyphanet/keys.h"
+#include "libhyphanet/key.h"
 #include "libhyphanet/support.h"
+#include <array>
 #include <cstddef>
 #include <gsl/assert>
+#include <optional>
 #include <utility>
 #include <vector>
 
-namespace keys::node {
+namespace key::node {
 
 // =============================================================================
 // Node_ssk
@@ -40,4 +42,4 @@ std::vector<std::byte> Node_ssk::make_routing_key(
     sha256.update(user_routing_key);
     return array_to_vector(sha256.digest());
 }
-} // namespace keys::node
+} // namespace key::node

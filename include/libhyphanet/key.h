@@ -1,5 +1,5 @@
-#ifndef LIBHYPHANET_KEYS_H
-#define LIBHYPHANET_KEYS_H
+#ifndef LIBHYPHANET_KEY_H
+#define LIBHYPHANET_KEY_H
 
 #include <array>
 #include <cryptopp/dsa.h>
@@ -17,7 +17,7 @@
 #include <tuple>
 #include <vector>
 
-namespace keys {
+namespace key {
 
 namespace exception {
     /**
@@ -451,6 +451,6 @@ private:
     std::vector<std::string> meta_strings_;
 };
 
-} // namespace keys
+} // namespace key
 
-#endif /* LIBHYPHANET_KEYS_H */
+#endif /* LIBHYPHANET_KEY_H */

@@ -1,5 +1,5 @@
-#include "libhyphanet/keys.h"
-#include "libhyphanet/keys/user.h"
+#include "libhyphanet/key.h"
+#include "libhyphanet/key/user.h"
 #include <catch2/catch_test_macros.hpp>
 #include <fmt/core.h>
 #include <memory>
@@ -22,7 +22,7 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
 
     SECTION("ssk/usk conversion")
     {
-        using namespace keys;
+        using namespace key;
 
         auto uri_usk = Uri::create(wanna_usk_1);
         auto usk = user::Key::create(*uri_usk);
@@ -55,14 +55,14 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
     SECTION("broken keys")
     {
         // Broken USK
-        auto uri = keys::Uri::create("USK@/broken/0");
-        REQUIRE_THROWS_AS(keys::user::Key::create(*uri),
-                          keys::exception::Malformed_uri);
+        auto uri = key::Uri::create("USK@/broken/0");
+        REQUIRE_THROWS_AS(key::user::Key::create(*uri),
+                          key::exception::Malformed_uri);
 
         // Broken SSK
-        uri = keys::Uri::create("SSK@/broken-0");
-        REQUIRE_THROWS_AS(keys::user::Key::create(*uri),
-                          keys::exception::Malformed_uri);
+        uri = key::Uri::create("SSK@/broken-0");
+        REQUIRE_THROWS_AS(key::user::Key::create(*uri),
+                          key::exception::Malformed_uri);
     }
 
     SECTION("added valid schema prefixes are ignored")
@@ -71,24 +71,24 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
                  "freenet", "web+freenet", "ext+freenet", "hypha", "hyphanet",
                  "web+hypha", "web+hyphanet", "ext+hypha", "ext+hyphanet"}) {
             auto uri
-                = keys::Uri::create(fmt::format("{}:{}", prefix, wanna_usk_1));
+                = key::Uri::create(fmt::format("{}:{}", prefix, wanna_usk_1));
             REQUIRE(uri->to_string() == wanna_usk_1);
-            auto key = keys::user::Key::create(*uri);
+            auto key = key::user::Key::create(*uri);
             REQUIRE(key->to_uri().to_string() == wanna_usk_1);
 
-            uri = keys::Uri::create(fmt::format("{}:{}", prefix, wanna_ssk_1));
+            uri = key::Uri::create(fmt::format("{}:{}", prefix, wanna_ssk_1));
             REQUIRE(uri->to_string() == wanna_ssk_1);
-            key = keys::user::Key::create(*uri);
+            key = key::user::Key::create(*uri);
             REQUIRE(key->to_uri().to_string() == wanna_ssk_1);
 
-            uri = keys::Uri::create(fmt::format("{}:{}", prefix, wanna_chk_1));
+            uri = key::Uri::create(fmt::format("{}:{}", prefix, wanna_chk_1));
             REQUIRE(uri->to_string() == wanna_chk_1);
-            key = keys::user::Key::create(*uri);
+            key = key::user::Key::create(*uri);
             REQUIRE(key->to_uri().to_string() == wanna_chk_1);
 
-            uri = keys::Uri::create(fmt::format("{}:{}", prefix, ksk_example));
+            uri = key::Uri::create(fmt::format("{}:{}", prefix, ksk_example));
             REQUIRE(uri->to_string() == ksk_example);
-            key = keys::user::Key::create(*uri);
+            key = key::user::Key::create(*uri);
             REQUIRE(key->to_uri().to_string() == ksk_example);
         }
     }
@@ -96,7 +96,7 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
 
 TEST_CASE("derive request uri", "[library][keys]")
 {
-    using namespace keys;
+    using namespace key;
 
     auto chk_uri
         = "CHK@DTCDUmnkKFlrJi9UlDDVqXlktsIXvAJ~ZTseyx5cAZs,PmA2rLgWZKVyMXxSn-"

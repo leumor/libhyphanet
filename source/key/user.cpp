@@ -1,7 +1,7 @@
-#include "libhyphanet/keys/user.h"
+#include "libhyphanet/key/user.h"
 #include "libhyphanet/crypto.h"
-#include "libhyphanet/keys.h"
-#include "libhyphanet/keys/node.h"
+#include "libhyphanet/key.h"
+#include "libhyphanet/key/node.h"
 #include "libhyphanet/support.h"
 #include <algorithm>
 #include <array>
@@ -20,7 +20,7 @@
 #include <utility>
 #include <vector>
 
-namespace keys::user {
+namespace key::user {
 
 // =============================================================================
 // class Key
@@ -38,7 +38,7 @@ std::unique_ptr<Key> Key::create(const Uri& uri)
     }
 
     switch (uri.get_uri_type()) {
-        using enum keys::Uri_type;
+        using enum key::Uri_type;
     case usk:
         if (is_insertable) { key = std::make_unique<Insertable_usk>(t); }
         else {
@@ -582,4 +582,4 @@ std::unique_ptr<node::Node_key> Chk::get_node_key() const
                                             get_crypto_algorithm());
 }
 
-} // namespace keys::user
+} // namespace key::user

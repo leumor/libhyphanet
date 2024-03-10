@@ -1,8 +1,8 @@
-#ifndef LIBHYPHANET_KEYS_USER_H
-#define LIBHYPHANET_KEYS_USER_H
+#ifndef LIBHYPHANET_KEY_USER_H
+#define LIBHYPHANET_KEY_USER_H
 
-#include "libhyphanet/keys.h"
-#include "libhyphanet/keys/node.h"
+#include "libhyphanet/key.h"
+#include "libhyphanet/key/node.h"
 #include "libhyphanet/support.h"
 #include <array>
 #include <cryptopp/dsa.h>
@@ -18,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-namespace keys::user {
+namespace key::user {
 /**
  * @brief Abstract base class for user keys that can be converted to a Uri.
  *
@@ -684,7 +684,7 @@ private:
      * Ssk and is necessary for certain network operations, such as retrieving
      * the associated content.
      */
-    std::array<std::byte, 32> encrypted_hashed_docname_;
+    std::array<std::byte, 32> encrypted_hashed_docname_{};
 
     /**
      * @brief Optionally stores the public key associated with the Ssk.
@@ -1086,6 +1086,6 @@ private:
         support::compressor::Compressor_type::gzip};
 };
 
-} // namespace keys::user
+} // namespace key::user
 
-#endif /* LIBHYPHANET_KEYS_USER_H */
+#endif /* LIBHYPHANET_KEY_USER_H */

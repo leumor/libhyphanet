@@ -1,4 +1,4 @@
-#include "libhyphanet/keys.h"
+#include "libhyphanet/key.h"
 #include "libhyphanet/support.h"
 #include "libhyphanet/support/base64.h"
 #include <array>
@@ -18,7 +18,7 @@
 using namespace support::util;
 using namespace support::url;
 
-namespace keys {
+namespace key {
 
 Uri::Uri(Uri_params url_params)
     : uri_type_{url_params.uri_type},
@@ -114,7 +114,7 @@ std::unique_ptr<Uri> Uri::create(std::string_view uri, bool no_trim)
 
 Uri_type Uri::parse_uri_type_str(std::string_view str)
 {
-    using enum keys::Uri_type;
+    using enum key::Uri_type;
 
     Uri_type uri_type{};
 
@@ -277,4 +277,4 @@ void Uri::append_meta_string(std::vector<std::string>& meta_strings,
         }
     }
 }
-} // namespace keys
+} // namespace key

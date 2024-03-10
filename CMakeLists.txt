@@ -53,14 +53,14 @@ add_library(
 
   include/libhyphanet/libhyphanet.h
 
-  include/libhyphanet/keys.h
-  source/keys.cpp
+  include/libhyphanet/key.h
+  source/key.cpp
 
-  include/libhyphanet/keys/user.h
-  source/keys/user.cpp
+  include/libhyphanet/key/user.h
+  source/key/user.cpp
 
-  include/libhyphanet/keys/node.h
-  source/keys/node.cpp
+  include/libhyphanet/key/node.h
+  source/key/node.cpp
 
   # source/keys/user.cpp
   include/libhyphanet/support.h
