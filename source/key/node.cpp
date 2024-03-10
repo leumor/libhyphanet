@@ -15,11 +15,10 @@ namespace key::node {
 // Node_ssk
 // =============================================================================
 
-Node_ssk::Node_ssk(const std::vector<std::byte>& user_routing_key,
-                   const std::array<std::byte, 32>& encrypted_hashed_docname,
-                   Crypto_algorithm algo,
-                   std::optional<std::vector<std::byte>> pub_key)
-    : Node_key{algo},
+Ssk::Ssk(const std::vector<std::byte>& user_routing_key,
+         const std::array<std::byte, 32>& encrypted_hashed_docname,
+         Crypto_algorithm algo, std::optional<std::vector<std::byte>> pub_key)
+    : Key{algo},
       user_routing_key_{
           support::util::vector_to_array<std::byte, 32>(user_routing_key)},
       encrypted_hashed_docname_{encrypted_hashed_docname},
@@ -31,9 +30,9 @@ Node_ssk::Node_ssk(const std::vector<std::byte>& user_routing_key,
         make_routing_key(user_routing_key, encrypted_hashed_docname));
 }
 
-std::vector<std::byte> Node_ssk::make_routing_key(
-    const std::vector<std::byte>& user_routing_key,
-    const std::array<std::byte, 32>& encrypted_hashed_docname)
+std::vector<std::byte>
+Ssk::make_routing_key(const std::vector<std::byte>& user_routing_key,
+                      const std::array<std::byte, 32>& encrypted_hashed_docname)
 {
     using support::util::array_to_vector;
 

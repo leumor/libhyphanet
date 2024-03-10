@@ -141,7 +141,7 @@ void Subspace_key::check_invariants() const
 std::vector<std::byte> Subspace_key::get_extra_bytes() const
 {
     std::vector<std::byte> extra_bytes{
-        std::byte{node::Node_ssk::ssk_version}, // Node SSK version
+        std::byte{node::Ssk::ssk_version}, // Node SSK version
         std::byte{0}, // 0 = fetch (public) URI; 1 = insert (private) URI
         std::byte{
             static_cast<std::byte>(get_crypto_algorithm())}, // Crypto algorithm
@@ -262,12 +262,12 @@ std::optional<Usk> Ssk::to_usk() const
     return std::nullopt;
 }
 
-std::unique_ptr<node::Node_key> Ssk::get_node_key() const
+std::unique_ptr<node::Key> Ssk::get_node_key() const
 {
     // TODO Cache node key
-    return std::make_unique<node::Node_ssk>(get_routing_key(),
-                                            encrypted_hashed_docname_,
-                                            get_crypto_algorithm(), pub_key_);
+    return std::make_unique<node::Ssk>(get_routing_key(),
+                                       encrypted_hashed_docname_,
+                                       get_crypto_algorithm(), pub_key_);
 }
 
 // =============================================================================
@@ -575,11 +575,11 @@ Uri Chk::to_request_uri() const
     return this->to_uri();
 }
 
-std::unique_ptr<node::Node_key> Chk::get_node_key() const
+std::unique_ptr<node::Key> Chk::get_node_key() const
 {
     // TODO Cache node key
-    return std::make_unique<node::Node_chk>(get_routing_key(),
-                                            get_crypto_algorithm());
+    return std::make_unique<node::Chk>(get_routing_key(),
+                                       get_crypto_algorithm());
 }
 
 } // namespace key::user

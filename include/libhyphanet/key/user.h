@@ -335,8 +335,7 @@ public:
      *
      * @return The node key as a `node::Node_key` object.
      */
-    [[nodiscard]] virtual std::unique_ptr<node::Node_key> get_node_key() const
-        = 0;
+    [[nodiscard]] virtual std::unique_ptr<node::Key> get_node_key() const = 0;
 };
 
 /**
@@ -647,7 +646,7 @@ public:
      */
     [[nodiscard]] std::optional<Usk> to_usk() const;
 
-    [[nodiscard]] std::unique_ptr<node::Node_key> get_node_key() const override;
+    [[nodiscard]] std::unique_ptr<node::Key> get_node_key() const override;
 
     [[nodiscard]] std::optional<std::vector<std::byte>> get_pub_key() const
     {
@@ -1018,7 +1017,7 @@ public:
      *
      * @return The node::Node_key associated with this CHK.
      */
-    [[nodiscard]] std::unique_ptr<node::Node_key> get_node_key() const override;
+    [[nodiscard]] std::unique_ptr<node::Key> get_node_key() const override;
 
     /**
      * @brief The fixed length of the extra data segment in the URI for a Chk

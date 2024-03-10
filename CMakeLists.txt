@@ -62,7 +62,6 @@ add_library(
   include/libhyphanet/key/node.h
   source/key/node.cpp
 
-  # source/keys/user.cpp
   include/libhyphanet/support.h
   source/support.cpp
 
@@ -71,6 +70,12 @@ add_library(
 
   include/libhyphanet/support/base64.h
   source/support/base64.cpp
+
+  include/libhyphanet/data.h
+  source/data.cpp
+
+  include/libhyphanet/data/key.h
+  source/data/key.cpp
 
   $<TARGET_OBJECTS:objlib_cppcrypto>
 )

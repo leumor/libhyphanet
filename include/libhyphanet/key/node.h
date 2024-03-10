@@ -7,11 +7,10 @@
 #include <vector>
 
 namespace key::node {
-class LIBHYPHANET_EXPORT Node_key {
+class LIBHYPHANET_EXPORT Key {
 protected:
-    explicit Node_key(Crypto_algorithm algo): crypto_algorithm_(algo) {}
-    Node_key(const std::vector<std::byte>& node_routing_key,
-             Crypto_algorithm algo)
+    explicit Key(Crypto_algorithm algo): crypto_algorithm_(algo) {}
+    Key(const std::vector<std::byte>& node_routing_key, Crypto_algorithm algo)
         : node_routing_key_(node_routing_key), crypto_algorithm_(algo)
     {}
 
@@ -48,11 +47,10 @@ private:
         Crypto_algorithm::algo_aes_ctr_256_sha_256};
 };
 
-class LIBHYPHANET_EXPORT Node_chk : public Node_key {
+class LIBHYPHANET_EXPORT Chk : public Key {
 public:
-    Node_chk(const std::vector<std::byte>& node_routing_key,
-             Crypto_algorithm algo)
-        : Node_key{node_routing_key, algo}
+    Chk(const std::vector<std::byte>& node_routing_key, Crypto_algorithm algo)
+        : Key{node_routing_key, algo}
     {}
 
     static const std::byte base_type = std::byte{1};
@@ -60,12 +58,12 @@ public:
     static const size_t full_key_length = 34;
 };
 
-class LIBHYPHANET_EXPORT Node_ssk : public Node_key {
+class LIBHYPHANET_EXPORT Ssk : public Key {
 public:
-    Node_ssk(const std::vector<std::byte>& user_routing_key,
-             const std::array<std::byte, 32>& encrypted_hashed_docname,
-             Crypto_algorithm algo = Crypto_algorithm::algo_aes_ctr_256_sha_256,
-             std::optional<std::vector<std::byte>> pub_key = std::nullopt);
+    Ssk(const std::vector<std::byte>& user_routing_key,
+        const std::array<std::byte, 32>& encrypted_hashed_docname,
+        Crypto_algorithm algo = Crypto_algorithm::algo_aes_ctr_256_sha_256,
+        std::optional<std::vector<std::byte>> pub_key = std::nullopt);
     static const std::byte ssk_version = std::byte{1};
 private:
     [[nodiscard]] static std::vector<std::byte>
