@@ -395,6 +395,11 @@ void Sha256::update(const std::vector<std::byte>& data)
     hasher_.Update(bytes_to_cryptoppbytes_ptr(data), data.size());
 }
 
+void Sha256::update(std::byte data)
+{
+    hasher_.Update(bytes_to_cryptoppbytes_ptr(std::vector<std::byte>{data}), 1);
+}
+
 void Sha256::update(std::string_view str)
 {
     hasher_.Update(std::bit_cast<CryptoPP::byte*>(str.data()), str.size());

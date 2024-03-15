@@ -7,6 +7,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <gsl/assert>
 #include <libhyphanet/libhyphanet_export.h>
 #include <ranges>
 #include <stdexcept>
@@ -55,6 +56,9 @@ namespace concepts {
         // The value_type of the range matches T
         requires std::same_as<typename R::value_type, T>;
     };
+
+    template<typename T> concept Integer = std::is_integral_v<T>;
+
 } // namespace concepts
 
 namespace util {
@@ -338,6 +342,10 @@ namespace util {
         if (v.size() != N) { return false; }
         return std::equal(v.begin(), v.end(), a.begin());
     }
+
+    [[nodiscard]] LIBHYPHANET_EXPORT double
+    key_digest_as_normalized_double(const std::vector<std::byte>& digest);
+
 } // namespace util
 
 namespace compressor {
@@ -383,6 +391,21 @@ namespace url {
     url_encode(std::string_view uri, bool ascii, std::string_view force = "",
                std::string_view extra_safe_chars = "");
 } // namespace url
+
+namespace field {
+    template<concepts::Integer T>
+    T bytes_to_integer(const std::vector<std::byte>& buf, size_t offset = 0)
+    {
+        Expects(buf.size() >= sizeof(T) + offset);
+
+        T x = 0;
+        for (size_t j = sizeof(T); j > 0; --j) {
+            auto y = static_cast<T>(buf[j - 1 + offset]);
+            x = (x << 8) | y;
+        }
+        return x;
+    }
+} // namespace field
 
 } // namespace support
 

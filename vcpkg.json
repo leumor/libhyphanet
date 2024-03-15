@@ -4,7 +4,7 @@
   "dependencies": [
     {
       "name": "fmt",
-      "version>=": "10.1.0"
+      "version>=": "10.2.1"
     },
     {
       "name": "ms-gsl",
@@ -16,11 +16,11 @@
     },
     {
       "name": "boost-algorithm",
-      "version>=": "1.83.0"
+      "version>=": "1.84.0"
     },
     {
       "name": "icu",
-      "version>=": "73.1"
+      "version>=": "74.1"
     }
   ],
   "default-features": [],
@@ -35,5 +35,5 @@
       ]
     }
   },
-  "builtin-baseline": "7032c5759f823fc8699a5c37d5f7072464ccb9a8"
+  "builtin-baseline": "e105a86c97b8ab13d4dbe3f7bd9ebc17ece31634"
 }

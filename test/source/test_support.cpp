@@ -215,3 +215,18 @@ TEST_CASE("Freenet specified versions of base64", "[library][support]")
     decoded_u8str = decode_u8str_freenet(encoded);
     REQUIRE(decoded_u8str == u8str);
 }
+
+TEST_CASE("Fields related functions are working", "[library][support]")
+{
+    using namespace support::field;
+
+    SECTION("testBytesToInt")
+    {
+        std::vector<std::byte> bytes{std::byte{0}, std::byte{1}, std::byte{2},
+                                     std::byte{2}};
+
+        auto out_int = bytes_to_integer<int>(bytes, 0);
+
+        REQUIRE(out_int == 33685760);
+    }
+}

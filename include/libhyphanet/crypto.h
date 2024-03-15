@@ -103,6 +103,13 @@ public:
     void update(const std::vector<std::byte>& data);
 
     /**
+     * @brief Updates the hash with one byte data.
+     *
+     * @param data The data to update the hash with.
+     */
+    void update(std::byte data);
+
+    /**
      * @brief Updates the hash with a string view.
      *
      * @param str The string view to update the hash with.

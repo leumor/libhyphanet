@@ -71,11 +71,11 @@ add_library(
   include/libhyphanet/support/base64.h
   source/support/base64.cpp
 
-  include/libhyphanet/data.h
-  source/data.cpp
+  include/libhyphanet/block.h
+  source/block.cpp
 
-  include/libhyphanet/data/key.h
-  source/data/key.cpp
+  include/libhyphanet/bucket.h
+  source/bucket.cpp
 
   $<TARGET_OBJECTS:objlib_cppcrypto>
 )

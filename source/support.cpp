@@ -3,9 +3,11 @@
 #include <array>
 #include <bit>
 #include <cstddef>
+#include <cstdlib>
 #include <fmt/core.h>
 #include <gsl/util>
 #include <iterator>
+#include <limits>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -72,6 +74,18 @@ namespace util {
         }
 
         return bytes;
+    }
+
+    double key_digest_as_normalized_double(const std::vector<std::byte>& digest)
+    {
+        long as_long = std::abs(field::bytes_to_integer<long>(digest));
+
+        if (as_long == std::numeric_limits<long>::min()) {
+            as_long = std::numeric_limits<long>::max();
+        }
+
+        return static_cast<double>(as_long)
+               / static_cast<double>(std::numeric_limits<long>::max());
     }
 
 } // namespace util
