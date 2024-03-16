@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <gsl/assert>
 #include <libhyphanet/libhyphanet_export.h>
+#include <memory>
 #include <vector>
 
 namespace key::node {
@@ -14,16 +15,7 @@ namespace key::node {
  */
 class LIBHYPHANET_EXPORT Key {
 public:
-    /**
-     * @brief Get the key bytes.
-     *
-     * @details
-     * Not just the routing key, enough data to reconstruct the key (excluding
-     * any pubkey needed).
-     *
-     * @return std::vector<std::byte> the key bytes.
-     */
-    [[nodiscard]] virtual std::vector<std::byte> get_key_bytes() const = 0;
+    virtual ~Key() = default;
 
     /**
      * @brief Get the full key.
@@ -47,7 +39,7 @@ public:
      *
      * @return Key the copy of the key.
      */
-    [[nodiscard]] virtual Key archival_copy() const = 0;
+    [[nodiscard]] virtual std::unique_ptr<Key> archival_copy() const = 0;
 
     /**
      * @brief Get key type
@@ -58,13 +50,27 @@ public:
      * - Low 8 bit (```type & 0xFF```) is the crypto algorithm. (Currently only
      *   Crypto_algorithm::algo_aes_pcfb_256_sha_256 is supported).
      *
-     * @return std::byte the key type.
+     * @return short the key type.
      */
-    [[nodiscard]] virtual std::byte get_type() const = 0;
+    [[nodiscard]] virtual short get_type() const = 0;
+
+    /**
+     * @brief Get the key bytes.
+     *
+     * @details
+     * Not just the routing key, enough data to reconstruct the key (excluding
+     * any pubkey needed).
+     *
+     * @return std::vector<std::byte> the key bytes.
+     */
+    [[nodiscard]] virtual std::vector<std::byte> get_key_bytes() const
+    {
+        return node_routing_key_;
+    }
 
     [[nodiscard]] double to_normalized_double();
 
-    [[nodiscard]] std::vector<std::byte> get_node_routing_key() const
+    [[nodiscard]] const std::vector<std::byte>& get_node_routing_key() const
     {
         return node_routing_key_;
     }
@@ -124,6 +130,10 @@ public:
         : Key{node_routing_key, algo}
     {}
 
+    [[nodiscard]] std::vector<std::byte> get_full_key() const override;
+    [[nodiscard]] std::unique_ptr<Key> archival_copy() const override;
+    [[nodiscard]] short get_type() const override;
+
     static const std::byte base_type = std::byte{1};
     static const size_t key_length = 32;
     static const size_t full_key_length = 34;
@@ -136,8 +146,14 @@ public:
         Crypto_algorithm algo = Crypto_algorithm::algo_aes_ctr_256_sha_256,
         std::optional<std::vector<std::byte>> pub_key = std::nullopt);
 
+    [[nodiscard]] std::vector<std::byte> get_full_key() const override;
+    [[nodiscard]] std::unique_ptr<Key> archival_copy() const override;
+    [[nodiscard]] short get_type() const override;
+    [[nodiscard]] std::vector<std::byte> get_key_bytes() const override;
+
     static const std::byte ssk_version = std::byte{1};
     static const std::byte base_type = std::byte{2};
+    static const size_t full_key_length = 66;
 private:
     [[nodiscard]] static std::vector<std::byte>
     make_routing_key(const std::vector<std::byte>& user_routing_key,
@@ -146,6 +162,16 @@ private:
     std::array<std::byte, 32> user_routing_key_;
     std::array<std::byte, 32> encrypted_hashed_docname_{};
     std::optional<std::vector<std::byte>> pub_key_;
+};
+
+class LIBHYPHANET_EXPORT Archive_ssk : public Ssk {
+public:
+    Archive_ssk(const std::vector<std::byte>& user_routing_key,
+                const std::array<std::byte, 32>& encrypted_hashed_docname,
+                Crypto_algorithm algo
+                = Crypto_algorithm::algo_aes_ctr_256_sha_256)
+        : Ssk{user_routing_key, encrypted_hashed_docname, algo}
+    {}
 };
 } // namespace key::node
 
