@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <utility>
 #include <vector>
 
 namespace block {
@@ -15,11 +16,20 @@ class Storable {
 public:
     virtual ~Storable() = default;
 
-    [[nodiscard]] virtual std::vector<std::byte> get_node_routing_key() = 0;
-    [[nodiscard]] virtual std::vector<std::byte> get_full_key() = 0;
+    [[nodiscard]] virtual std::vector<std::byte> get_node_routing_key() const
+        = 0;
+    [[nodiscard]] virtual std::vector<std::byte> get_full_key() const = 0;
 };
 
+namespace exception {
+    class LIBHYPHANET_EXPORT Invalid_hash : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+} // namespace exception
+
 namespace node {
+
     /**
      * @brief Abstract class for fetched blocks.
      *
@@ -33,7 +43,7 @@ namespace node {
         [[nodiscard]] virtual std::optional<std::vector<std::byte>>
         get_pubkey_bytes() = 0;
 
-        [[nodiscard]] std::shared_ptr<key::node::Key> get_node_key()
+        [[nodiscard]] std::shared_ptr<key::node::Key> get_node_key() const
         {
             return node_key_;
         }
@@ -58,19 +68,37 @@ namespace node {
             return data_;
         }
 
+        [[nodiscard]] short get_hash_identifier() const
+        {
+            return hash_identifier_;
+        }
+
         static const short hash_sha_256 = 1;
     protected:
+        Key(const std::vector<std::byte>& data,
+            const std::vector<std::byte>& headers,
+            const std::shared_ptr<key::node::Chk>& node_key)
+            : data_{data}, headers_{headers}, node_key_{node_key}
+        {}
+
         void set_raw_headers(const std::vector<std::byte>& headers)
         {
             headers_ = headers;
         }
 
         void set_raw_data(const std::vector<std::byte>& data) { data_ = data; }
+
+        void set_node_key(std::shared_ptr<key::node::Key> node_key)
+        {
+            node_key_ = std::move(node_key);
+        }
+
+        void set_hash_identifier(short id) { hash_identifier_ = id; }
     private:
         std::vector<std::byte> data_;
         std::vector<std::byte> headers_;
-
         std::shared_ptr<key::node::Key> node_key_;
+        short hash_identifier_{0};
     };
 
     /**
@@ -79,13 +107,16 @@ namespace node {
      */
     class Chk : public Key {
     public:
-        Chk(std::vector<std::byte> data, std::vector<std::byte> headers,
-            std::shared_ptr<key::node::Chk> key = nullptr, bool verify = true,
+        Chk(const std::vector<std::byte>& data,
+            const std::vector<std::byte>& headers,
+            const std::shared_ptr<key::node::Chk>& node_key = nullptr,
+            bool verify = true,
             key::Crypto_algorithm algo
             = key::Crypto_algorithm::algo_aes_ctr_256_sha_256);
 
-        [[nodiscard]] std::vector<std::byte> get_node_routing_key() override;
-        [[nodiscard]] std::vector<std::byte> get_full_key() override;
+        [[nodiscard]] std::vector<std::byte>
+        get_node_routing_key() const override;
+        [[nodiscard]] std::vector<std::byte> get_full_key() const override;
 
         [[nodiscard]] std::optional<std::vector<std::byte>>
         get_pubkey_bytes() override
@@ -132,8 +163,9 @@ namespace node {
      */
     class Ssk : public Key {
     public:
-        Ssk(std::vector<std::byte> data, std::vector<std::byte> headers,
-            std::shared_ptr<key::node::Ssk> key, bool dont_verify);
+        Ssk(const std::vector<std::byte>& data,
+            const std::vector<std::byte>& headers,
+            const std::shared_ptr<key::node::Chk>& node_key, bool dont_verify);
 
         /**
          * @brief how much of the headers we compare in order to consider
