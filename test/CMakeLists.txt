@@ -46,6 +46,7 @@ target_link_libraries(
   cryptopp::cryptopp
   fmt::fmt
   ICU::i18n ICU::uc ICU::data
+  PkgConfig::gmp
   objlib_cppcrypto
 )
 target_compile_features(libhyphanet_test PRIVATE cxx_std_20)
