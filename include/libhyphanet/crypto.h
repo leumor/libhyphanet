@@ -2,6 +2,7 @@
 #define LIBHYPHANET_CRYPTO_H
 
 #include <array>
+#include <boost/multiprecision/gmp.hpp>
 #include <cryptopp/config_int.h>
 #include <cryptopp/cryptlib.h>
 #include <cryptopp/gfpcrypt.h>
@@ -9,8 +10,8 @@
 #include <cryptopp/queue.h>
 #include <cstddef>
 #include <libhyphanet/libhyphanet_export.h>
+#include <ranges>
 #include <vector>
-
 /**
  * @brief The crypto namespace contains functions and classes for cryptographic
  * operations.
@@ -22,15 +23,17 @@
  */
 namespace crypto {
 
-class LIBHYPHANET_EXPORT Encryption_error : public std::runtime_error {
-public:
-    using std::runtime_error::runtime_error;
-};
+namespace exception {
+    class LIBHYPHANET_EXPORT Encryption_error : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
 
-class LIBHYPHANET_EXPORT Decryption_error : public std::runtime_error {
-public:
-    using std::runtime_error::runtime_error;
-};
+    class LIBHYPHANET_EXPORT Decryption_error : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+} // namespace exception
 
 /**
  * @brief Encrypts data using the Rijndael algorithm with a 256-bit key and
@@ -100,7 +103,12 @@ public:
      *
      * @param data The data to update the hash with.
      */
-    void update(const std::vector<std::byte>& data);
+    template<std::ranges::viewable_range Range>
+    requires std::same_as<std::ranges::range_value_t<Range>, std::byte>
+    void update(const Range& data)
+    {
+        update(std::ranges::data(data), std::ranges::size(data));
+    }
 
     /**
      * @brief Updates the hash with one byte data.
@@ -123,6 +131,7 @@ public:
      */
     [[nodiscard]] std::array<std::byte, 32> digest();
 private:
+    void update(const std::byte* data, std::size_t length);
     CryptoPP::SHA256 hasher_;
 };
 
@@ -136,22 +145,29 @@ private:
  * to DSA operations.
  */
 namespace dsa {
-    /**
-     * @brief Exception for invalid private key errors.
-     */
-    class LIBHYPHANET_EXPORT Invalid_priv_key_error
-        : public std::runtime_error {
-    public:
-        using std::runtime_error::runtime_error;
-    };
 
-    /**
-     * @brief Exception for invalid public key errors.
-     */
-    class LIBHYPHANET_EXPORT Invalid_pub_key_error : public std::runtime_error {
-    public:
-        using std::runtime_error::runtime_error;
-    };
+    namespace exception {
+        /**
+         * @brief Exception for invalid private key errors.
+         */
+        class LIBHYPHANET_EXPORT Invalid_priv_key_error
+            : public std::runtime_error {
+        public:
+            using std::runtime_error::runtime_error;
+        };
+
+        /**
+         * @brief Exception for invalid public key errors.
+         */
+        class LIBHYPHANET_EXPORT Invalid_pub_key_error
+            : public std::runtime_error {
+        public:
+            using std::runtime_error::runtime_error;
+        };
+    } // namespace exception
+
+    static const boost::multiprecision::mpz_int signature_mask{
+        boost::multiprecision::pow(boost::multiprecision::mpz_int{2}, 255) - 1};
 
     /**
      * @brief Converts private key bytes to PKCS#8 format.

@@ -19,6 +19,14 @@
       "version>=": "1.84.0"
     },
     {
+      "name": "boost-multiprecision",
+      "version>=": "1.84.0"
+    },
+    {
+      "name": "gmp",
+      "version>=": "6.3.0"
+    },
+    {
       "name": "icu",
       "version>=": "74.1"
     }

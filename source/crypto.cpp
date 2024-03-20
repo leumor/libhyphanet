@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <array>
 #include <bit>
+#include <boost/multiprecision/fwd.hpp>
+#include <boost/multiprecision/gmp.hpp>
 #include <cryptopp/config_int.h>
 #include <cryptopp/cryptlib.h>
 #include <cryptopp/filters.h>
@@ -16,6 +18,7 @@
 #include <cryptopp/secblock.h>
 #include <cryptopp/seckey.h>
 #include <cstddef>
+#include <gmp.h>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -46,6 +49,26 @@ namespace {
             cryptopp_bytes, std::back_inserter(std_bytes),
             [](CryptoPP::byte b) { return std::bit_cast<std::byte>(b); });
         return std_bytes;
+    }
+
+    /**
+     * @brief Converts a range of std::byte to a pointer to CryptoPP bytes.
+     *
+     * @details
+     * This utility function provides a way to convert a range of std::byte to
+     * a pointer that can be used with CryptoPP functions expecting a byte
+     * pointer.
+     *
+     * @param bytes The vector of std::byte to convert.
+     *
+     * @return A pointer to the converted CryptoPP::byte array.
+     */
+    template<std::ranges::viewable_range Range>
+    requires std::same_as<std::ranges::range_value_t<Range>, std::byte>
+    [[nodiscard]] const CryptoPP::byte*
+    bytes_to_cryptoppbytes_ptr(const Range& bytes)
+    {
+        return std::bit_cast<const CryptoPP::byte*>(std::ranges::data(bytes));
     }
 
     /**
@@ -87,24 +110,6 @@ namespace {
             bytearr, cryptopp_bytearr.begin(),
             [](std::byte b) { return std::bit_cast<CryptoPP::byte>(b); });
         return cryptopp_bytearr;
-    }
-
-    /**
-     * @brief Converts a vector of std::byte to a pointer to CryptoPP bytes.
-     *
-     * @details
-     * This utility function provides a way to convert a vector of std::byte to
-     * a pointer that can be used with CryptoPP functions expecting a byte
-     * pointer.
-     *
-     * @param bytes The vector of std::byte to convert.
-     *
-     * @return A pointer to the converted CryptoPP::byte array.
-     */
-    [[nodiscard]] const CryptoPP::byte*
-    bytes_to_cryptoppbytes_ptr(const std::vector<std::byte>& bytes)
-    {
-        return std::bit_cast<const CryptoPP::byte*>(bytes.data());
     }
 
     /**
@@ -290,6 +295,53 @@ namespace {
             = CryptoPP::BlockCipherFinal<CryptoPP::ENCRYPTION, Dec>;
     };
 
+    CryptoPP::Integer
+    mpz_int_to_cryptopp_integer(boost::multiprecision::mpz_int num)
+    {
+        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        mpz_t num_gmp;
+        mpz_init(num_gmp);
+        mpz_set(num_gmp, num.backend().data());
+        // Determine the number of bits in the integer
+        const size_t num_bits = mpz_sizeinbase(num_gmp, 2);
+
+        // Calculate the number of bytes needed to store the bits
+        const size_t num_bytes = (num_bits + 7) / 8;
+
+        std::vector<CryptoPP::byte> encoded(num_bytes);
+
+        // Export the bits to the byte array
+        size_t count{};
+        mpz_export(encoded.data(), &count, 1, sizeof(CryptoPP::byte), 1, 0,
+                   num_gmp);
+
+        mpz_clear(num_gmp);
+        // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+
+        return {encoded.data(), encoded.size(), CryptoPP::Integer::UNSIGNED};
+    }
+
+    boost::multiprecision::mpz_int
+    cryptopp_integer_to_mpz_int(const CryptoPP::Integer& num)
+    {
+        const size_t encoded_size = num.MinEncodedSize();
+        std::vector<CryptoPP::byte> encoded(encoded_size);
+        num.Encode(encoded.data(), encoded.size(), CryptoPP::Integer::UNSIGNED);
+
+        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+        mpz_t num_gmp;
+        mpz_init(num_gmp);
+        mpz_import(num_gmp, encoded.size(), 1, sizeof(CryptoPP::byte), 1, 0,
+                   encoded.data());
+
+        boost::multiprecision::mpz_int result{num_gmp};
+
+        mpz_clear(num_gmp);
+        // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+
+        return result;
+    }
+
 } // namespace
 
 std::array<std::byte, 32>
@@ -352,7 +404,7 @@ rijndael256_256_pcfb_encrypt(const std::array<std::byte, 32>& key,
         ); // StringSource
     }
     catch (CryptoPP::Exception& e) {
-        throw Encryption_error{e.what()};
+        throw exception::Encryption_error{e.what()};
     }
 
     return cryptoppbytes_to_bytes(cipher);
@@ -384,15 +436,16 @@ rijndael256_256_pcfb_decrypt(const std::array<std::byte, 32>& key,
         ); // StringSource
     }
     catch (CryptoPP::Exception& e) {
-        throw Decryption_error{e.what()};
+        throw exception::Decryption_error{e.what()};
     }
 
     return cryptoppbytes_to_bytes(plain);
 }
 
-void Sha256::update(const std::vector<std::byte>& data)
+void Sha256::update(const std::byte* data, std::size_t length)
 {
-    hasher_.Update(bytes_to_cryptoppbytes_ptr(data), data.size());
+    auto cryptopp_data = std::bit_cast<const unsigned char*>(data);
+    hasher_.Update(cryptopp_data, length);
 }
 
 void Sha256::update(std::byte data)
@@ -418,9 +471,9 @@ namespace dsa {
          * @brief Holds the DSA group parameters (p, q, g).
          *
          * @details
-         * This structure encapsulates the DSA group parameters, which are three
-         * large prime numbers that define the finite field and subgroup used
-         * for DSA operations.
+         * This structure encapsulates the DSA group parameters, which are
+         * three large prime numbers that define the finite field and
+         * subgroup used for DSA operations.
          */
         struct Group_parameters {
             CryptoPP::Integer p; ///< The prime modulus p.
@@ -432,40 +485,54 @@ namespace dsa {
          * @brief Predefined DSA group parameters for a specific DSA group.
          *
          * @details
-         * This variable holds a set of predefined DSA group parameters for a
-         * specific DSA group. These parameters are used to initialize DSA key
-         * objects for cryptographic operations.
+         * This variable holds a set of predefined DSA group parameters for
+         * a specific DSA group. These parameters are used to initialize DSA
+         * key objects for cryptographic operations.
          */
         const Group_parameters group_big_a_params{
-            CryptoPP::Integer{
-                "0x008608ac4f55361337f2a3e38ab1864ff3c98d66411d8d2afc9c526320c5"
-                "41f65078e86bc78494a5d73e4a9a67583f941f2993ed6c97dbc795dd88f091"
-                "5c9cfbffc7e5373cde13e3c7ca9073b9106eb31bf82272ed0057f984a870a1"
-                "9f8a83bfa707d16440c382e62d3890473ea79e9d50c4ac6b1f1d30b10c32a0"
-                "2f685833c6278fc29eb3439c5333885614a115219b3808c92a37a0f365cd5e"
-                "61b5861761dad9eff0ce23250f558848f8db932b87a3bd8d7a2f7cf99c7582"
-                "2bdc2fb7c1a1d78d0bcf81488ae0de5269ff853ab8b8f1f2bf3e6c0564573f"
-                "612808f68dbfef49d5c9b4a705794cf7a424cd4eb1e0260552e67bfc1fa37b"
-                "4a1f78b757ef185e86e9"},
+            CryptoPP::Integer{"0x008608ac4f55361337f2a3e38ab1864ff3c98d6641"
+                              "1d8d2afc9c526320c5"
+                              "41f65078e86bc78494a5d73e4a9a67583f941f2993ed"
+                              "6c97dbc795dd88f091"
+                              "5c9cfbffc7e5373cde13e3c7ca9073b9106eb31bf822"
+                              "72ed0057f984a870a1"
+                              "9f8a83bfa707d16440c382e62d3890473ea79e9d50c4"
+                              "ac6b1f1d30b10c32a0"
+                              "2f685833c6278fc29eb3439c5333885614a115219b38"
+                              "08c92a37a0f365cd5e"
+                              "61b5861761dad9eff0ce23250f558848f8db932b87a3"
+                              "bd8d7a2f7cf99c7582"
+                              "2bdc2fb7c1a1d78d0bcf81488ae0de5269ff853ab8b8"
+                              "f1f2bf3e6c0564573f"
+                              "612808f68dbfef49d5c9b4a705794cf7a424cd4eb1e0"
+                              "260552e67bfc1fa37b"
+                              "4a1f78b757ef185e86e9"},
             CryptoPP::Integer{"0x00b143368abcd51f58d6440d5417399339a4d15bef096a"
                               "2c5d8e6df44f52d6d379"},
-            CryptoPP::Integer{
-                "0x51a45ab670c1c9fd10bd395a6805d33339f5675e4b0d35defc9fa03aa5c2"
-                "bf4ce9cfcdc256781291bfff6d546e67d47ae4e160f804ca72ec3c5492709f"
-                "5f80f69e6346dd8d3e3d8433b6eeef63bce7f98574185c6aff161c9b536d76"
-                "f873137365a4246cf414bfe8049ee11e31373cd0a6558e2950ef095320ce86"
-                "218f992551cc292224114f3b60146d22dd51f8125c9da0c028126ffa85efd4"
-                "f4bfea2c104453329cc1268a97e9a835c14e4a9a43c6a1886580e35ad8f1de"
-                "230e1af32208ef9337f1924702a4514e95dc16f30f0c11e714a112ee84a9d8"
-                "d6c9bc9e74e336560bb5cd4e91eabf6dad26bf0ca04807f8c31a2fc18ea7d4"
-                "5baab7cc997b53c356"}};
+            CryptoPP::Integer{"0x51a45ab670c1c9fd10bd395a6805d33339f5675e4b"
+                              "0d35defc9fa03aa5c2"
+                              "bf4ce9cfcdc256781291bfff6d546e67d47ae4e160f8"
+                              "04ca72ec3c5492709f"
+                              "5f80f69e6346dd8d3e3d8433b6eeef63bce7f9857418"
+                              "5c6aff161c9b536d76"
+                              "f873137365a4246cf414bfe8049ee11e31373cd0a655"
+                              "8e2950ef095320ce86"
+                              "218f992551cc292224114f3b60146d22dd51f8125c9d"
+                              "a0c028126ffa85efd4"
+                              "f4bfea2c104453329cc1268a97e9a835c14e4a9a43c6"
+                              "a1886580e35ad8f1de"
+                              "230e1af32208ef9337f1924702a4514e95dc16f30f0c"
+                              "11e714a112ee84a9d8"
+                              "d6c9bc9e74e336560bb5cd4e91eabf6dad26bf0ca048"
+                              "07f8c31a2fc18ea7d4"
+                              "5baab7cc997b53c356"}};
 
         /**
          * @brief Loads a DSA private key from a byte vector.
          *
          * @details
-         * This function takes a byte vector representing a DSA private key and
-         * initializes a
+         * This function takes a byte vector representing a DSA private key
+         * and initializes a
          * [CryptoPP::DSA::PrivateKey](https://cryptopp.com/docs/ref/class_d_l___private_key___g_f_p.html)
          * object with it. It throws an exception if the key is invalid or
          * cannot be loaded.
@@ -476,8 +543,8 @@ namespace dsa {
          * [CryptoPP::DSA::PrivateKey](https://cryptopp.com/docs/ref/class_d_l___private_key___g_f_p.html)
          * object.
          *
-         * @throws Invalid_priv_key_error if the key is invalid or cannot be
-         * loaded.
+         * @throws exception::Invalid_priv_key_error if the key is invalid or
+         * cannot be loaded.
          */
         CryptoPP::DSA::PrivateKey
         load_priv_key(const std::vector<std::byte>& key_bytes)
@@ -499,11 +566,12 @@ namespace dsa {
                 private_key.SetPrivateExponent(x);
             }
             catch (CryptoPP::Exception&) {
-                throw Invalid_priv_key_error("Unable to load dsa private key");
+                throw exception::Invalid_priv_key_error(
+                    "Unable to load dsa private key");
             }
 
             if (!private_key.Validate(prng, 3)) {
-                throw Invalid_pub_key_error(
+                throw exception::Invalid_pub_key_error(
                     "Dsa private key validation failed");
             }
 
@@ -514,8 +582,8 @@ namespace dsa {
          * @brief Loads a DSA public key from a byte vector.
          *
          * @details
-         * This function takes a byte vector representing a DSA public key and
-         * initializes a
+         * This function takes a byte vector representing a DSA public key
+         * and initializes a
          * [CryptoPP::DSA::PublicKey](https://cryptopp.com/docs/ref/class_d_l___public_key___g_f_p.html)
          * object with it. It throws an exception if the key is invalid or
          * cannot be loaded.
@@ -526,8 +594,8 @@ namespace dsa {
          * [CryptoPP::DSA::PublicKey](https://cryptopp.com/docs/ref/class_d_l___public_key___g_f_p.html)
          * object.
          *
-         * @throws Invalid_pub_key_error if the key is invalid or cannot be
-         * loaded.
+         * @throws exception::Invalid_pub_key_error if the key is invalid or
+         * cannot be loaded.
          */
         CryptoPP::DSA::PublicKey
         load_pub_key(const std::vector<std::byte>& key_bytes)
@@ -548,11 +616,13 @@ namespace dsa {
                 pub_key.SetPublicElement(y);
             }
             catch (CryptoPP::Exception&) {
-                throw Invalid_pub_key_error("Unable to load dsa public key");
+                throw exception::Invalid_pub_key_error(
+                    "Unable to load dsa public key");
             }
 
             if (!pub_key.Validate(prng, 3)) {
-                throw Invalid_pub_key_error("Dsa public key validation failed");
+                throw exception::Invalid_pub_key_error(
+                    "Dsa public key validation failed");
             }
 
             return pub_key;
@@ -564,8 +634,8 @@ namespace dsa {
          * @details
          * This function takes a
          * [CryptoPP::DSA::PrivateKey](https://cryptopp.com/docs/ref/class_d_l___private_key___g_f_p.html)
-         * object and converts it to a byte vector. The private key bytes are
-         * big-endian encoded `x` values.
+         * object and converts it to a byte vector. The private key bytes
+         * are big-endian encoded `x` values.
          *
          * @param priv_key The DSA private key to convert.
          *

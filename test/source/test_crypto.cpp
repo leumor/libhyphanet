@@ -3,13 +3,18 @@
 #include "libhyphanet/support.h"
 #include <algorithm>
 #include <array>
+#include <boost/multiprecision/fwd.hpp>
+#include <boost/multiprecision/gmp.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cryptopp/config_int.h>
 #include <cryptopp/gfpcrypt.h>
 #include <cryptopp/integer.h>
 #include <cstddef>
 #include <fmt/core.h>
 #include <fmt/format.h>
+#include <gmp.h>
 #include <string>
+#include <vector>
 
 std::array<std::byte, 32>
 chars_to_bytes(const std::array<signed char, 32>& chars)
@@ -143,4 +148,17 @@ TEST_CASE("SHA-256", "[library][crypto]")
     std::ranges::copy(bytes_to_verify, digest_to_verify.begin());
 
     REQUIRE(digest == digest_to_verify);
+}
+
+TEST_CASE("Boost::multiprecision::mpz_int to CryptoPP::Integer conversion",
+          "[library][crypto]")
+{
+    const CryptoPP::Integer a{"12345"};
+    boost::multiprecision::mpz_int b{"12345"};
+
+    auto result_boost = crypto::cryptopp_integer_to_mpz_int(a);
+    REQUIRE(result_boost == b);
+
+    auto result_cryptopp = crypto::mpz_int_to_cryptopp_integer(b);
+    REQUIRE(result_cryptopp == a);
 }

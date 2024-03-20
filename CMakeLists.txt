@@ -13,6 +13,8 @@ project(
 include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)
 
+set(CMAKE_OSX_DEPLOYMENT_TARGET 14.3)
+
 if(BUILD_SHARED_LIBS)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
@@ -138,8 +140,12 @@ target_link_libraries(libhyphanet_libhyphanet PRIVATE cryptopp::cryptopp)
 
 find_package(Boost REQUIRED COMPONENTS)
 
-# target_link_libraries(libhyphanet_libhyphanet PRIVATE Boost::algorithm)
+# target_link_libraries(libhyphanet_libhyphanet PRIVATE Boost::multiprecision)
 target_include_directories(libhyphanet_libhyphanet PRIVATE ${Boost_INCLUDE_DIRS})
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(gmp REQUIRED IMPORTED_TARGET gmp)
+target_link_libraries(libhyphanet_libhyphanet PRIVATE PkgConfig::gmp)
 
 find_package(ICU REQUIRED COMPONENTS i18n uc data)
 target_link_libraries(libhyphanet_libhyphanet PRIVATE ICU::i18n ICU::uc ICU::data)

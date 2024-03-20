@@ -151,6 +151,11 @@ public:
     [[nodiscard]] short get_type() const override;
     [[nodiscard]] std::vector<std::byte> get_key_bytes() const override;
 
+    [[nodiscard]] std::optional<std::vector<std::byte>> get_pub_key() const
+    {
+        return pub_key_;
+    }
+
     static const std::byte ssk_version = std::byte{1};
     static const std::byte base_type = std::byte{2};
     static const size_t full_key_length = 66;

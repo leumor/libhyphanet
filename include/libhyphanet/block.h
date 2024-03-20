@@ -12,6 +12,8 @@
 
 namespace block {
 
+static const size_t ssk_data_decrypt_key_length = 32;
+
 class Storable {
 public:
     virtual ~Storable() = default;
@@ -26,6 +28,7 @@ namespace exception {
     public:
         using std::runtime_error::runtime_error;
     };
+
 } // namespace exception
 
 namespace node {
@@ -41,7 +44,7 @@ namespace node {
     class Key : public Storable {
     public:
         [[nodiscard]] virtual std::optional<std::vector<std::byte>>
-        get_pubkey_bytes() = 0;
+        get_pub_key() = 0;
 
         [[nodiscard]] std::shared_ptr<key::node::Key> get_node_key() const
         {
@@ -77,7 +80,7 @@ namespace node {
     protected:
         Key(const std::vector<std::byte>& data,
             const std::vector<std::byte>& headers,
-            const std::shared_ptr<key::node::Chk>& node_key)
+            const std::shared_ptr<key::node::Key>& node_key)
             : data_{data}, headers_{headers}, node_key_{node_key}
         {}
 
@@ -119,7 +122,7 @@ namespace node {
         [[nodiscard]] std::vector<std::byte> get_full_key() const override;
 
         [[nodiscard]] std::optional<std::vector<std::byte>>
-        get_pubkey_bytes() override
+        get_pub_key() override
         {
             return std::nullopt;
         }
@@ -165,7 +168,7 @@ namespace node {
     public:
         Ssk(const std::vector<std::byte>& data,
             const std::vector<std::byte>& headers,
-            const std::shared_ptr<key::node::Chk>& node_key, bool dont_verify);
+            const std::shared_ptr<key::node::Ssk>& node_key, bool verify);
 
         /**
          * @brief how much of the headers we compare in order to consider
@@ -189,6 +192,10 @@ namespace node {
         static const size_t sig_s_length = 32;
         static const size_t e_h_docname_length = 32;
         static const size_t encrypted_headers_length = 36;
+
+        static const size_t total_headers_length
+            = 2 + sig_r_length + sig_s_length + 2 + e_h_docname_length
+              + ssk_data_decrypt_key_length;
     private:
         /**
          * @brief The index of the first byte of encrypted fields in the
@@ -197,6 +204,8 @@ namespace node {
         size_t headers_offset_;
 
         std::vector<std::byte> pub_key_;
+
+        short sym_cipher_identifier_{0};
     };
 } // namespace node
 
