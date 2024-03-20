@@ -6,10 +6,10 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
-#include <gsl/assert>
 #include <gsl/util>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <stdexcept>
 #include <vector>
 
@@ -138,6 +138,9 @@ namespace node {
                                   + sig_r_length + sig_s_length,
                               signature.begin());
 
+            // x isn't verified otherwise so no need to += sig_r_length +
+            // sig_s_length
+
             // Compute the hash on the data
             crypto::Sha256 sha265;
             sha265.update(data);
@@ -152,6 +155,25 @@ namespace node {
             auto overall_hash = sha265.digest();
 
             // Now verify it
+
+            // We probably don't need to try both here...
+            // but that's what the legacy code was doing...
+            if (!(crypto::dsa::verify(
+                      pub_key_,
+                      crypto::dsa::truncate_hash(
+                          support::util::array_to_vector(overall_hash)),
+                      support::util::array_to_vector(signature))
+                  || crypto::dsa::verify(
+                      pub_key_, support::util::array_to_vector(overall_hash),
+                      support::util::array_to_vector(signature)))) {
+                throw exception::Invalid_signature(
+                    "Signature verification failed for node-level SSK");
+            }
+        }
+
+        if (e_h_docname != node_key->get_encrypted_hashed_docname()) {
+            throw exception::Invalid_e_h_docname(
+                "E(H(docname)) wrong - wrong key?");
         }
     }
 } // namespace node

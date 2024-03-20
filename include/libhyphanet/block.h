@@ -29,6 +29,16 @@ namespace exception {
         using std::runtime_error::runtime_error;
     };
 
+    class LIBHYPHANET_EXPORT Invalid_signature : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
+    class LIBHYPHANET_EXPORT Invalid_e_h_docname : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
 } // namespace exception
 
 namespace node {

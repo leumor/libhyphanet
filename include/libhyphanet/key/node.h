@@ -151,6 +151,11 @@ public:
     [[nodiscard]] short get_type() const override;
     [[nodiscard]] std::vector<std::byte> get_key_bytes() const override;
 
+    [[nodiscard]] std::array<std::byte, 32> get_encrypted_hashed_docname() const
+    {
+        return encrypted_hashed_docname_;
+    }
+
     [[nodiscard]] std::optional<std::vector<std::byte>> get_pub_key() const
     {
         return pub_key_;
