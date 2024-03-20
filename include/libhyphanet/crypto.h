@@ -135,17 +135,22 @@ private:
     CryptoPP::SHA256 hasher_;
 };
 
+[[nodiscard]] LIBHYPHANET_EXPORT boost::multiprecision::mpz_int
+bytes_to_mpz_int(const std::vector<std::byte>& bytes);
+
+[[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
+mpz_int_to_bytes(const boost::multiprecision::mpz_int& num);
+
 /**
- * @brief The dsa namespace within crypto contains functions and classes related
- * to the DSA (Digital Signature Algorithm).
+ * @brief The dsa namespace within crypto contains functions and classes
+ * related to the DSA (Digital Signature Algorithm).
  *
  * @details
- * This namespace provides tools for generating DSA keys, signing messages, and
- * verifying signatures. It also includes exceptions for handling errors related
- * to DSA operations.
+ * This namespace provides tools for generating DSA keys, signing messages,
+ * and verifying signatures. It also includes exceptions for handling errors
+ * related to DSA operations.
  */
 namespace dsa {
-
     namespace exception {
         /**
          * @brief Exception for invalid private key errors.
@@ -168,6 +173,9 @@ namespace dsa {
 
     static const boost::multiprecision::mpz_int signature_mask{
         boost::multiprecision::pow(boost::multiprecision::mpz_int{2}, 255) - 1};
+
+    [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
+    truncate_hash(const std::vector<std::byte>& hash);
 
     /**
      * @brief Converts private key bytes to PKCS#8 format.

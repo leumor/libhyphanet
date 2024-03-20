@@ -27,6 +27,7 @@
 #include <vector>
 
 namespace crypto {
+
 namespace {
     /**
      * @brief Converts a vector of CryptoPP bytes to a vector of std::byte.
@@ -295,30 +296,24 @@ namespace {
             = CryptoPP::BlockCipherFinal<CryptoPP::ENCRYPTION, Dec>;
     };
 
-    CryptoPP::Integer
-    mpz_int_to_cryptopp_integer(boost::multiprecision::mpz_int num)
+    std::vector<CryptoPP::byte>
+    mpz_int_to_bytes(const boost::multiprecision::mpz_int& num)
     {
-        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-        mpz_t num_gmp;
-        mpz_init(num_gmp);
-        mpz_set(num_gmp, num.backend().data());
-        // Determine the number of bits in the integer
-        const size_t num_bits = mpz_sizeinbase(num_gmp, 2);
+        return bytes_to_cryptoppbytes(crypto::mpz_int_to_bytes(num));
+    }
 
-        // Calculate the number of bytes needed to store the bits
-        const size_t num_bytes = (num_bits + 7) / 8;
-
-        std::vector<CryptoPP::byte> encoded(num_bytes);
-
-        // Export the bits to the byte array
-        size_t count{};
-        mpz_export(encoded.data(), &count, 1, sizeof(CryptoPP::byte), 1, 0,
-                   num_gmp);
-
-        mpz_clear(num_gmp);
-        // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+    CryptoPP::Integer
+    mpz_int_to_cryptopp_integer(const boost::multiprecision::mpz_int& num)
+    {
+        auto encoded = mpz_int_to_bytes(num);
 
         return {encoded.data(), encoded.size(), CryptoPP::Integer::UNSIGNED};
+    }
+
+    boost::multiprecision::mpz_int
+    bytes_to_mpz_int(const std::vector<CryptoPP::byte>& bytes)
+    {
+        return crypto::bytes_to_mpz_int(cryptoppbytes_to_bytes(bytes));
     }
 
     boost::multiprecision::mpz_int
@@ -328,18 +323,7 @@ namespace {
         std::vector<CryptoPP::byte> encoded(encoded_size);
         num.Encode(encoded.data(), encoded.size(), CryptoPP::Integer::UNSIGNED);
 
-        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-        mpz_t num_gmp;
-        mpz_init(num_gmp);
-        mpz_import(num_gmp, encoded.size(), 1, sizeof(CryptoPP::byte), 1, 0,
-                   encoded.data());
-
-        boost::multiprecision::mpz_int result{num_gmp};
-
-        mpz_clear(num_gmp);
-        // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-
-        return result;
+        return bytes_to_mpz_int(encoded);
     }
 
 } // namespace
@@ -463,6 +447,47 @@ std::array<std::byte, 32> Sha256::digest()
     std::array<std::byte, 32> digest{};
     hasher_.Final(std::bit_cast<CryptoPP::byte*>(digest.data()));
     return digest;
+}
+
+boost::multiprecision::mpz_int
+bytes_to_mpz_int(const std::vector<std::byte>& bytes)
+{
+    // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+    mpz_t num_gmp;
+    mpz_init(num_gmp);
+    mpz_import(num_gmp, bytes.size(), 1, sizeof(CryptoPP::byte), 1, 0,
+               bytes.data());
+
+    boost::multiprecision::mpz_int result{num_gmp};
+
+    mpz_clear(num_gmp);
+    // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+
+    return result;
+}
+
+std::vector<std::byte>
+mpz_int_to_bytes(const boost::multiprecision::mpz_int& num)
+{
+    // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+    mpz_t num_gmp;
+    mpz_init(num_gmp);
+    mpz_set(num_gmp, num.backend().data());
+    // Determine the number of bits in the integer
+    const size_t num_bits = mpz_sizeinbase(num_gmp, 2);
+
+    // Calculate the number of bytes needed to store the bits
+    const size_t num_bytes = (num_bits + 7) / 8;
+
+    std::vector<std::byte> encoded(num_bytes);
+
+    size_t count{};
+    mpz_export(encoded.data(), &count, 1, sizeof(std::byte), 1, 0, num_gmp);
+
+    mpz_clear(num_gmp);
+    // NOLINTEND(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+
+    return encoded;
 }
 
 namespace dsa {
@@ -684,6 +709,13 @@ namespace dsa {
         }
 
     } // namespace
+
+    std::vector<std::byte> truncate_hash(const std::vector<std::byte>& hash)
+    {
+        auto m = bytes_to_mpz_int(hash);
+        m = m & signature_mask;
+        return crypto::mpz_int_to_bytes(m);
+    }
 
     std::vector<std::byte>
     priv_key_bytes_to_pkcs8(const std::vector<std::byte>& key_bytes)
