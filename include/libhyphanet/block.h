@@ -4,6 +4,7 @@
 #include "libhyphanet/key.h"
 #include "libhyphanet/key/node.h"
 #include "libhyphanet/key/user.h"
+#include "libhyphanet/support.h"
 #include <cstddef>
 #include <memory>
 #include <optional>
@@ -278,7 +279,22 @@ namespace user {
 
     class Chk : public Key {};
 
-    class Ssk : public Key {};
+    class Ssk : public Key {
+    public:
+        static const size_t max_decompressed_data_length = 32768;
+    private:
+        /**
+         * @brief Is metadata. Set on decode.
+         */
+        bool is_metadata_;
+
+        /**
+         * @brief Has decoded?
+         */
+        bool decoded_;
+
+        support::compressor::Compressor_type compression_algorithm_;
+    };
 
 } // namespace user
 } // namespace block
