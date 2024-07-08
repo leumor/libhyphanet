@@ -16,11 +16,15 @@
     },
     {
       "name": "boost-algorithm",
-      "version>=": "1.84.0"
+      "version>=": "1.85.0"
     },
     {
       "name": "boost-multiprecision",
-      "version>=": "1.84.0"
+      "version>=": "1.85.0"
+    },
+    {
+      "name": "boost-asio",
+      "version>=": "1.85.0"
     },
     {
       "name": "gmp",
@@ -28,7 +32,7 @@
     },
     {
       "name": "icu",
-      "version>=": "74.1"
+      "version>=": "74.2#3"
     }
   ],
   "default-features": [],
@@ -38,10 +42,10 @@
       "dependencies": [
         {
           "name": "catch2",
-          "version>=": "3.5.0"
+          "version>=": "3.6.0"
         }
       ]
     }
   },
-  "builtin-baseline": "e105a86c97b8ab13d4dbe3f7bd9ebc17ece31634"
+  "builtin-baseline": "afa12e7292fb47771e619675d7915645fe0adb1b"
 }
