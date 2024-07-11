@@ -102,14 +102,14 @@ struct LIBHYPHANET_EXPORT Uri_params {
 };
 
 // Forward declarations
-namespace user {
+namespace user::impl {
     class Ssk;
     class Insertable_ssk;
     class Usk;
     class Insertable_usk;
     class Ksk;
     class Chk;
-} // namespace user
+} // namespace user::impl
 
 /**
  * @brief Represents a Hyphanet URI
@@ -139,12 +139,12 @@ namespace user {
  * (e.g. `CHK@blahblahblah.html`). The constructor will remove it.
  */
 class LIBHYPHANET_EXPORT Uri {
-    friend class user::Ssk;
-    friend class user::Insertable_ssk;
-    friend class user::Usk;
-    friend class user::Insertable_usk;
-    friend class user::Ksk;
-    friend class user::Chk;
+    friend class user::impl::Ssk;
+    friend class user::impl::Insertable_ssk;
+    friend class user::impl::Usk;
+    friend class user::impl::Insertable_usk;
+    friend class user::impl::Ksk;
+    friend class user::impl::Chk;
 public:
     /**
      * @brief Construct a new `Uri` object

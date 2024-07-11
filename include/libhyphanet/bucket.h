@@ -12,7 +12,7 @@
 #include <string_view>
 #include <utility>
 
-namespace bucket {
+namespace support::bucket {
 
 /**
  * @brief A bucket is any arbitrary object can temporarily store data.
@@ -216,6 +216,6 @@ public:
 private:
     std::shared_ptr<Array> array_;
 };
-} // namespace bucket
+} // namespace support::bucket
 
 #endif /* LIBHYPHANET_BUCKET_H */

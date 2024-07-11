@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-namespace block {
+namespace support::block {
 
 static const size_t ssk_data_decrypt_key_length = 32;
 
@@ -297,6 +297,6 @@ namespace user {
     };
 
 } // namespace user
-} // namespace block
+} // namespace support::block
 
 #endif /* LIBHYPHANET_BLOCK_H */

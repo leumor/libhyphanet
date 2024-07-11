@@ -44,12 +44,12 @@ TEST_CASE("rijndael256_256", "[library][crypto]")
     });
 
     const std::array<std::byte, 32> encrypted
-        = crypto::rijndael256_256_encrypt(key, plain);
+        = support::crypto::rijndael256_256_encrypt(key, plain);
 
     REQUIRE(encrypted == cipher);
 
     const std::array<std::byte, 32> decrypted
-        = crypto::rijndael256_256_decrypt(key, cipher);
+        = support::crypto::rijndael256_256_decrypt(key, cipher);
 
     REQUIRE(decrypted == plain);
 
@@ -68,14 +68,14 @@ TEST_CASE("rijndael256_256", "[library][crypto]")
         "c964b00326e216214f1a68f5b08726081b403c92fe02898664a81f5bbbbf8341fc1d04"
         "b2c1addfb826cca1eab68131272751b9d6cd536f78059b10b4867dbbd9");
 
-    auto cipher_text = crypto::rijndael256_256_pcfb_encrypt(
+    auto cipher_text = support::crypto::rijndael256_256_pcfb_encrypt(
         pfcb_256_encrypt_key, pfcb_256_encrypt_iv, pcfb_256_encrypt_plaintext);
 
     fmt::println("PCFB 256 Cipher text: {:02x}", fmt::join(cipher_text, " "));
 
     REQUIRE(cipher_text == pcfb_256_encrypt_ciphertext);
 
-    auto plain_text = crypto::rijndael256_256_pcfb_decrypt(
+    auto plain_text = support::crypto::rijndael256_256_pcfb_decrypt(
         pfcb_256_encrypt_key, pfcb_256_encrypt_iv, cipher_text);
 
     fmt::println("PCFB 256 Plain text: {:02x}", fmt::join(plain_text, " "));
@@ -86,25 +86,28 @@ TEST_CASE("rijndael256_256", "[library][crypto]")
 TEST_CASE("DSA", "[library][crypto]")
 {
     using namespace CryptoPP;
-    using namespace crypto::dsa;
+    using namespace support::crypto::dsa;
 
-    auto [priv_key_bytes, pub_key_bytes] = crypto::dsa::generate_keys();
+    auto [priv_key_bytes, pub_key_bytes]
+        = support::crypto::dsa::generate_keys();
 
     fmt::println("Private key bytes: {:02x}", fmt::join(priv_key_bytes, " "));
 
     fmt::println(
         "Private key: {:02x}",
-        fmt::join(crypto::dsa::priv_key_bytes_to_pkcs8(priv_key_bytes), " "));
+        fmt::join(support::crypto::dsa::priv_key_bytes_to_pkcs8(priv_key_bytes),
+                  " "));
 
     fmt::println(
         "Public key: {:02x}",
-        fmt::join(crypto::dsa::pub_key_bytes_to_x509(pub_key_bytes), " "));
+        fmt::join(support::crypto::dsa::pub_key_bytes_to_x509(pub_key_bytes),
+                  " "));
 
     const auto message = support::util::str_to_bytes("Hello, world!");
-    const auto signature = crypto::dsa::sign(priv_key_bytes, message);
+    const auto signature = support::crypto::dsa::sign(priv_key_bytes, message);
     fmt::println("Signature: {:02x}", fmt::join(signature, " "));
 
-    REQUIRE(crypto::dsa::verify(pub_key_bytes, message, signature));
+    REQUIRE(support::crypto::dsa::verify(pub_key_bytes, message, signature));
 
     DL_GroupParameters_DSA params;
     params.Initialize(group_big_a_params.p, group_big_a_params.q,
@@ -130,7 +133,7 @@ TEST_CASE("DSA", "[library][crypto]")
 
 TEST_CASE("SHA-256", "[library][crypto]")
 {
-    crypto::Sha256 hasher;
+    support::crypto::Sha256 hasher;
 
     const std::string message_1{"Yoda said, Do or do not. "};
     const std::string message_2{"There is no try."};
@@ -156,9 +159,9 @@ TEST_CASE("Boost::multiprecision::mpz_int to CryptoPP::Integer conversion",
     const CryptoPP::Integer a{"12345"};
     boost::multiprecision::mpz_int b{"12345"};
 
-    auto result_boost = crypto::cryptopp_integer_to_mpz_int(a);
+    auto result_boost = support::crypto::cryptopp_integer_to_mpz_int(a);
     REQUIRE(result_boost == b);
 
-    auto result_cryptopp = crypto::mpz_int_to_cryptopp_integer(b);
+    auto result_cryptopp = support::crypto::mpz_int_to_cryptopp_integer(b);
     REQUIRE(result_cryptopp == a);
 }
