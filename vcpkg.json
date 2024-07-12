@@ -16,15 +16,15 @@
     },
     {
       "name": "boost-algorithm",
-      "version>=": "1.85.0"
+      "version>=": "1.85.0#1"
     },
     {
       "name": "boost-multiprecision",
-      "version>=": "1.85.0"
+      "version>=": "1.85.0#2"
     },
     {
       "name": "boost-asio",
-      "version>=": "1.85.0"
+      "version>=": "1.85.0#2"
     },
     {
       "name": "gmp",

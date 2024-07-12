@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <gsl/util>
 #include <memory>
-#include <ostream>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -22,7 +21,7 @@ namespace support::bucket {
  * RAM, on disk, encrypted, part of a file on disk, composed of a chain of other
  * buckets etc.
  *
- * A bucket also meets the requirrements of Boost Asio's AsyncReadStream and
+ * A bucket also meets the requirements of Boost Asio's AsyncReadStream and
  * AsyncWriteStream.
  *
  */
