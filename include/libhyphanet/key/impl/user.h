@@ -299,27 +299,6 @@ private:
 };
 
 /**
- * @brief A mixin class for Client Keys.
- *
- * @details
- * Client keys are decodable. Node keys are not. When data has been
- * fetched to a node-level Key Block, it can only be decoded after a
- * Client Key Block has been constructed from the node-level block and
- * the client key. The client key generally contains the encryption keys
- * which the node level does not know about, but which are in the URI -
- * usually the second part, after the comma.
- */
-class Client : public virtual key::user::Client {
-public:
-    /**
-     * @brief Returns the node key corresponding to this key.
-     *
-     * @return The node key as a `node::Node_key` object.
-     */
-    [[nodiscard]] std::unique_ptr<node::Key> get_node_key() const override;
-};
-
-/**
  * @brief **Subspace %Key** is a subtype of Key that encoded a [document
  * name](#doc_name_) (can be used as a site name) into it.
  *
@@ -712,7 +691,7 @@ public:
     Usk& operator=(Usk&& other) noexcept = default;
     ~Usk() override = default;
 
-    [[nodiscard]] long get_suggested_edition() const
+    [[nodiscard]] long get_suggested_edition() const override
     {
         return suggested_edition_;
     }
@@ -884,9 +863,7 @@ private:
  * exact content that was originally inserted. CHks are fundamental to
  * Hyphanet's goal of censorship-resistant storage.
  */
-class LIBHYPHANET_EXPORT Chk : public virtual key::user::Chk,
-                               public Key,
-                               public Client {
+class LIBHYPHANET_EXPORT Chk : public virtual key::user::Chk, public Key {
 public:
     /**
      * @brief Construct a new **Content Hash %Key** (CHK) object.

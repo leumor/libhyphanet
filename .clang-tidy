@@ -15,6 +15,7 @@ Checks: >
   portability-*,
   readability-*,
   -modernize-use-trailing-return-type,
+  -modernize-use-constraints,
   -readability-qualified-auto,
   -llvm-qualified-auto,
   -cppcoreguidelines-avoid-magic-numbers,

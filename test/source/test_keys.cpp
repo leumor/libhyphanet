@@ -32,12 +32,12 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
         REQUIRE(wanna_ssk_1
                 == dynamic_cast<user::Usk*>(usk.get())
                        ->to_ssk()
-                       .to_uri()
+                       ->to_uri()
                        .to_string());
 
         auto usk_2 = dynamic_cast<user::Ssk*>(ssk.get())->to_usk();
         REQUIRE(usk_2 != std::nullopt);
-        REQUIRE(wanna_usk_1 == (*usk_2).to_uri().to_string()); // NOLINT
+        REQUIRE(wanna_usk_1 == (*usk_2)->to_uri().to_string()); // NOLINT
 
         uri_ssk = Uri::create(
             "SSK@5hH~39FtjA7A9~VXWtBKI~prUDTuJZURudDG0xFn3KA,GDgRGt5f6xqbmo-"

@@ -77,9 +77,8 @@ add_library(
   include/libhyphanet/block.h
   source/block.cpp
 
-  include/libhyphanet/bucket.h
-  source/bucket.cpp
-
+  # include/libhyphanet/bucket.h
+  # source/bucket.cpp
   $<TARGET_OBJECTS:objlib_cppcrypto>
 )
 add_library(libhyphanet::libhyphanet ALIAS libhyphanet_libhyphanet)
