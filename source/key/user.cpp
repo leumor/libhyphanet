@@ -193,11 +193,11 @@ namespace impl {
 
     void Ssk::calculate_encrypted_hashed_docname()
     {
-        support::crypto::Sha256 hasher;
+        crypto::Sha256 hasher;
         hasher.update(impl::Subspace_key::get_docname());
         const auto buf = hasher.digest();
-        encrypted_hashed_docname_ = support::crypto::rijndael256_256_encrypt(
-            impl::Key::get_crypto_key(), buf);
+        encrypted_hashed_docname_
+            = crypto::rijndael256_256_encrypt(impl::Key::get_crypto_key(), buf);
     }
 
     void Ssk::set_pub_key(const std::vector<std::byte>& pub_key)
@@ -207,7 +207,7 @@ namespace impl {
         }
         if (auto routing_key = impl::Key::get_routing_key();
             !routing_key.empty()) {
-            if (auto new_key_hash = support::crypto::dsa::pub_key_hash(pub_key);
+            if (auto new_key_hash = crypto::dsa::pub_key_hash(pub_key);
                 impl::Key::get_routing_key()
                 != support::util::array_to_vector(new_key_hash)) {
                 throw std::invalid_argument{
@@ -222,7 +222,7 @@ namespace impl {
     {
         // Verify pub_key_hash
         if (pub_key_) {
-            auto pub_key_hash = support::crypto::dsa::pub_key_hash(*pub_key_);
+            auto pub_key_hash = crypto::dsa::pub_key_hash(*pub_key_);
             auto routing_key = impl::Key::get_routing_key();
             if (routing_key != support::util::array_to_vector(pub_key_hash)) {
                 throw exception::Malformed_uri{
@@ -303,12 +303,12 @@ namespace impl {
         set_routing_key(std::vector<std::byte>{}); // Disable pub_key/priv_key
                                                    // matching check
 
-        auto pub_key = support::crypto::dsa::make_pub_key(
-            impl::Insertable::get_priv_key());
+        auto pub_key
+            = crypto::dsa::make_pub_key(impl::Insertable::get_priv_key());
         set_pub_key(pub_key);
 
-        set_routing_key(support::util::array_to_vector(
-            support::crypto::dsa::pub_key_hash(pub_key)));
+        set_routing_key(
+            support::util::array_to_vector(crypto::dsa::pub_key_hash(pub_key)));
     }
 
     Uri Insertable_ssk::to_uri() const
@@ -426,10 +426,10 @@ namespace impl {
         Expects(extra.at(1) == std::byte{1});
 
         set_priv_key(impl::Key::get_routing_key());
-        auto pub_key = support::crypto::dsa::make_pub_key(get_priv_key());
+        auto pub_key = crypto::dsa::make_pub_key(get_priv_key());
 
-        set_routing_key(support::util::array_to_vector(
-            support::crypto::dsa::pub_key_hash(pub_key)));
+        set_routing_key(
+            support::util::array_to_vector(crypto::dsa::pub_key_hash(pub_key)));
     }
 
     Uri Insertable_usk::to_request_uri() const
@@ -469,17 +469,16 @@ namespace impl {
 
         keyword_ = *keyword;
 
-        support::crypto::Sha256 hasher;
+        crypto::Sha256 hasher;
         hasher.update(keyword_);
         set_crypto_key(hasher.digest());
 
-        auto [priv_key_bytes, pub_key_bytes]
-            = support::crypto::dsa::generate_keys();
+        auto [priv_key_bytes, pub_key_bytes] = crypto::dsa::generate_keys();
         set_priv_key(priv_key_bytes);
         set_pub_key(pub_key_bytes);
 
         set_routing_key(support::util::array_to_vector(
-            support::crypto::dsa::pub_key_hash(pub_key_bytes)));
+            crypto::dsa::pub_key_hash(pub_key_bytes)));
     }
 
     Uri Ksk::to_uri() const

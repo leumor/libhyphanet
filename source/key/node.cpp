@@ -23,7 +23,7 @@ namespace key::node::impl {
 double Key::to_normalized_double()
 {
     if (cached_normalized_double_ > 0) { return cached_normalized_double_; }
-    auto sha256 = support::crypto::Sha256();
+    auto sha256 = crypto::Sha256();
     sha256.update(node_routing_key_);
     auto type = get_type();
     sha256.update(gsl::narrow_cast<std::byte>(type >> 8));
@@ -96,7 +96,7 @@ Ssk::make_routing_key(const std::vector<std::byte>& user_routing_key,
 {
     using support::util::array_to_vector;
 
-    auto sha256 = support::crypto::Sha256();
+    auto sha256 = crypto::Sha256();
     sha256.update(array_to_vector(encrypted_hashed_docname));
     sha256.update(user_routing_key);
     return array_to_vector(sha256.digest());

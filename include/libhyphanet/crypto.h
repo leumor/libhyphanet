@@ -21,7 +21,7 @@
  * using various algorithms. It provides a high-level interface for secure
  * cryptographic transformations on data.
  */
-namespace support::crypto {
+namespace crypto {
 
 namespace exception {
     class LIBHYPHANET_EXPORT Encryption_error : public std::runtime_error {
@@ -351,6 +351,6 @@ namespace dsa {
 
 } // namespace dsa
 
-} // namespace support::crypto
+} // namespace crypto
 
 #endif /* LIBHYPHANET_CRYPTO_H */

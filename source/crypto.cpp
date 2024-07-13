@@ -26,7 +26,7 @@
 #include <utility>
 #include <vector>
 
-namespace support::crypto {
+namespace crypto {
 
 namespace {
     /**
@@ -901,4 +901,4 @@ namespace dsa {
 
 } // namespace dsa
 
-} // namespace support::crypto
+} // namespace crypto
