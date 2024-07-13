@@ -583,10 +583,9 @@ private:
  * Hyphanet network. They are crucial for maintaining mutable content
  * where the owner wishes to update the content securely.
  */
-class LIBHYPHANET_EXPORT Insertable_ssk
-    : public virtual key::user::Insertable_ssk,
-      public Ssk,
-      public Insertable {
+class Insertable_ssk : public virtual key::user::Insertable_ssk,
+                       public Ssk,
+                       public Insertable {
 public:
     /**
      * @brief Constructs an Insertable_ssk object with specified key
@@ -675,8 +674,7 @@ protected:
  * - [Document name](#Subspace_key#docname_).
  * - [Document edition number](#suggested_edition_).
  */
-class LIBHYPHANET_EXPORT Usk : public virtual key::user::Usk,
-                               public Subspace_key {
+class Usk : public virtual key::user::Usk, public Subspace_key {
 public:
     Usk(Key_params key, std::string_view docname, long suggested_edition = -1)
         : Subspace_key{std::move(key), docname},
@@ -781,10 +779,9 @@ private:
  * of new data versions but with the added functionality of USKs for
  * dynamic content updates.
  */
-class LIBHYPHANET_EXPORT Insertable_usk
-    : public virtual key::user::Insertable_usk,
-      public Usk,
-      public Insertable {
+class Insertable_usk : public virtual key::user::Insertable_usk,
+                       public Usk,
+                       public Insertable {
 public:
     /**
      * @brief Constructs an Insertable_usk object from an existing Usk
@@ -825,8 +822,7 @@ protected:
  * human-readable string. They are less secure than SSKs or USKs but
  * offer a straightforward way to share and access static content.
  */
-class LIBHYPHANET_EXPORT Ksk : public virtual key::user::Ksk,
-                               public Insertable_ssk {
+class Ksk : public virtual key::user::Ksk, public Insertable_ssk {
 public:
     explicit Ksk(std::string keyword);
 
@@ -863,7 +859,7 @@ private:
  * exact content that was originally inserted. CHks are fundamental to
  * Hyphanet's goal of censorship-resistant storage.
  */
-class LIBHYPHANET_EXPORT Chk : public virtual key::user::Chk, public Key {
+class Chk : public virtual key::user::Chk, public Key {
 public:
     /**
      * @brief Construct a new **Content Hash %Key** (CHK) object.

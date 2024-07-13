@@ -82,7 +82,7 @@ private:
     double cached_normalized_double_{-1.0};
 };
 
-class LIBHYPHANET_EXPORT Chk : public virtual key::node::Chk, public Key {
+class Chk : public virtual key::node::Chk, public Key {
 public:
     Chk(const std::vector<std::byte>& node_routing_key, Crypto_algorithm algo)
         : Key{node_routing_key, algo}
@@ -94,7 +94,7 @@ public:
     [[nodiscard]] short get_type() const override;
 };
 
-class LIBHYPHANET_EXPORT Ssk : public virtual key::node::Ssk, public Key {
+class Ssk : public virtual key::node::Ssk, public Key {
 public:
     Ssk(const std::vector<std::byte>& user_routing_key,
         const std::array<std::byte, 32>& encrypted_hashed_docname,
