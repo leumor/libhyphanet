@@ -1,7 +1,6 @@
 #include "libhyphanet/block.h"
 #include "libhyphanet/crypto.h"
 #include "libhyphanet/key.h"
-#include "libhyphanet/key/impl/node.h"
 #include "libhyphanet/key/node.h"
 #include "libhyphanet/support.h"
 #include <algorithm>
