@@ -1,6 +1,7 @@
 #include "libhyphanet/key/node.h"
 #include "libhyphanet/crypto.h"
 #include "libhyphanet/key.h"
+#include "libhyphanet/key/impl/node.h"
 #include "libhyphanet/support.h"
 #include <algorithm>
 #include <array>
@@ -13,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-namespace key::node {
+namespace key::node::impl {
 
 // =============================================================================
 // Key
@@ -65,7 +66,7 @@ short Chk::get_type() const
             static_cast<std::byte>(get_crypto_algorithm()) & std::byte{0xFF}));
 }
 
-std::unique_ptr<Key> Chk::archival_copy() const
+std::unique_ptr<key::node::Key> Chk::archival_copy() const
 {
     return std::make_unique<Chk>(*this);
 }
@@ -115,7 +116,7 @@ std::vector<std::byte> Ssk::get_full_key() const
     return buf;
 }
 
-std::unique_ptr<Key> Ssk::archival_copy() const
+std::unique_ptr<key::node::Key> Ssk::archival_copy() const
 {
     return std::make_unique<Archive_ssk>(
         support::util::array_to_vector(user_routing_key_),
@@ -135,4 +136,4 @@ std::vector<std::byte> Ssk::get_key_bytes() const
     return support::util::array_to_vector(encrypted_hashed_docname_);
 }
 
-} // namespace key::node
+} // namespace key::node::impl

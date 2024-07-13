@@ -1,6 +1,7 @@
 #include "libhyphanet/key/user.h"
 #include "libhyphanet/crypto.h"
 #include "libhyphanet/key.h"
+#include "libhyphanet/key/impl/node.h"
 #include "libhyphanet/key/impl/user.h"
 #include "libhyphanet/key/node.h"
 #include "libhyphanet/support.h"
@@ -279,7 +280,7 @@ namespace impl {
     std::unique_ptr<node::Key> Ssk::get_node_key() const
     {
         // TODO Cache node key
-        return std::make_unique<node::Ssk>(
+        return std::make_unique<node::impl::Ssk>(
             impl::Key::get_routing_key(), encrypted_hashed_docname_,
             impl::Key::get_crypto_algorithm(), pub_key_);
     }
@@ -594,8 +595,8 @@ namespace impl {
     std::unique_ptr<node::Key> Chk::get_node_key() const
     {
         // TODO Cache node key
-        return std::make_unique<node::Chk>(get_routing_key(),
-                                           get_crypto_algorithm());
+        return std::make_unique<node::impl::Chk>(get_routing_key(),
+                                                 get_crypto_algorithm());
     }
 
 } // namespace impl

@@ -1,6 +1,7 @@
 #include "libhyphanet/block.h"
 #include "libhyphanet/crypto.h"
 #include "libhyphanet/key.h"
+#include "libhyphanet/key/impl/node.h"
 #include "libhyphanet/key/node.h"
 #include "libhyphanet/support.h"
 #include <algorithm>
@@ -51,7 +52,8 @@ Chk::Chk(const std::vector<std::byte>& data,
         auto hash_vec = support::util::array_to_vector(hash);
 
         if (node_key == nullptr) {
-            set_node_key(std::make_shared<key::node::Chk>(hash_vec, algo));
+            set_node_key(
+                std::make_shared<key::node::impl::Chk>(hash_vec, algo));
         }
         else {
             auto check = get_node_key();

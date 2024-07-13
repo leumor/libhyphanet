@@ -63,6 +63,7 @@ add_library(
   source/key/user.cpp
 
   include/libhyphanet/key/node.h
+  include/libhyphanet/key/impl/node.h
   source/key/node.cpp
 
   include/libhyphanet/support.h
