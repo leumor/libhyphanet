@@ -13,7 +13,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace support::block::node {
+namespace block::node {
 // =========================================================================
 // Key
 // =========================================================================
@@ -176,4 +176,4 @@ Ssk::Ssk(const std::vector<std::byte>& data,
             "E(H(docname)) wrong - wrong key?");
     }
 }
-} // namespace support::block::node
+} // namespace block::node

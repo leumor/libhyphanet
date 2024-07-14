@@ -1,7 +1,6 @@
 #ifndef LIBHYPHANET_BLOCK_H
 #define LIBHYPHANET_BLOCK_H
 
-#include "libhyphanet/key.h"
 #include "libhyphanet/key/node.h"
 #include "libhyphanet/key/user.h"
 #include "libhyphanet/support.h"
@@ -11,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-namespace support::block {
+namespace block {
 
 static const size_t ssk_data_decrypt_key_length = 32;
 
@@ -297,6 +296,6 @@ namespace user {
     };
 
 } // namespace user
-} // namespace support::block
+} // namespace block
 
 #endif /* LIBHYPHANET_BLOCK_H */
