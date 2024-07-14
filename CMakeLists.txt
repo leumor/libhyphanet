@@ -59,11 +59,9 @@ add_library(
   source/key.cpp
 
   include/libhyphanet/key/user.h
-  include/libhyphanet/key/impl/user.h
   source/key/user.cpp
 
   include/libhyphanet/key/node.h
-  include/libhyphanet/key/impl/node.h
   source/key/node.cpp
 
   include/libhyphanet/support.h
@@ -78,8 +76,9 @@ add_library(
   include/libhyphanet/block.h
   source/block.cpp
 
-  # include/libhyphanet/bucket.h
-  # source/bucket.cpp
+  include/libhyphanet/bucket.h
+  include/libhyphanet/bucket/random.h
+  source/bucket.cpp
   $<TARGET_OBJECTS:objlib_cppcrypto>
 )
 add_library(libhyphanet::libhyphanet ALIAS libhyphanet_libhyphanet)

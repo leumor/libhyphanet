@@ -31,7 +31,7 @@ namespace key::user {
  * used across various Key types to standardize the initialization
  * and configuration process.
  */
-struct Key_params {
+struct LIBHYPHANET_EXPORT Key_params {
     /**
      * @brief The routing key part of the Key object.
      */

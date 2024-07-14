@@ -16,7 +16,6 @@
 #include <string_view>
 #include <tuple>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 namespace key {
@@ -112,10 +111,6 @@ namespace user::impl {
     class Ksk;
     class Chk;
 } // namespace user::impl
-
-namespace node {
-    class Key;
-} // namespace node
 
 /**
  * @brief Represents a Hyphanet URI
