@@ -1,4 +1,4 @@
-#include "libhyphanet/block.h"
+#include "libhyphanet/block/node.h"
 #include "libhyphanet/crypto.h"
 #include "libhyphanet/key.h"
 #include "libhyphanet/key/node.h"
@@ -13,7 +13,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace block::node {
+namespace block::node::impl {
 // =========================================================================
 // Key
 // =========================================================================
@@ -176,4 +176,4 @@ Ssk::Ssk(const std::vector<std::byte>& data,
             "E(H(docname)) wrong - wrong key?");
     }
 }
-} // namespace block::node
+} // namespace block::node::impl
