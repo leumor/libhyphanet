@@ -3,7 +3,6 @@
 
 #include "libhyphanet/support.h"
 #include <cryptopp/config_int.h>
-#include <optional>
 #include <string_view>
 #include <vector>
 

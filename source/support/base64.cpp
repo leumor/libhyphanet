@@ -8,7 +8,6 @@
 #include <cryptopp/config_int.h>
 #include <cryptopp/filters.h> // NOLINT
 #include <cstddef>
-#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
