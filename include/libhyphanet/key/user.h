@@ -264,15 +264,13 @@ public:
      * accessed through Ssk but needs to be managed or referenced as Usk
      * for updates or versioning purposes.
      *
-     * @return A std::optional containing a Usk object if the conversion
-     * is successful, or an empty optional if the document name does not
-     * include an edition number or does not follow the expected format.
+     * @return A Usk object if the conversion is successful, or a nullptr if the
+     * document name does not include an edition number or does not follow the
+     * expected format.
      */
-    [[nodiscard]] virtual std::optional<std::unique_ptr<key::user::Usk>>
-    to_usk() const = 0;
+    [[nodiscard]] virtual std::unique_ptr<key::user::Usk> to_usk() const = 0;
 
-    [[nodiscard]] virtual std::optional<std::vector<std::byte>>
-    get_pub_key() const = 0;
+    [[nodiscard]] virtual std::vector<std::byte> get_pub_key() const = 0;
 
     /**
      * @brief The character to separate the site name from the edition
@@ -589,10 +587,10 @@ namespace impl {
          * meta strings and returns it. If there are no meta strings left,
          * it returns std::nullopt.
          *
-         * @return An optional containing the first meta string if
-         * available, or std::nullopt if there are no meta strings left.
+         * @return A non-empty string containing the first meta string if
+         * available, or an empty string if there are no meta strings left.
          */
-        std::optional<std::string> pop_meta_strings();
+        std::string pop_meta_strings();
     private:
         /**
          * @brief Checks the invariants of the Key object.
@@ -875,8 +873,7 @@ namespace impl {
          * public key, used for content verification.
          */
         Ssk(Key_params key, std::string_view docname,
-            const std::optional<const std::vector<std::byte>>& pub_key
-            = std::nullopt)
+            const std::vector<std::byte>& pub_key = {})
             : key::user::impl::Subspace_key{std::move(key), docname},
               pub_key_{pub_key}
         {
@@ -931,17 +928,15 @@ namespace impl {
          * accessed through Ssk but needs to be managed or referenced as Usk
          * for updates or versioning purposes.
          *
-         * @return A std::optional containing a Usk object if the conversion
-         * is successful, or an empty optional if the document name does not
-         * include an edition number or does not follow the expected format.
+         * @return A Usk object if the conversion is successful, or a nullptr if
+         * the document name does not include an edition number or does not
+         * follow the expected format.
          */
-        [[nodiscard]] std::optional<std::unique_ptr<key::user::Usk>>
-        to_usk() const override;
+        [[nodiscard]] std::unique_ptr<key::user::Usk> to_usk() const override;
 
         [[nodiscard]] std::unique_ptr<node::Key> get_node_key() const override;
 
-        [[nodiscard]] std::optional<std::vector<std::byte>>
-        get_pub_key() const override
+        [[nodiscard]] std::vector<std::byte> get_pub_key() const override
         {
             return pub_key_;
         }
@@ -983,12 +978,12 @@ namespace impl {
          * @brief Optionally stores the public key associated with the Ssk.
          *
          * @details
-         * This optional variable holds the public key if it is provided
-         * during the construction of the Ssk. The public key is used for
-         * verifying the authenticity of content updates in the network. If
-         * the public key is not provided, this variable remains empty.
+         * This variable holds the public key if it is provided during the
+         * construction of the Ssk. The public key is used for verifying the
+         * authenticity of content updates in the network. If the public key is
+         * not provided, this variable remains empty.
          */
-        std::optional<std::vector<std::byte>> pub_key_;
+        std::vector<std::byte> pub_key_;
     };
 
     /**

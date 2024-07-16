@@ -145,9 +145,9 @@ Uri::parse_routing_crypto_keys(const std::string_view keys_str)
 {
     auto keys_str_copy = keys_str;
 
-    std::optional<std::string_view> routing_key;
-    std::optional<std::string_view> crypto_key;
-    std::optional<std::string_view> extra;
+    std::string_view routing_key;
+    std::string_view crypto_key;
+    std::string_view extra;
 
     size_t comma_pos = std::string_view::npos;
     if (comma_pos = keys_str_copy.find(',');
@@ -165,17 +165,17 @@ Uri::parse_routing_crypto_keys(const std::string_view keys_str)
     if (!keys_str_copy.empty()) { extra = keys_str_copy; }
 
     using namespace support::base64;
-    if (routing_key && crypto_key && extra) {
+    if (!routing_key.empty() && !crypto_key.empty() && !extra.empty()) {
         // URI does contain RoutingKey, CryptoKey and ExtraData
-        auto crypto_key_bytes = decode_freenet(*crypto_key);
+        auto crypto_key_bytes = decode_freenet(crypto_key);
         if (crypto_key_bytes.size() != crypto_key_length) {
             throw exception::Malformed_uri{"Invalid URI: invalid crypto key"};
         }
 
         return std::tuple{
-            decode_freenet(*routing_key),
+            decode_freenet(routing_key),
             vector_to_array<std::byte, crypto_key_length>(crypto_key_bytes),
-            decode_freenet(*extra)};
+            decode_freenet(extra)};
     }
     return std::nullopt;
 }

@@ -86,8 +86,7 @@ public:
     [[nodiscard]] virtual std::array<std::byte, 32>
     get_encrypted_hashed_docname() const = 0;
 
-    [[nodiscard]] virtual std::optional<std::vector<std::byte>>
-    get_pub_key() const = 0;
+    [[nodiscard]] virtual std::vector<std::byte> get_pub_key() const = 0;
 
     static const std::byte ssk_version = std::byte{1};
     static const std::byte base_type = std::byte{2};
@@ -194,7 +193,7 @@ namespace impl {
         Ssk(const std::vector<std::byte>& user_routing_key,
             const std::array<std::byte, 32>& encrypted_hashed_docname,
             Crypto_algorithm algo = Crypto_algorithm::algo_aes_ctr_256_sha_256,
-            std::optional<std::vector<std::byte>> pub_key = std::nullopt);
+            std::vector<std::byte> pub_key = {});
 
         [[nodiscard]] std::vector<std::byte> get_full_key() const override;
         [[nodiscard]] std::unique_ptr<key::node::Key>
@@ -208,8 +207,7 @@ namespace impl {
             return encrypted_hashed_docname_;
         }
 
-        [[nodiscard]] std::optional<std::vector<std::byte>>
-        get_pub_key() const override
+        [[nodiscard]] std::vector<std::byte> get_pub_key() const override
         {
             return pub_key_;
         }
@@ -220,7 +218,7 @@ namespace impl {
 
         std::array<std::byte, 32> user_routing_key_;
         std::array<std::byte, 32> encrypted_hashed_docname_{};
-        std::optional<std::vector<std::byte>> pub_key_;
+        std::vector<std::byte> pub_key_;
     };
 
     class LIBHYPHANET_EXPORT Archive_ssk

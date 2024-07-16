@@ -34,7 +34,7 @@ static const std::string base64_alphabet_freenet{
  */
 [[nodiscard]] LIBHYPHANET_EXPORT std::string
 encode(const std::vector<std::byte>& bytes, bool equals_pad,
-       std::optional<std::string_view> alphabet);
+       std::string_view alphabet);
 
 /**
  * @brief Encodes the given bytes using Base64 encoding with [Freenet specific
@@ -67,7 +67,7 @@ encode_freenet(const std::vector<std::byte>& bytes)
 [[nodiscard]] LIBHYPHANET_EXPORT inline std::string
 encode_standard(const std::vector<std::byte>& bytes)
 {
-    return encode(bytes, true, std::nullopt);
+    return encode(bytes, true, {});
 }
 
 /**
@@ -135,7 +135,7 @@ encode_basicstr_standard(std::basic_string_view<T> str)
 {
     auto bytes = util::basicstr_to_bytes(str);
 
-    return encode(bytes, true, std::nullopt);
+    return encode(bytes, true, {});
 }
 
 /**
@@ -174,7 +174,7 @@ encode_u8str_standard(std::u8string_view str)
  * @return The decoded bytes.
  */
 [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
-decode(std::string_view encoded, std::optional<std::string_view> alphabet);
+decode(std::string_view encoded, std::string_view alphabet);
 
 /**
  * @brief Decodes the given string using the Base64 encoding with the [Freenet
@@ -200,7 +200,7 @@ decode_freenet(std::string_view encoded)
 [[nodiscard]] LIBHYPHANET_EXPORT inline std::vector<std::byte>
 decode_standard(std::string_view encoded)
 {
-    return decode(encoded, std::nullopt);
+    return decode(encoded, {});
 }
 
 /**

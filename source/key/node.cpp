@@ -76,7 +76,7 @@ std::unique_ptr<key::node::Key> Chk::archival_copy() const
 
 Ssk::Ssk(const std::vector<std::byte>& user_routing_key,
          const std::array<std::byte, 32>& encrypted_hashed_docname,
-         Crypto_algorithm algo, std::optional<std::vector<std::byte>> pub_key)
+         Crypto_algorithm algo, std::vector<std::byte> pub_key)
     : Key{algo},
       user_routing_key_{
           support::util::vector_to_array<std::byte, 32>(user_routing_key)},

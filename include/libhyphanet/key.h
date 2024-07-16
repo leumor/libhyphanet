@@ -255,7 +255,7 @@ public:
     /**
      * @brief Get the meta strings from the URI
      *
-     * @return std::optional<std::vector<std::string>> The meta strings
+     * @return std::vector<std::string> The meta strings
      */
     [[nodiscard]] const std::vector<std::string>& get_meta_strings() const
     {

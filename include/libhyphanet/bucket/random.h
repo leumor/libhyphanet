@@ -2,9 +2,50 @@
 #define LIBHYPHANET_BUCKET_RANDOM_H
 
 #include "libhyphanet/bucket.h"
+#include <cstddef>
+#include <libhyphanet/libhyphanet_export.h>
+#include <memory>
 
 namespace bucket::random {
-class Array : public virtual Bucket {};
+
+/**
+ * @brief A Bucket which can be converted to a LockableRandomAccessBuffer
+ * without copying.
+ *
+ * @details
+ * Mostly we need
+ * this where the size of something we will later use as a RandomAccessBuffer is
+ * uncertain. It provides a separate object because the API's are incompatible;
+ * in particular, the size of a RandomAccessBuffer is fixed (and this is mostly
+ * a good thing).
+ *
+ * FINALIZERS: Persistent RandomAccessBucket's should never free on finalize.
+ * Transient RABs can free on finalize, but must ensure that this only happens
+ * if both the Bucket and the RAB are no longer reachable.
+ *
+ */
+class LIBHYPHANET_EXPORT Random_access : public virtual Bucket {
+public:
+    // TODO: toRandomAccessBuffer()
+};
+
+class LIBHYPHANET_EXPORT Array : public virtual Random_access {};
+
+class LIBHYPHANET_EXPORT Factory {
+public:
+    virtual ~Factory() = default;
+
+    /**
+     * @brief Create a bucket.
+     *
+     * @param size The maximum size of the data, or -1 if we don't know.
+     * Some buckets will throw IOException if you go over this length.
+     *
+     * @return Random_access a Random Access Bucket
+     */
+    [[nodiscard]] virtual std::unique_ptr<Random_access>
+    make_bucket(size_t size) const = 0;
+};
 
 namespace impl {
 
@@ -127,5 +168,16 @@ namespace impl {
         std::shared_ptr<Array> array_;
     };
 } // namespace impl
+namespace factory {
+    class LIBHYPHANET_EXPORT Array_factory : public Factory {
+    public:
+        [[nodiscard]] std::unique_ptr<Random_access>
+        make_bucket(size_t /*size*/) const override
+        {
+            return std::make_unique<impl::Array>();
+        }
+    };
+} // namespace factory
+
 } // namespace bucket::random
 #endif /* LIBHYPHANET_BUCKET_RANDOM_H */

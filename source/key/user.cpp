@@ -101,12 +101,13 @@ namespace impl {
         }
     }
 
-    std::optional<std::string> Key::pop_meta_strings()
+    std::string Key::pop_meta_strings()
     {
         std::string meta_string;
-        if (meta_strings_.empty()) { return std::nullopt; }
-        meta_string = std::move(meta_strings_.front());
-        meta_strings_.erase(meta_strings_.begin());
+        if (!meta_strings_.empty()) {
+            meta_string = std::move(meta_strings_.front());
+            meta_strings_.erase(meta_strings_.begin());
+        }
         return meta_string;
     }
 
@@ -123,8 +124,8 @@ namespace impl {
         impl::Key::init_from_uri(uri);
 
         // Docname should be the first item of meta strings
-        if (auto docname = pop_meta_strings(); docname) {
-            docname_ = std::move(*docname);
+        if (auto docname = pop_meta_strings(); !docname.empty()) {
+            docname_ = std::move(docname);
         }
 
         // Subspace_key always uses algo_aes_pcfb_256_sha_256
@@ -200,7 +201,7 @@ namespace impl {
 
     void Ssk::set_pub_key(const std::vector<std::byte>& pub_key)
     {
-        if (pub_key_ && pub_key_ != pub_key) {
+        if (!pub_key_.empty() && pub_key_ != pub_key) {
             throw std::invalid_argument{"Cannot reassign public key"};
         }
         if (auto routing_key = impl::Key::get_routing_key();
@@ -219,8 +220,8 @@ namespace impl {
     void Ssk::check_invariants() const
     {
         // Verify pub_key_hash
-        if (pub_key_) {
-            auto pub_key_hash = crypto::dsa::pub_key_hash(*pub_key_);
+        if (!pub_key_.empty()) {
+            auto pub_key_hash = crypto::dsa::pub_key_hash(pub_key_);
             auto routing_key = impl::Key::get_routing_key();
             if (routing_key != support::util::array_to_vector(pub_key_hash)) {
                 throw exception::Malformed_uri{
@@ -256,7 +257,7 @@ namespace impl {
         return std::nullopt;
     }
 
-    std::optional<std::unique_ptr<key::user::Usk>> Ssk::to_usk() const
+    std::unique_ptr<key::user::Usk> Ssk::to_usk() const
     {
         if (auto sitename_edition = parse_sitename_edition();
             sitename_edition) {
@@ -272,7 +273,7 @@ namespace impl {
 
             return std::move(ptr);
         }
-        return std::nullopt;
+        return nullptr;
     }
 
     std::unique_ptr<node::Key> Ssk::get_node_key() const
@@ -360,9 +361,10 @@ namespace impl {
         }
 
         // Suggested edition number is the second item of meta strings
-        if (auto suggested_edition = pop_meta_strings(); suggested_edition) {
+        if (auto suggested_edition = pop_meta_strings();
+            !suggested_edition.empty()) {
             try {
-                suggested_edition_ = std::stol(*suggested_edition);
+                suggested_edition_ = std::stol(suggested_edition);
             }
             catch (const std::invalid_argument&) {
                 throw exception::Malformed_uri{
@@ -461,11 +463,11 @@ namespace impl {
         set_meta_strings(uri.get_meta_strings());
 
         const auto& keyword = pop_meta_strings();
-        if (!keyword) {
+        if (keyword.empty()) {
             throw exception::Malformed_uri{"Invalid URI: missing keyword"};
         }
 
-        keyword_ = *keyword;
+        keyword_ = keyword;
 
         crypto::Sha256 hasher;
         hasher.update(keyword_);

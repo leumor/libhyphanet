@@ -28,8 +28,7 @@ public:
  */
 class LIBHYPHANET_EXPORT Key : public virtual Storable {
 public:
-    [[nodiscard]] virtual std::optional<std::vector<std::byte>> get_pub_key()
-        = 0;
+    [[nodiscard]] virtual std::vector<std::byte> get_pub_key() = 0;
 
     [[nodiscard]] virtual std::shared_ptr<key::node::Key> get_node_key() const
         = 0;
@@ -232,10 +231,9 @@ namespace impl {
         get_node_routing_key() const override;
         [[nodiscard]] std::vector<std::byte> get_full_key() const override;
 
-        [[nodiscard]] std::optional<std::vector<std::byte>>
-        get_pub_key() override
+        [[nodiscard]] std::vector<std::byte> get_pub_key() override
         {
-            return std::nullopt;
+            return {};
         }
     };
 

@@ -1,7 +1,6 @@
 #ifndef LIBHYPHANET_BUCKET_H
 #define LIBHYPHANET_BUCKET_H
 
-#include <algorithm>
 #include <boost/asio.hpp>
 #include <boost/asio/io_context.hpp>
 #include <cstddef>

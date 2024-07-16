@@ -35,8 +35,8 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
                        .to_string());
 
         auto usk_2 = dynamic_cast<user::Ssk*>(ssk.get())->to_usk();
-        REQUIRE(usk_2 != std::nullopt);
-        REQUIRE(wanna_usk_1 == (*usk_2)->to_uri().to_string()); // NOLINT
+        REQUIRE(usk_2 != nullptr);
+        REQUIRE(wanna_usk_1 == usk_2->to_uri().to_string()); // NOLINT
 
         uri_ssk = Uri::create(
             "SSK@5hH~39FtjA7A9~VXWtBKI~prUDTuJZURudDG0xFn3KA,GDgRGt5f6xqbmo-"
@@ -48,7 +48,7 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
             "SSK@5hH~39FtjA7A9~VXWtBKI~prUDTuJZURudDG0xFn3KA,GDgRGt5f6xqbmo-"
             "WraQtU54x4H~871Sho9Hz6hC-0RA,AQACAAE/Search17/index_d51.xml");
         ssk = user::Key::create(*uri_ssk);
-        REQUIRE(dynamic_cast<user::Ssk*>(ssk.get())->to_usk() == std::nullopt);
+        REQUIRE(dynamic_cast<user::Ssk*>(ssk.get())->to_usk() == nullptr);
     }
 
     SECTION("broken keys")

@@ -74,6 +74,8 @@ add_library(
   source/support/base64.cpp
 
   include/libhyphanet/block.h
+  include/libhyphanet/block/node.h
+  include/libhyphanet/block/user.h
   source/block.cpp
 
   include/libhyphanet/bucket.h
