@@ -170,26 +170,31 @@ namespace impl {
             std::size_t bytes_transferred = 0;
             boost::system::error_code ec;
 
-            if (offset > array_->data_.size()) { ec = boost::asio::error::eof; }
+            // Use read_pos_ for stream-oriented reads, offset for random access
+            // reads
+            if (uint64_t read_offset = (offset == 0) ? read_pos_ : offset;
+                read_offset > array_->data_.size()) {
+                ec = boost::asio::error::eof;
+            }
             else {
                 for (const auto& buffer:
                      boost::asio::buffer_sequence_begin(buffers)) {
                     auto* data = static_cast<std::byte*>(buffer.data());
                     std::size_t size = buffer.size();
-                    std::size_t available
-                        = std::min(size, array_->data_.size()
-                                             - gsl::narrow_cast<size_t>(offset)
-                                             - bytes_transferred);
+                    std::size_t available = std::min(
+                        size, array_->data_.size()
+                                  - gsl::narrow_cast<size_t>(read_offset));
 
                     std::copy_n(array_->data_.begin()
-                                    + gsl::narrow_cast<long>(offset)
-                                    + gsl::narrow_cast<long>(bytes_transferred),
+                                    + gsl::narrow_cast<long>(read_offset),
                                 available, data);
                     bytes_transferred += available;
+                    read_offset += available;
 
                     if (available < size) { break; }
                 }
-                read_pos_ = offset + bytes_transferred;
+                // Update read_pos_ only for stream-oriented reads
+                if (offset == 0) { read_pos_ = read_offset; }
             }
 
             handler(ec, bytes_transferred);
