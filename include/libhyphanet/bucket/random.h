@@ -229,7 +229,8 @@ namespace impl {
                 get_executor(),
                 [this, self = shared_from_this(), buffers,
                  handler2 = std::forward<Write_handler>(handler)]() mutable {
-                    do_write_some(buffers, 0, std::move(handler2));
+                    do_write_some(buffers, array_->data_.size(),
+                                  std::move(handler2));
                 });
         }
 
@@ -271,6 +272,7 @@ namespace impl {
 
             handler(ec, bytes_transferred);
         }
+
         std::shared_ptr<Array> array_;
     };
 } // namespace impl
