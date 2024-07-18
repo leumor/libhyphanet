@@ -2,6 +2,7 @@
 #define LIBHYPHANET_BUCKET_H
 
 #include <boost/asio.hpp>
+#include <boost/asio/any_io_executor.hpp>
 #include <boost/asio/io_context.hpp>
 #include <cstddef>
 #include <gsl/util>
@@ -45,51 +46,34 @@ public:
      * different objects but using the same external storage.
      *
      * @details
-     * If this is not possible, return null. Note that if the underlying
+     * If this is not possible, return nullptr. Note that if the underlying
      * bucket is deleted, the copy will become invalid and probably throw an
      * exception on read, or possibly return too-short data etc. In some use
      * cases e.g. on fproxy, this is acceptable.
      *
-     * @return Bucket
+     * @return std::unique_ptr<Bucket> A shadow copy of this bucket. nullptr if
+     * it's not possible to create one.
      */
     [[nodiscard]] virtual std::unique_ptr<Bucket> create_shadow() = 0;
 };
 
+using executor_type = boost::asio::any_io_executor;
+
 class Stream {
 public:
-    explicit Stream(std::shared_ptr<boost::asio::io_context> io_context)
-        : io_context_{std::move(io_context)}
-    {}
+    explicit Stream(executor_type executor): executor_{std::move(executor)} {}
 
-    [[nodiscard]] std::shared_ptr<boost::asio::io_context>
-    get_io_context() const
+    [[nodiscard]] executor_type get_executor() const noexcept
     {
-        return io_context_;
-    }
-
-    /**
-     * @brief Returns the associated I/O executor.
-     *
-     * @details
-     * It's a requirement of AsyncReadStream and AsyncWriteStream.
-     *
-     * @return boost::asio::io_context::executor_type the associated I/O
-     * executor.
-     */
-    boost::asio::io_context::executor_type get_executor() noexcept
-    {
-        return (*io_context_).get_executor();
+        return executor_;
     }
 private:
-    std::shared_ptr<boost::asio::io_context> io_context_;
+    executor_type executor_;
 };
 
 template<typename Derived> class Read_stream : public Stream {
 public:
-    explicit Read_stream<Derived>(
-        std::shared_ptr<boost::asio::io_context> io_context)
-        : Stream{std::move(io_context)}
-    {}
+    using Stream::Stream;
 
     /**
      * @brief Start an asynchronous read.
@@ -108,10 +92,7 @@ public:
 
 template<typename Derived> class Write_stream : public Stream {
 public:
-    explicit Write_stream<Derived>(
-        std::shared_ptr<boost::asio::io_context> io_context)
-        : Stream{std::move(io_context)}
-    {}
+    using Stream::Stream;
 
     /**
      * @brief Start an asynchronous write.

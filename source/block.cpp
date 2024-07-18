@@ -89,8 +89,8 @@ Ssk::Ssk(const std::vector<std::byte>& data,
         throw std::invalid_argument("Invalid data length.");
     }
 
-    if (auto pub_key = node_key->get_pub_key(); pub_key != std::nullopt) {
-        pub_key_ = *pub_key;
+    if (auto pub_key = node_key->get_pub_key(); !pub_key.empty()) {
+        pub_key_ = pub_key;
     }
     else {
         throw std::invalid_argument("PubKey was null.");

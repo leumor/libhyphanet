@@ -5,6 +5,8 @@
 #include <cstddef>
 #include <libhyphanet/libhyphanet_export.h>
 #include <memory>
+#include <utility>
+#include <vector>
 
 namespace bucket::random {
 
@@ -41,10 +43,14 @@ public:
      * @param size The maximum size of the data, or -1 if we don't know.
      * Some buckets will throw IOException if you go over this length.
      *
-     * @return Random_access a Random Access Bucket
+     * @return std::unique_ptr<Random_access> a Random Access Bucket
      */
     [[nodiscard]] virtual std::unique_ptr<Random_access>
     make_bucket(size_t size) const = 0;
+
+    [[nodiscard]] virtual std::unique_ptr<Random_access>
+    make_immutable_bucket(std::vector<std::byte> data, size_t offset,
+                          size_t length) const;
 };
 
 namespace impl {
@@ -65,31 +71,35 @@ namespace impl {
             set_name(name);
         }
 
-        [[nodiscard]] std::unique_ptr<Array_read_stream> get_read_stream(
-            const std::shared_ptr<boost::asio::io_context>& io_context) const
+        [[nodiscard]] std::unique_ptr<Array_read_stream>
+        get_read_stream(const executor_type& executor) const
         {
             return std::make_unique<Array_read_stream>(
-                io_context, std::make_shared<const Array>(this));
+                executor, std::make_shared<const Array>(this));
         }
 
-        [[nodiscard]] std::unique_ptr<Array_write_stream> get_write_stream(
-            const std::shared_ptr<boost::asio::io_context>& io_context) const
+        [[nodiscard]] std::unique_ptr<Array_write_stream>
+        get_write_stream(const executor_type& executor) const
         {
             return std::make_unique<Array_write_stream>(
-                io_context, std::make_shared<Array>(this));
+                executor, std::make_shared<Array>(this));
         }
 
         [[nodiscard]] size_t size() const override { return data_.size(); }
+
+        [[nodiscard]] std::unique_ptr<bucket::Bucket> create_shadow() override
+        {
+            return nullptr;
+        }
     private:
         std::vector<std::byte> data_;
     };
 
     class Array_read_stream : public Read_stream<Array_read_stream> {
     public:
-        explicit Array_read_stream(
-            std::shared_ptr<boost::asio::io_context> io_context,
-            std::shared_ptr<const Array> array)
-            : Read_stream<Array_read_stream>{std::move(io_context)},
+        explicit Array_read_stream(executor_type executor,
+                                   std::shared_ptr<const Array> array)
+            : Read_stream<Array_read_stream>{std::move(executor)},
               array_{std::move(array)}
         {}
 
@@ -117,7 +127,7 @@ namespace impl {
 
             // Schedule the completion handler
             boost::asio::post(
-                get_io_context(),
+                get_executor(),
                 [handler_fwd = std::forward<Read_handler>(handler),
                  bytes_to_read]() mutable {
                     handler_fwd(boost::system::error_code{}, bytes_to_read);
@@ -130,10 +140,9 @@ namespace impl {
 
     class Array_write_stream : public Write_stream<Array_write_stream> {
     public:
-        explicit Array_write_stream(
-            std::shared_ptr<boost::asio::io_context> io_context,
-            std::shared_ptr<Array> array)
-            : Write_stream<Array_write_stream>{std::move(io_context)},
+        explicit Array_write_stream(executor_type executor,
+                                    std::shared_ptr<Array> array)
+            : Write_stream<Array_write_stream>{std::move(executor)},
               array_{std::move(array)}
         {}
 
@@ -158,7 +167,7 @@ namespace impl {
             }
 
             boost::asio::post(
-                get_io_context(),
+                get_executor(),
                 [handler_fwd = std::forward<Write_handler>(handler),
                  bytes_transferred]() mutable {
                     handler_fwd(boost::system::error_code(), bytes_transferred);
