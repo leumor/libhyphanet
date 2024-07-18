@@ -2,7 +2,9 @@
 #define LIBHYPHANET_BUCKET_RANDOM_H
 
 #include "libhyphanet/bucket.h"
+#include <boost/asio/awaitable.hpp>
 #include <cstddef>
+#include <gsl/util>
 #include <libhyphanet/libhyphanet_export.h>
 #include <memory>
 #include <utility>
@@ -48,9 +50,31 @@ public:
     [[nodiscard]] virtual std::unique_ptr<Random_access>
     make_bucket(size_t size) const = 0;
 
-    [[nodiscard]] virtual std::unique_ptr<Random_access>
-    make_immutable_bucket(std::vector<std::byte> data, size_t offset,
-                          size_t length) const;
+    [[nodiscard]] virtual boost::asio::awaitable<std::unique_ptr<Random_access>>
+    make_immutable_bucket(std::vector<std::byte> data, size_t length,
+                          size_t offset = 0) const;
+};
+
+template<typename Derived> class LIBHYPHANET_EXPORT Random_access_read_device {
+    template<typename Mutable_buffer_sequence, typename Read_handler>
+    void async_read_some_at(uint64_t offset,
+                            const Mutable_buffer_sequence& buffers,
+                            Read_handler&& handler)
+    {
+        static_cast<Derived*>(this)->async_read_some_at(
+            offset, buffers, std::forward<Read_handler>(handler));
+    }
+};
+
+template<typename Derived> class LIBHYPHANET_EXPORT Random_access_write_device {
+    template<typename Const_buffer_sequence, typename Write_handler>
+    void async_write_some_at(uint64_t offset,
+                             const Const_buffer_sequence& buffers,
+                             Write_handler&& handler)
+    {
+        static_cast<Derived*>(this)->async_write_some_at(
+            offset, buffers, std::forward<Write_handler>(handler));
+    }
 };
 
 namespace impl {
@@ -59,7 +83,8 @@ namespace impl {
     class Array_write_stream;
 
     class Array : public virtual bucket::random::Array,
-                  public bucket::impl::Bucket {
+                  public bucket::impl::Bucket,
+                  public std::enable_shared_from_this<Array> {
     public:
         friend class Array_read_stream;
         friend class Array_write_stream;
@@ -74,15 +99,15 @@ namespace impl {
         [[nodiscard]] std::unique_ptr<Array_read_stream>
         get_read_stream(const executor_type& executor) const
         {
-            return std::make_unique<Array_read_stream>(
-                executor, std::make_shared<const Array>(this));
+            return std::make_unique<Array_read_stream>(executor,
+                                                       shared_from_this());
         }
 
         [[nodiscard]] std::unique_ptr<Array_write_stream>
-        get_write_stream(const executor_type& executor) const
+        get_write_stream(const executor_type& executor)
         {
-            return std::make_unique<Array_write_stream>(
-                executor, std::make_shared<Array>(this));
+            return std::make_unique<Array_write_stream>(executor,
+                                                        shared_from_this());
         }
 
         [[nodiscard]] size_t size() const override { return data_.size(); }
@@ -95,7 +120,10 @@ namespace impl {
         std::vector<std::byte> data_;
     };
 
-    class Array_read_stream : public Read_stream<Array_read_stream> {
+    class Array_read_stream
+        : public Read_stream<Array_read_stream>,
+          public Random_access_read_device<Array_read_stream>,
+          public std::enable_shared_from_this<Array_read_stream> {
     public:
         explicit Array_read_stream(executor_type executor,
                                    std::shared_ptr<const Array> array)
@@ -109,36 +137,72 @@ namespace impl {
          * @details
          * It's a requirement of AsyncReadStream.
          */
+        // AsyncReadStream
         template<typename Mutable_buffer_sequence, typename Read_handler>
         void async_read_some(const Mutable_buffer_sequence& buffers,
                              Read_handler&& handler)
         {
-            auto bytes_available = array_->data_.size() - read_position_;
-            auto bytes_to_read
-                = std::min(bytes_available, boost::asio::buffer_size(buffers));
-
-            std::copy(
-                array_->data_.begin() + gsl::narrow_cast<long>(read_position_),
-                array_->data_.begin() + gsl::narrow_cast<long>(read_position_)
-                    + bytes_to_read,
-                static_cast<std::byte*>(buffers.data()));
-
-            read_position_ += bytes_to_read;
-
-            // Schedule the completion handler
             boost::asio::post(
                 get_executor(),
-                [handler_fwd = std::forward<Read_handler>(handler),
-                 bytes_to_read]() mutable {
-                    handler_fwd(boost::system::error_code{}, bytes_to_read);
+                [this, self = shared_from_this(), buffers,
+                 handler2 = std::forward<Read_handler>(handler)]() mutable {
+                    do_read_some(buffers, 0, std::move(handler2));
+                });
+        }
+
+        template<typename Mutable_buffer_sequence, typename Read_handler>
+        void async_read_some_at(uint64_t offset,
+                                const Mutable_buffer_sequence& buffers,
+                                Read_handler&& handler)
+        {
+            boost::asio::post(
+                get_executor(),
+                [this, self = shared_from_this(), offset, buffers,
+                 handler2 = std::forward<Read_handler>(handler)]() mutable {
+                    do_read_some(buffers, offset, std::move(handler2));
                 });
         }
     private:
+        template<typename Mutable_buffer_sequence, typename Read_handler>
+        void do_read_some(const Mutable_buffer_sequence& buffers,
+                          uint64_t offset, Read_handler handler)
+        {
+            std::size_t bytes_transferred = 0;
+            boost::system::error_code ec;
+
+            if (offset > array_->data_.size()) { ec = boost::asio::error::eof; }
+            else {
+                for (const auto& buffer:
+                     boost::asio::buffer_sequence_begin(buffers)) {
+                    auto* data = static_cast<std::byte*>(buffer.data());
+                    std::size_t size = buffer.size();
+                    std::size_t available
+                        = std::min(size, array_->data_.size()
+                                             - gsl::narrow_cast<size_t>(offset)
+                                             - bytes_transferred);
+
+                    std::copy_n(array_->data_.begin()
+                                    + gsl::narrow_cast<long>(offset)
+                                    + gsl::narrow_cast<long>(bytes_transferred),
+                                available, data);
+                    bytes_transferred += available;
+
+                    if (available < size) { break; }
+                }
+                read_pos_ = offset + bytes_transferred;
+            }
+
+            handler(ec, bytes_transferred);
+        }
+
         std::shared_ptr<const Array> array_;
-        std::size_t read_position_ = 0;
+        std::size_t read_pos_ = 0;
     };
 
-    class Array_write_stream : public Write_stream<Array_write_stream> {
+    class Array_write_stream
+        : public Write_stream<Array_write_stream>,
+          public Random_access_read_device<Array_write_stream>,
+          public std::enable_shared_from_this<Array_write_stream> {
     public:
         explicit Array_write_stream(executor_type executor,
                                     std::shared_ptr<Array> array)
@@ -156,24 +220,52 @@ namespace impl {
         void async_write_some(const Const_buffer_sequence& buffers,
                               Write_handler&& handler)
         {
-            std::size_t bytes_transferred = 0;
-            for (const auto& buffer:
-                 boost::asio::buffer_sequence_begin(buffers),
-                 boost::asio::buffer_sequence_end(buffers)) {
-                const auto begin = static_cast<const std::byte*>(buffer.data());
-                const std::byte* end = begin + buffer.size();
-                array_->data_.insert(array_->data_.end(), begin, end);
-                bytes_transferred += buffer.size();
-            }
-
             boost::asio::post(
                 get_executor(),
-                [handler_fwd = std::forward<Write_handler>(handler),
-                 bytes_transferred]() mutable {
-                    handler_fwd(boost::system::error_code(), bytes_transferred);
+                [this, self = shared_from_this(), buffers,
+                 handler2 = std::forward<Write_handler>(handler)]() mutable {
+                    do_write_some(buffers, 0, std::move(handler2));
+                });
+        }
+
+        template<typename Const_buffer_sequence, typename Write_handler>
+        void async_read_some_at(uint64_t offset,
+                                const Const_buffer_sequence& buffers,
+                                Write_handler&& handler)
+        {
+            boost::asio::post(
+                get_executor(),
+                [this, self = shared_from_this(), offset, buffers,
+                 handler2 = std::forward<Write_handler>(handler)]() mutable {
+                    do_write_some(buffers, offset, std::move(handler2));
                 });
         }
     private:
+        template<typename Const_buffer_sequence, typename Write_handler>
+        void do_write_some(const Const_buffer_sequence& buffers,
+                           uint64_t offset, Write_handler&& handler)
+        {
+            std::size_t bytes_transferred = 0;
+            boost::system::error_code ec;
+
+            for (const auto& buffer:
+                 boost::asio::buffer_sequence_begin(buffers)) {
+                const auto* data = static_cast<const std::byte*>(buffer.data());
+                std::size_t size = buffer.size();
+
+                if (offset + bytes_transferred + size > array_->data_.size()) {
+                    array_->data_.resize(offset + bytes_transferred + size);
+                }
+
+                std::copy_n(data, size,
+                            array_->data_.begin()
+                                + gsl::narrow_cast<long>(offset)
+                                + gsl::narrow_cast<long>(bytes_transferred));
+                bytes_transferred += size;
+            }
+
+            handler(ec, bytes_transferred);
+        }
         std::shared_ptr<Array> array_;
     };
 } // namespace impl
