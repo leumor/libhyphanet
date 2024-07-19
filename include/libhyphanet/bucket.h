@@ -14,49 +14,6 @@
 
 namespace bucket {
 
-class LIBHYPHANET_EXPORT Bucket {
-public:
-    virtual ~Bucket() = default;
-
-    /**
-     * @brief Returns a name for the bucket.
-     *
-     * @details
-     * It may be used to identify them in certain situations.
-     */
-    [[nodiscard]] virtual std::string get_name() const = 0;
-
-    /**
-     * @brief Returns the amount of data currently in this bucket in bytes.
-     */
-    [[nodiscard]] virtual size_t size() const = 0;
-
-    /**
-     * @brief Is the bucket read-only?
-     */
-    [[nodiscard]] virtual bool is_readonly() const = 0;
-
-    /**
-     * @brief Make the bucket read-only. Irreversible.
-     */
-    virtual void set_read_only() = 0;
-
-    /**
-     * @brief Create a shallow read-only copy of this bucket, using
-     * different objects but using the same external storage.
-     *
-     * @details
-     * If this is not possible, return nullptr. Note that if the underlying
-     * bucket is deleted, the copy will become invalid and probably throw an
-     * exception on read, or possibly return too-short data etc. In some use
-     * cases e.g. on fproxy, this is acceptable.
-     *
-     * @return std::unique_ptr<Bucket> A shadow copy of this bucket. nullptr if
-     * it's not possible to create one.
-     */
-    [[nodiscard]] virtual std::unique_ptr<Bucket> create_shadow() = 0;
-};
-
 using executor_type = boost::asio::any_io_executor;
 
 class Stream {
@@ -109,6 +66,54 @@ public:
     }
 };
 
+class LIBHYPHANET_EXPORT Bucket {
+public:
+    virtual ~Bucket() = default;
+
+    [[nodiscard]] virtual std::unique_ptr<Stream>
+    get_read_stream(const executor_type& executor) const = 0;
+
+    [[nodiscard]] virtual std::unique_ptr<Stream>
+    get_write_stream(const executor_type& executor) = 0;
+
+    /**
+     * @brief Returns a name for the bucket.
+     *
+     * @details
+     * It may be used to identify them in certain situations.
+     */
+    [[nodiscard]] virtual std::string get_name() const = 0;
+
+    /**
+     * @brief Returns the amount of data currently in this bucket in bytes.
+     */
+    [[nodiscard]] virtual size_t size() const = 0;
+
+    /**
+     * @brief Is the bucket read-only?
+     */
+    [[nodiscard]] virtual bool is_readonly() const = 0;
+
+    /**
+     * @brief Make the bucket read-only. Irreversible.
+     */
+    virtual void set_read_only() = 0;
+
+    /**
+     * @brief Create a shallow read-only copy of this bucket, using
+     * different objects but using the same external storage.
+     *
+     * @details
+     * If this is not possible, return nullptr. Note that if the underlying
+     * bucket is deleted, the copy will become invalid and probably throw an
+     * exception on read, or possibly return too-short data etc. In some use
+     * cases e.g. on fproxy, this is acceptable.
+     *
+     * @return std::unique_ptr<Bucket> A shadow copy of this bucket. nullptr if
+     * it's not possible to create one.
+     */
+    [[nodiscard]] virtual std::unique_ptr<Bucket> create_shadow() = 0;
+};
 namespace impl {
     /**
      * @brief A bucket is any arbitrary object can temporarily store data.

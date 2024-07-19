@@ -30,6 +30,8 @@ namespace bucket::random {
  */
 class LIBHYPHANET_EXPORT Random_access : public virtual Bucket {
 public:
+    using executor_type = boost::asio::any_io_executor;
+
     // TODO: toRandomAccessBuffer()
 };
 
@@ -78,7 +80,6 @@ template<typename Derived> class LIBHYPHANET_EXPORT Random_access_write_device {
 };
 
 namespace impl {
-
     class Array_read_stream;
     class Array_write_stream;
 
@@ -96,19 +97,11 @@ namespace impl {
             set_name(name);
         }
 
-        [[nodiscard]] std::unique_ptr<Array_read_stream>
-        get_read_stream(const executor_type& executor) const
-        {
-            return std::make_unique<Array_read_stream>(executor,
-                                                       shared_from_this());
-        }
+        [[nodiscard]] std::unique_ptr<Stream>
+        get_read_stream(const executor_type& executor) const override;
 
-        [[nodiscard]] std::unique_ptr<Array_write_stream>
-        get_write_stream(const executor_type& executor)
-        {
-            return std::make_unique<Array_write_stream>(executor,
-                                                        shared_from_this());
-        }
+        [[nodiscard]] std::unique_ptr<Stream>
+        get_write_stream(const executor_type& executor) override;
 
         [[nodiscard]] size_t size() const override { return data_.size(); }
 
@@ -200,7 +193,7 @@ namespace impl {
             handler(ec, bytes_transferred);
         }
 
-        std::shared_ptr<const Array> array_;
+        std::shared_ptr<const impl::Array> array_;
         std::size_t read_pos_ = 0;
     };
 
