@@ -14,13 +14,17 @@
 
 namespace bucket {
 
-using executor_type = boost::asio::any_io_executor;
-
-class Stream {
+class Reader_writer {
 public:
-    explicit Stream(executor_type executor): executor_{std::move(executor)} {}
+    using executor_type = boost::asio::any_io_executor;
 
-    [[nodiscard]] executor_type get_executor() const noexcept
+    virtual ~Reader_writer() = default;
+
+    explicit Reader_writer(executor_type executor)
+        : executor_{std::move(executor)}
+    {}
+
+    [[nodiscard]] virtual executor_type get_executor() const noexcept
     {
         return executor_;
     }
@@ -28,9 +32,9 @@ private:
     executor_type executor_;
 };
 
-template<typename Derived> class Read_stream : public Stream {
+template<typename Derived> class Read_stream : public Reader_writer {
 public:
-    using Stream::Stream;
+    using Reader_writer::Reader_writer;
 
     /**
      * @brief Start an asynchronous read.
@@ -47,9 +51,9 @@ public:
     }
 };
 
-template<typename Derived> class Write_stream : public Stream {
+template<typename Derived> class Write_stream : public Reader_writer {
 public:
-    using Stream::Stream;
+    using Reader_writer::Reader_writer;
 
     /**
      * @brief Start an asynchronous write.
@@ -69,12 +73,6 @@ public:
 class LIBHYPHANET_EXPORT Bucket {
 public:
     virtual ~Bucket() = default;
-
-    [[nodiscard]] virtual std::unique_ptr<Stream>
-    get_read_stream(const executor_type& executor) const = 0;
-
-    [[nodiscard]] virtual std::unique_ptr<Stream>
-    get_write_stream(const executor_type& executor) = 0;
 
     /**
      * @brief Returns a name for the bucket.
@@ -114,6 +112,25 @@ public:
      */
     [[nodiscard]] virtual std::unique_ptr<Bucket> create_shadow() = 0;
 };
+
+using executor_type = boost::asio::any_io_executor;
+
+template<typename T> concept DerivedFromBucket = std::derived_from<T, Bucket>;
+
+template<DerivedFromBucket T>
+[[nodiscard]] std::unique_ptr<Read_stream<typename T::reader_type>>
+get_read_stream(const executor_type& executor, const std::shared_ptr<T> bucket)
+{
+    return std::make_unique<T::reader_type>(executor, bucket);
+}
+
+template<DerivedFromBucket T>
+[[nodiscard]] std::unique_ptr<Write_stream<typename T::writer_type>>
+get_write_stream(const executor_type& executor, const std::shared_ptr<T> bucket)
+{
+    return std::make_unique<T::writer_type>(executor, bucket);
+}
+
 namespace impl {
     /**
      * @brief A bucket is any arbitrary object can temporarily store data.

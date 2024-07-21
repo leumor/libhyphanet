@@ -81,6 +81,7 @@ add_library(
   include/libhyphanet/bucket.h
   include/libhyphanet/bucket/random.h
   source/bucket.cpp
+  source/bucket/random.cpp
   $<TARGET_OBJECTS:objlib_cppcrypto>
 )
 add_library(libhyphanet::libhyphanet ALIAS libhyphanet_libhyphanet)

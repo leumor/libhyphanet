@@ -24,6 +24,7 @@ add_executable(libhyphanet_test
   source/test_support.cpp
   source/test_crypto.cpp
   source/test_keys.cpp
+  source/test_bucket.cpp
 
   include/test/utf_util.h
 )

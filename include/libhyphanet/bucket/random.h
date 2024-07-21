@@ -39,6 +39,8 @@ class LIBHYPHANET_EXPORT Array : public virtual Random_access {};
 
 class LIBHYPHANET_EXPORT Factory {
 public:
+    using executor_type = boost::asio::any_io_executor;
+
     virtual ~Factory() = default;
 
     /**
@@ -49,15 +51,19 @@ public:
      *
      * @return std::unique_ptr<Random_access> a Random Access Bucket
      */
-    [[nodiscard]] virtual std::unique_ptr<Random_access>
+    [[nodiscard]] virtual std::shared_ptr<Random_access>
     make_bucket(size_t size) const = 0;
 
-    [[nodiscard]] virtual boost::asio::awaitable<std::unique_ptr<Random_access>>
-    make_immutable_bucket(std::vector<std::byte> data, size_t length,
-                          size_t offset = 0) const;
+    [[nodiscard]] virtual boost::asio::awaitable<std::shared_ptr<Random_access>>
+    make_immutable_bucket(executor_type executor, std::vector<std::byte> data,
+                          size_t length, size_t offset = 0) const
+        = 0;
 };
 
 template<typename Derived> class LIBHYPHANET_EXPORT Random_access_read_device {
+public:
+    using executor_type = boost::asio::any_io_executor;
+
     template<typename Mutable_buffer_sequence, typename Read_handler>
     void async_read_some_at(uint64_t offset,
                             const Mutable_buffer_sequence& buffers,
@@ -69,6 +75,9 @@ template<typename Derived> class LIBHYPHANET_EXPORT Random_access_read_device {
 };
 
 template<typename Derived> class LIBHYPHANET_EXPORT Random_access_write_device {
+public:
+    using executor_type = boost::asio::any_io_executor;
+
     template<typename Const_buffer_sequence, typename Write_handler>
     void async_write_some_at(uint64_t offset,
                              const Const_buffer_sequence& buffers,
@@ -79,16 +88,38 @@ template<typename Derived> class LIBHYPHANET_EXPORT Random_access_write_device {
     }
 };
 
+template<typename T> concept DerivedFromRandomAccess
+    = std::derived_from<T, Random_access>;
+
+template<DerivedFromRandomAccess T> [[nodiscard]] std::unique_ptr<
+    Random_access_read_device<typename T::reader_type>>
+get_random_access_reader(const executor_type& executor,
+                         const std::shared_ptr<T> bucket)
+{
+    return std::make_unique<typename T::reader_type>(executor, bucket);
+}
+
+template<DerivedFromRandomAccess T> [[nodiscard]] std::unique_ptr<
+    Random_access_write_device<typename T::writer_type>>
+get_random_access_writer(const executor_type& executor,
+                         const std::shared_ptr<T> bucket)
+{
+    return std::make_unique<typename T::writer_type>(executor, bucket);
+}
+
 namespace impl {
-    class Array_read_stream;
-    class Array_write_stream;
+    class Array_reader;
+    class Array_writer;
 
     class Array : public virtual bucket::random::Array,
                   public bucket::impl::Bucket,
                   public std::enable_shared_from_this<Array> {
     public:
-        friend class Array_read_stream;
-        friend class Array_write_stream;
+        friend class Array_reader;
+        friend class Array_writer;
+
+        using reader_type = Array_reader;
+        using writer_type = Array_writer;
 
         Array(const std::vector<std::byte>& init_data = {},
               std::string_view name = "ArrayBucket")
@@ -96,12 +127,6 @@ namespace impl {
         {
             set_name(name);
         }
-
-        [[nodiscard]] std::unique_ptr<Stream>
-        get_read_stream(const executor_type& executor) const override;
-
-        [[nodiscard]] std::unique_ptr<Stream>
-        get_write_stream(const executor_type& executor) override;
 
         [[nodiscard]] size_t size() const override { return data_.size(); }
 
@@ -113,14 +138,13 @@ namespace impl {
         std::vector<std::byte> data_;
     };
 
-    class Array_read_stream
-        : public Read_stream<Array_read_stream>,
-          public Random_access_read_device<Array_read_stream>,
-          public std::enable_shared_from_this<Array_read_stream> {
+    class Array_reader : public Read_stream<Array_reader>,
+                         public Random_access_read_device<Array_reader>,
+                         public std::enable_shared_from_this<Array_reader> {
     public:
-        explicit Array_read_stream(executor_type executor,
-                                   std::shared_ptr<const Array> array)
-            : Read_stream<Array_read_stream>{std::move(executor)},
+        explicit Array_reader(executor_type executor,
+                              std::shared_ptr<const Array> array)
+            : Read_stream<Array_reader>{std::move(executor)},
               array_{std::move(array)}
         {}
 
@@ -197,14 +221,13 @@ namespace impl {
         std::size_t read_pos_ = 0;
     };
 
-    class Array_write_stream
-        : public Write_stream<Array_write_stream>,
-          public Random_access_read_device<Array_write_stream>,
-          public std::enable_shared_from_this<Array_write_stream> {
+    class Array_writer : public Write_stream<Array_writer>,
+                         public Random_access_write_device<Array_writer>,
+                         public std::enable_shared_from_this<Array_writer> {
     public:
-        explicit Array_write_stream(executor_type executor,
-                                    std::shared_ptr<Array> array)
-            : Write_stream<Array_write_stream>{std::move(executor)},
+        explicit Array_writer(executor_type executor,
+                              std::shared_ptr<Array> array)
+            : Write_stream<Array_writer>{std::move(executor)},
               array_{std::move(array)}
         {}
 
@@ -228,9 +251,9 @@ namespace impl {
         }
 
         template<typename Const_buffer_sequence, typename Write_handler>
-        void async_read_some_at(uint64_t offset,
-                                const Const_buffer_sequence& buffers,
-                                Write_handler&& handler)
+        void async_write_some_at(uint64_t offset,
+                                 const Const_buffer_sequence& buffers,
+                                 Write_handler&& handler)
         {
             boost::asio::post(
                 get_executor(),
@@ -272,10 +295,32 @@ namespace impl {
 namespace factory {
     class LIBHYPHANET_EXPORT Array_factory : public Factory {
     public:
-        [[nodiscard]] std::unique_ptr<Random_access>
+        [[nodiscard]] std::shared_ptr<Random_access>
         make_bucket(size_t /*size*/) const override
         {
             return std::make_unique<impl::Array>();
+        }
+
+        [[nodiscard]] boost::asio::awaitable<std::shared_ptr<Random_access>>
+        make_immutable_bucket(const executor_type executor,
+                              std::vector<std::byte> data, size_t length,
+                              size_t offset = 0) const override
+        {
+            if (data.size() < offset + length) { co_return nullptr; }
+
+            auto bucket
+                = std::dynamic_pointer_cast<impl::Array>(make_bucket(length));
+            if (!bucket) { co_return nullptr; }
+
+            auto write_stream = get_random_access_writer(executor, bucket);
+
+            co_await boost::asio::async_write_at(*write_stream, offset,
+                                                 boost::asio::buffer(data),
+                                                 boost::asio::use_awaitable);
+
+            bucket->set_read_only();
+
+            co_return std::move(bucket);
         }
     };
 } // namespace factory
