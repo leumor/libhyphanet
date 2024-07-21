@@ -9,7 +9,6 @@
 #include <cstdint>
 #include <gsl/assert>
 #include <libhyphanet/libhyphanet_export.h>
-#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <string_view>

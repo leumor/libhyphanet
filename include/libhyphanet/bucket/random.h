@@ -23,7 +23,7 @@ namespace bucket::random {
  * in particular, the size of a RandomAccessBuffer is fixed (and this is mostly
  * a good thing).
  *
- * FINALIZERS: Persistent RandomAccessBucket's should never free on finalize.
+ * FINALIZER: Persistent RandomAccessBucket's should never free on finalize.
  * Transient RABs can free on finalize, but must ensure that this only happens
  * if both the Bucket and the RAB are no longer reachable.
  *
@@ -168,6 +168,7 @@ namespace impl {
         }
 
         template<typename Mutable_buffer_sequence, typename Read_handler>
+        // cppcheck-suppress duplInheritedMember
         void async_read_some_at(uint64_t offset,
                                 const Mutable_buffer_sequence& buffers,
                                 Read_handler&& handler)
@@ -198,7 +199,7 @@ namespace impl {
                      boost::asio::buffer_sequence_begin(buffers)) {
                     auto* data = static_cast<std::byte*>(buffer.data());
                     std::size_t size = buffer.size();
-                    std::size_t available = std::min(
+                    const std::size_t available = std::min(
                         size, array_->data_.size()
                                   - gsl::narrow_cast<size_t>(read_offset));
 
@@ -268,12 +269,11 @@ namespace impl {
                            uint64_t offset, Write_handler&& handler)
         {
             std::size_t bytes_transferred = 0;
-            boost::system::error_code ec;
+            const boost::system::error_code ec;
 
-            for (const auto& buffer:
-                 boost::asio::buffer_sequence_begin(buffers)) {
+            for (const auto& buffer: buffers) {
                 const auto* data = static_cast<const std::byte*>(buffer.data());
-                std::size_t size = buffer.size();
+                const std::size_t size = buffer.size();
 
                 if (offset + bytes_transferred + size > array_->data_.size()) {
                     array_->data_.resize(offset + bytes_transferred + size);
@@ -286,7 +286,7 @@ namespace impl {
                 bytes_transferred += size;
             }
 
-            handler(ec, bytes_transferred);
+            std::forward<Write_handler>(handler)(ec, bytes_transferred);
         }
 
         std::shared_ptr<Array> array_;
@@ -298,7 +298,7 @@ namespace factory {
         [[nodiscard]] std::shared_ptr<Random_access>
         make_bucket(size_t /*size*/) const override
         {
-            return std::make_unique<impl::Array>();
+            return std::make_shared<impl::Array>();
         }
 
         [[nodiscard]] boost::asio::awaitable<std::shared_ptr<Random_access>>

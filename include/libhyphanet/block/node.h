@@ -4,7 +4,6 @@
 #include "libhyphanet/key/node.h"
 #include <cstddef>
 #include <libhyphanet/libhyphanet_export.h>
-#include <optional>
 #include <vector>
 
 namespace block::node {
@@ -177,8 +176,7 @@ namespace impl {
          *
          * @return the raw data as a vector of bytes.
          */
-        [[nodiscard]] virtual std::vector<std::byte>
-        get_raw_data() const override
+        [[nodiscard]] std::vector<std::byte> get_raw_data() const override
         {
             return data_;
         }
