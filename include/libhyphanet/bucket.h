@@ -118,17 +118,17 @@ using executor_type = boost::asio::any_io_executor;
 template<typename T> concept DerivedFromBucket = std::derived_from<T, Bucket>;
 
 template<DerivedFromBucket T>
-[[nodiscard]] std::unique_ptr<Read_stream<typename T::reader_type>>
+[[nodiscard]] std::shared_ptr<Read_stream<typename T::reader_type>>
 get_read_stream(const executor_type& executor, const std::shared_ptr<T> bucket)
 {
-    return std::make_unique<T::reader_type>(executor, bucket);
+    return std::make_shared<typename T::reader_type>(executor, bucket);
 }
 
 template<DerivedFromBucket T>
-[[nodiscard]] std::unique_ptr<Write_stream<typename T::writer_type>>
+[[nodiscard]] std::shared_ptr<Write_stream<typename T::writer_type>>
 get_write_stream(const executor_type& executor, const std::shared_ptr<T> bucket)
 {
-    return std::make_unique<T::writer_type>(executor, bucket);
+    return std::make_shared<typename T::writer_type>(executor, bucket);
 }
 
 namespace impl {

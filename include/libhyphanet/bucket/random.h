@@ -91,20 +91,20 @@ public:
 template<typename T> concept DerivedFromRandomAccess
     = std::derived_from<T, Random_access>;
 
-template<DerivedFromRandomAccess T> [[nodiscard]] std::unique_ptr<
+template<DerivedFromRandomAccess T> [[nodiscard]] std::shared_ptr<
     Random_access_read_device<typename T::reader_type>>
 get_random_access_reader(const executor_type& executor,
                          const std::shared_ptr<T> bucket)
 {
-    return std::make_unique<typename T::reader_type>(executor, bucket);
+    return std::make_shared<typename T::reader_type>(executor, bucket);
 }
 
-template<DerivedFromRandomAccess T> [[nodiscard]] std::unique_ptr<
+template<DerivedFromRandomAccess T> [[nodiscard]] std::shared_ptr<
     Random_access_write_device<typename T::writer_type>>
 get_random_access_writer(const executor_type& executor,
                          const std::shared_ptr<T> bucket)
 {
-    return std::make_unique<typename T::writer_type>(executor, bucket);
+    return std::make_shared<typename T::writer_type>(executor, bucket);
 }
 
 namespace impl {
@@ -159,9 +159,10 @@ namespace impl {
         void async_read_some(const Mutable_buffer_sequence& buffers,
                              Read_handler&& handler)
         {
+            auto self = shared_from_this();
             boost::asio::post(
                 get_executor(),
-                [this, self = shared_from_this(), buffers,
+                [this, self, buffers,
                  handler2 = std::forward<Read_handler>(handler)]() mutable {
                     do_read_some(buffers, 0, std::move(handler2));
                 });
@@ -195,8 +196,7 @@ namespace impl {
                 ec = boost::asio::error::eof;
             }
             else {
-                for (const auto& buffer:
-                     boost::asio::buffer_sequence_begin(buffers)) {
+                for (const auto& buffer: buffers) {
                     auto* data = static_cast<std::byte*>(buffer.data());
                     std::size_t size = buffer.size();
                     const std::size_t available = std::min(
@@ -302,14 +302,14 @@ namespace factory {
         }
 
         [[nodiscard]] boost::asio::awaitable<std::shared_ptr<Random_access>>
-        make_immutable_bucket(const executor_type executor,
+        make_immutable_bucket(executor_type executor,
                               std::vector<std::byte> data, size_t length,
                               size_t offset = 0) const override
         {
-            if (data.size() < offset + length) { co_return nullptr; }
+            Expects(data.size() + offset <= length);
 
-            auto bucket
-                = std::dynamic_pointer_cast<impl::Array>(make_bucket(length));
+            auto bucket_random = make_bucket(length);
+            auto bucket = std::dynamic_pointer_cast<impl::Array>(bucket_random);
             if (!bucket) { co_return nullptr; }
 
             auto write_stream = get_random_access_writer(executor, bucket);
