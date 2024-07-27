@@ -21,13 +21,10 @@ boost::asio::awaitable<void> perform_io(boost::asio::any_io_executor executor)
     auto data
         = {std::byte{0x01}, std::byte{0x02}, std::byte{0x03}, std::byte{0x04}};
     auto bucket = co_await factory.make_immutable_bucket(executor, data, 10, 1);
-    auto reader = bucket::get_read_stream(
-        executor,
-        std::dynamic_pointer_cast<bucket::random::impl::Array>(bucket));
 
     std::vector<std::byte> buffer(10);
     auto bytes_read = co_await boost::asio::async_read(
-        *reader, boost::asio::buffer(buffer), boost::asio::use_awaitable);
+        *bucket, boost::asio::buffer(buffer), boost::asio::use_awaitable);
 
     fmt::println("{} bytes read", bytes_read);
     fmt::println("buffer: {:02x}", fmt::join(buffer, " "));

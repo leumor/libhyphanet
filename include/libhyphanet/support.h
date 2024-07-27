@@ -58,6 +58,8 @@ namespace concepts {
 
     template<typename T> concept Integer = std::is_integral_v<T>;
 
+    template<typename Derived, typename Base> concept DerivedFromBase
+        = std::is_base_of_v<Base, Derived>;
 } // namespace concepts
 
 namespace util {
