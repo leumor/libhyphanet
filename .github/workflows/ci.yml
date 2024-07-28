@@ -57,6 +57,7 @@ jobs:
       - name: Install gcc-14
         run: |
           sudo add-apt-repository universe
+          sudo apt update
           sudo apt-get install gcc-14 -y -q
 
       - name: Install LCov
@@ -161,12 +162,13 @@ jobs:
       - name: Install compilers and static analyzers
         if: matrix.os == 'ubuntu-22.04'
         run: |
+          sudo add-apt-repository universe
+          sudo apt update
           sudo apt-get install cppcheck -y -q
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           echo -ne '\n' | sudo ./llvm.sh 18 all
           sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-17 140
-          sudo add-apt-repository universe
           sudo apt-get install gcc-14 -y -q
 
       - name: Install autoconf-archive
