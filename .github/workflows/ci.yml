@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Apt upgrade
-        run: /
+        run: |
           sudo apt-get upgrade -y -q
 
       - uses: actions/checkout@v4
@@ -57,7 +57,7 @@ jobs:
 
     steps:
       - name: Apt upgrade
-        run: /
+        run: |
           sudo apt-get upgrade -y -q
 
       - uses: actions/checkout@v4
@@ -110,7 +110,7 @@ jobs:
 
     steps:
       - name: Apt upgrade
-        run: /
+        run: |
           sudo apt-get upgrade -y -q
 
       - uses: actions/checkout@v4
@@ -248,7 +248,7 @@ jobs:
 
     steps:
       - name: Apt upgrade
-        run: /
+        run: |
           sudo apt-get upgrade -y -q
 
       - uses: actions/checkout@v4
