@@ -70,8 +70,8 @@ jobs:
       - name: Install LCov
         run: |
           sudo apt-get update -q
-          wget https://launchpad.net/ubuntu/+archive/primary/+files/lcov_2.0-4ubuntu1_all.deb
-          sudo apt install ./lcov_2.0-4ubuntu1_all.deb
+          wget https://launchpad.net/ubuntu/+archive/primary/+files/lcov_2.1~beta2-1_all.deb
+          sudo apt install ./lcov_2.1~beta2-1_all.deb
 
       - name: Install autoconf-archive
         run: |
