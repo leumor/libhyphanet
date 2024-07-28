@@ -141,7 +141,7 @@ target_link_libraries(libhyphanet_libhyphanet PRIVATE Microsoft.GSL::GSL)
 find_package(cryptopp CONFIG REQUIRED)
 target_link_libraries(libhyphanet_libhyphanet PRIVATE cryptopp::cryptopp)
 
-find_package(Boost REQUIRED COMPONENTS)
+find_package(Boost CONFIG REQUIRED COMPONENTS)
 
 # target_link_libraries(libhyphanet_libhyphanet PRIVATE Boost::multiprecision)
 target_include_directories(libhyphanet_libhyphanet PRIVATE ${Boost_INCLUDE_DIRS})
