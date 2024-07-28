@@ -33,6 +33,14 @@
     {
       "name": "icu",
       "version>=": "74.2#3"
+    },
+    {
+      "name": "pkgconf",
+      "version>=": "2.2.0"
+    },
+    {
+      "name": "vcpkg-pkgconfig-get-modules",
+      "version>=": "2024-04-03"
     }
   ],
   "default-features": [],

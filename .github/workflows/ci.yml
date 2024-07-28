@@ -53,7 +53,7 @@ jobs:
     # workflow.
     if: github.repository_owner == 'leumor'
 
-    env: { CXX: g++-14 }
+    env: { CXX: g++-13 }
 
     steps:
       - name: Apt upgrade
@@ -61,11 +61,6 @@ jobs:
           sudo apt-get upgrade -y -q
 
       - uses: actions/checkout@v4
-
-      - name: Install gcc-14
-        run: |
-          sudo add-apt-repository universe
-          sudo apt-get install gcc-14 -y -q
 
       - name: Install LCov
         run: |
@@ -96,7 +91,7 @@ jobs:
         run: cmake --build build/coverage -t coverage
 
       - name: Submit to codecov.io
-        uses: codecov/codecov-action@v4.0.1
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: build/coverage/coverage.info
@@ -180,7 +175,7 @@ jobs:
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           echo -ne '\n' | sudo ./llvm.sh 18 all
-          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-17 140
+          sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-18 140
           sudo apt-get install gcc-14 -y -q
 
       - name: Install autoconf-archive
