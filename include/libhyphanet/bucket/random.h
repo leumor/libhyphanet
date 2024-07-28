@@ -86,6 +86,8 @@ template<typename Derived> class LIBHYPHANET_EXPORT Random_access
       public Random_access_write_device<Derived> {
 public:
     // TODO: toRandomAccessBuffer()
+
+    virtual ~Random_access() = default;
 };
 template<typename T> concept DerivedFromRandomAccess
     = std::derived_from<T, Random_access<T>>;
@@ -139,25 +141,6 @@ public:
             executor, data, length, offset);
     }
 };
-
-// template<typename T> concept DerivedFromRandomAccess
-//     = std::derived_from<T, Random_access>;
-
-// template<DerivedFromRandomAccess T> [[nodiscard]] std::shared_ptr<
-//     Random_access_read_device<typename T::reader_type>>
-// get_random_access_reader(const executor_type& executor,
-//                          const std::shared_ptr<T> bucket)
-// {
-//     return std::make_shared<typename T::reader_type>(executor, bucket);
-// }
-
-// template<DerivedFromRandomAccess T> [[nodiscard]] std::shared_ptr<
-//     Random_access_write_device<typename T::writer_type>>
-// get_random_access_writer(const executor_type& executor,
-//                          const std::shared_ptr<T> bucket)
-// {
-//     return std::make_shared<typename T::writer_type>(executor, bucket);
-// }
 
 namespace impl {
 
@@ -245,6 +228,7 @@ namespace impl {
         }
 
         template<typename Const_buffer_sequence, typename Write_handler>
+        // cppcheck-suppress duplInheritedMember
         void async_write_some_at(uint64_t offset,
                                  const Const_buffer_sequence& buffers,
                                  Write_handler&& handler)
@@ -326,12 +310,14 @@ namespace factory {
     class LIBHYPHANET_EXPORT Array_factory : public Factory<Array_factory> {
     public:
         [[nodiscard]] std::shared_ptr<impl::Array>
+        // cppcheck-suppress duplInheritedMember
         make_bucket(executor_type executor, size_t /*size*/) const
         {
             return std::make_shared<impl::Array>(executor);
         }
 
         [[nodiscard]] boost::asio::awaitable<std::shared_ptr<impl::Array>>
+        // cppcheck-suppress duplInheritedMember
         make_immutable_bucket(executor_type executor,
                               std::vector<std::byte> data, size_t length,
                               size_t offset = 0) const

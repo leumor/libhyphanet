@@ -64,7 +64,7 @@ jobs:
 
       - name: Install gcc-14
         run: |
-          sudo add-apt-repository universe -q
+          sudo add-apt-repository universe
           sudo apt-get install gcc-14 -y -q
 
       - name: Install LCov
