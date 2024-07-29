@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <gsl/assert>
+#include <iterator>
 #include <libhyphanet/libhyphanet_export.h>
 #include <stdexcept>
 #include <string>

@@ -30,7 +30,9 @@ add_library(objlib_cppcrypto OBJECT
   third_party/cppcrypto/rijndael-impl.h
 )
 
-if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
+message("CMAKE_SYSTEM_PROCESSOR: ${CMAKE_SYSTEM_PROCESSOR}")
+
+if(${CMAKE_GENERATOR_PLATFORM} MATCHES "(Win32)|(x64)")
   target_sources(objlib_cppcrypto PRIVATE
     third_party/cppcrypto/rijndael-impl-aesni-common.h
     third_party/cppcrypto/rijndael-impl-aesni.cpp

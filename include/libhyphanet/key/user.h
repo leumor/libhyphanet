@@ -417,6 +417,8 @@ public:
 };
 
 namespace impl {
+    class Insertable;
+
     /**
      * @brief Abstract base class for user keys that can be converted to a
      * Uri.
