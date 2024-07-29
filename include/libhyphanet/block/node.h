@@ -66,7 +66,7 @@ public:
     static const size_t max_compressed_data_length = data_length - 4;
 };
 
-LIBHYPHANET_EXPORT static const size_t ssk_data_decrypt_key_length = 32;
+static const size_t ssk_data_decrypt_key_length = 32;
 
 /**
  * @brief SSK plus data.
