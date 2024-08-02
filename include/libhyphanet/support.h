@@ -25,14 +25,16 @@ namespace concepts {
      * @brief checks if the type T is an enumeration and if its underlying type
      * is int.
      */
-    template<typename T> concept EnumWithInt
+    template<typename T>
+    concept EnumWithInt
         = std::is_enum_v<T> && std::same_as<std::underlying_type_t<T>, int>;
 
     /**
      * @brief checks if the given type T is either char (underlying type of
      * std::string) or char8_t (underlying type of std::u8string).
      */
-    template<typename T> concept CharOrChar8_t
+    template<typename T>
+    concept CharOrChar8_t
         = std::is_same_v<T, char> || std::is_same_v<T, char8_t>;
 
     /**
@@ -59,8 +61,8 @@ namespace concepts {
 
     template<typename T> concept Integer = std::is_integral_v<T>;
 
-    template<typename Derived, typename Base> concept DerivedFromBase
-        = std::is_base_of_v<Base, Derived>;
+    template<typename Derived, typename Base>
+    concept Derived_From_Base = std::is_base_of_v<Base, Derived>;
 } // namespace concepts
 
 namespace util {
@@ -167,7 +169,8 @@ namespace util {
      *
      * @return bool true if the two underlying values are equal
      */
-    template<concepts::EnumWithInt E> [[nodiscard]] LIBHYPHANET_EXPORT bool
+    template<concepts::EnumWithInt E>
+    [[nodiscard]] LIBHYPHANET_EXPORT bool
     compare_byte_enum(std::byte byte_value, E enum_value)
     {
         // Convert the enum class item to its underlying type using
@@ -338,8 +341,9 @@ namespace util {
         return vec;
     }
 
-    template<class T, std::size_t N> [[nodiscard]] LIBHYPHANET_EXPORT bool
-    equal(const std::vector<T>& v, const std::array<T, N>& a)
+    template<class T, std::size_t N>
+    [[nodiscard]] LIBHYPHANET_EXPORT bool equal(const std::vector<T>& v,
+                                                const std::array<T, N>& a)
     {
         if (v.size() != N) { return false; }
         return std::equal(v.begin(), v.end(), a.begin());

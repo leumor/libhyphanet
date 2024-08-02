@@ -2,6 +2,7 @@
 #define LIBHYPHANET_BLOCK_USER_H
 
 #include "libhyphanet/block/node.h"
+#include "libhyphanet/bucket.h"
 #include "libhyphanet/key/user.h"
 #include <vector>
 
@@ -19,6 +20,9 @@ namespace block::user {
 class Key {
 public:
     virtual ~Key() = default;
+
+    // template<typename Derived>
+    // [[nodiscard]] bucket::Bucket<Derived>
 
     /**
      * @brief Does the block contain metadata? If not, it contains real
