@@ -5,7 +5,6 @@
 #include "libhyphanet/key/node.h"
 #include "libhyphanet/support.h"
 #include <algorithm>
-#include <any>
 #include <array>
 #include <concepts>
 #include <cryptopp/dsa.h>
@@ -835,6 +834,11 @@ public:
 
     explicit Subspace_key(Token t): Key{t} {}
     Subspace_key() = delete;
+    Subspace_key(const Subspace_key& other) = default;
+    Subspace_key(Subspace_key&& other) noexcept = default;
+    Subspace_key& operator=(const Subspace_key& other) = default;
+    Subspace_key& operator=(Subspace_key&& other) noexcept = default;
+    ~Subspace_key() override = default;
 
     [[nodiscard]] std::string get_docname() const { return docname_; }
 

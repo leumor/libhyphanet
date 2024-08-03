@@ -16,14 +16,15 @@ namespace bucket {
 using executor_type = boost::asio::any_io_executor;
 
 template<typename T, typename Mutable_buffer_sequence, typename Read_handler>
-concept HasMethodAsyncReadSome = requires(
+concept Has_Method_Async_Read_Some = requires(
     T t, const Mutable_buffer_sequence& buffers, Read_handler&& handler) {
     {
         t.template async_read_some<Mutable_buffer_sequence, Read_handler>(
             buffers, handler)
     } -> std::same_as<void>;
 };
-template<typename Derived> class Read_stream {
+template<typename Derived>
+class Read_stream {
 public:
     /**
      * @brief Start an asynchronous read.
@@ -35,23 +36,25 @@ public:
     void async_read_some(const Mutable_buffer_sequence& buffers,
                          Read_handler&& handler)
     {
-        static_assert(HasMethodAsyncReadSome<Derived, Mutable_buffer_sequence,
-                                             Read_handler>,
-                      "Derived class must implement async_read_some()");
+        static_assert(
+            Has_Method_Async_Read_Some<Derived, Mutable_buffer_sequence,
+                                       Read_handler>,
+            "Derived class must implement async_read_some()");
         static_cast<Derived*>(this)->async_read_some(
             buffers, std::forward<Read_handler>(handler));
     }
 };
 
 template<typename T, typename Const_buffer_sequence, typename Write_handler>
-concept HasMethodAsyncWriteSome = requires(
+concept Has_Method_Async_Write_Some = requires(
     T t, const Const_buffer_sequence& buffers, Write_handler&& handler) {
     {
         t.template async_write_some<Const_buffer_sequence, Write_handler>(
             buffers, handler)
     } -> std::same_as<void>;
 };
-template<typename Derived> class Write_stream {
+template<typename Derived>
+class Write_stream {
 public:
     /**
      * @brief Start an asynchronous write.
@@ -63,21 +66,22 @@ public:
     void async_write_some(const Const_buffer_sequence& buffers,
                           Write_handler&& handler)
     {
-        static_assert(HasMethodAsyncWriteSome<Derived, Const_buffer_sequence,
-                                              Write_handler>,
-                      "Derived class must implement async_write_some()");
+        static_assert(
+            Has_Method_Async_Write_Some<Derived, Const_buffer_sequence,
+                                        Write_handler>,
+            "Derived class must implement async_write_some()");
         static_cast<Derived*>(this)->async_write_some(
             buffers, std::forward<Write_handler>(handler));
     }
 };
 
-template<typename T, typename Bucket> concept HasMethodCreateShadow
-    = requires(T t) {
-          { t.create_shadow() } -> std::same_as<std::unique_ptr<T>>;
-      } && std::is_base_of_v<Bucket, T>;
-template<typename Derived> class LIBHYPHANET_EXPORT Bucket
-    : public Read_stream<Derived>,
-      public Write_stream<Derived> {
+template<typename T, typename Bucket>
+concept Has_Method_Create_Shadow = requires(T t) {
+    { t.create_shadow() } -> std::same_as<std::unique_ptr<T>>;
+} && std::is_base_of_v<Bucket, T>;
+template<typename Derived>
+class LIBHYPHANET_EXPORT Bucket : public Read_stream<Derived>,
+                                  public Write_stream<Derived> {
 public:
     // explicit Bucket(const executor_type& executor)
     //     : bucket::Reader_writer{executor}
@@ -128,7 +132,7 @@ public:
      */
     [[nodiscard]] std::unique_ptr<Bucket<Derived>> create_shadow()
     {
-        static_assert(HasMethodCreateShadow<Derived, Bucket<Derived>>,
+        static_assert(Has_Method_Create_Shadow<Derived, Bucket<Derived>>,
                       "Derived class must implement create_shadow()");
 
         auto ptr = static_cast<Derived*>(this)->create_shadow();
@@ -167,9 +171,9 @@ namespace impl {
      * and AsyncWriteStream.
      *
      */
-    template<typename Derived> class Bucket
-        : public virtual bucket::Bucket<Derived>,
-          public Reader_writer {
+    template<typename Derived>
+    class Bucket : public virtual bucket::Bucket<Derived>,
+                   public Reader_writer {
     public:
         explicit Bucket(const executor_type& executor): Reader_writer{executor}
         {}

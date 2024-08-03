@@ -26,7 +26,7 @@ namespace concepts {
      * is int.
      */
     template<typename T>
-    concept EnumWithInt
+    concept Enum_With_Int
         = std::is_enum_v<T> && std::same_as<std::underlying_type_t<T>, int>;
 
     /**
@@ -34,7 +34,7 @@ namespace concepts {
      * std::string) or char8_t (underlying type of std::u8string).
      */
     template<typename T>
-    concept CharOrChar8_t
+    concept Char_Or_Char8_T
         = std::is_same_v<T, char> || std::is_same_v<T, char8_t>;
 
     /**
@@ -45,7 +45,7 @@ namespace concepts {
      * @tparam R the Range type
      */
     template<typename T, typename R>
-    concept RangeWithUnderlyingType = requires(R range) {
+    concept Range_With_Underlying_Type = requires(R range) {
         typename R::value_type; // The range has a value_type
         {
             std::begin(range)
@@ -169,7 +169,7 @@ namespace util {
      *
      * @return bool true if the two underlying values are equal
      */
-    template<concepts::EnumWithInt E>
+    template<concepts::Enum_With_Int E>
     [[nodiscard]] LIBHYPHANET_EXPORT bool
     compare_byte_enum(std::byte byte_value, E enum_value)
     {
@@ -194,7 +194,7 @@ namespace util {
      * @return true if the value is within the range, false otherwise
      */
     template<typename T, typename R>
-    requires concepts::RangeWithUnderlyingType<T, R>
+    requires concepts::Range_With_Underlying_Type<T, R>
     [[nodiscard]] LIBHYPHANET_EXPORT bool in_range(const T& val, const R& arr)
     {
         auto it = std::ranges::find(arr, val);
@@ -211,7 +211,7 @@ namespace util {
      *
      * @return a vector of bytes representing the string
      */
-    template<concepts::CharOrChar8_t T>
+    template<concepts::Char_Or_Char8_T T>
     [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
     basicstr_to_bytes(std::basic_string_view<T> str)
     {
@@ -258,7 +258,7 @@ namespace util {
      * @param bytes the vector of bytes to convert
      * @return std::string the converted string
      */
-    template<concepts::CharOrChar8_t T>
+    template<concepts::Char_Or_Char8_T T>
     [[nodiscard]] LIBHYPHANET_EXPORT std::basic_string<T>
     bytes_to_basicstr(const std::vector<std::byte>& bytes)
     {

@@ -9,7 +9,6 @@
 #include <gsl/util>
 #include <iterator>
 #include <memory>
-#include <optional>
 #include <utility>
 #include <vector>
 

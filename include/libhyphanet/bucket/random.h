@@ -13,7 +13,7 @@
 namespace bucket::random {
 
 template<typename T, typename Mutable_buffer_sequence, typename Read_handler>
-concept HasMethodAsyncReadSomeAt = requires(
+concept Has_Method_Async_Read_Some_At = requires(
     T t, uint64_t offset, const Mutable_buffer_sequence& buffers,
     Read_handler&& handler) {
     {
@@ -21,7 +21,8 @@ concept HasMethodAsyncReadSomeAt = requires(
             offset, buffers, handler)
     } -> std::same_as<void>;
 };
-template<typename Derived> class LIBHYPHANET_EXPORT Random_access_read_device {
+template<typename Derived>
+class LIBHYPHANET_EXPORT Random_access_read_device {
 public:
     using executor_type = boost::asio::any_io_executor;
 
@@ -30,16 +31,17 @@ public:
                             const Mutable_buffer_sequence& buffers,
                             Read_handler&& handler)
     {
-        static_assert(HasMethodAsyncReadSomeAt<Derived, Mutable_buffer_sequence,
-                                               Read_handler>,
-                      "Derived class must implement async_read_some_at()");
+        static_assert(
+            Has_Method_Async_Read_Some_At<Derived, Mutable_buffer_sequence,
+                                          Read_handler>,
+            "Derived class must implement async_read_some_at()");
         static_cast<Derived*>(this)->async_read_some_at(
             offset, buffers, std::forward<Read_handler>(handler));
     }
 };
 
 template<typename T, typename Const_buffer_sequence, typename Write_handler>
-concept HasMethodAsyncWriteSomeAt = requires(
+concept Has_Method_Async_Write_Some_At = requires(
     T t, uint64_t offset, const Const_buffer_sequence& buffers,
     Write_handler&& handler) {
     {
@@ -47,7 +49,8 @@ concept HasMethodAsyncWriteSomeAt = requires(
             offset, buffers, handler)
     } -> std::same_as<void>;
 };
-template<typename Derived> class LIBHYPHANET_EXPORT Random_access_write_device {
+template<typename Derived>
+class LIBHYPHANET_EXPORT Random_access_write_device {
 public:
     using executor_type = boost::asio::any_io_executor;
 
@@ -56,9 +59,10 @@ public:
                              const Const_buffer_sequence& buffers,
                              Write_handler&& handler)
     {
-        static_assert(HasMethodAsyncWriteSomeAt<Derived, Const_buffer_sequence,
-                                                Write_handler>,
-                      "Derived class must implement async_write_some()");
+        static_assert(
+            Has_Method_Async_Write_Some_At<Derived, Const_buffer_sequence,
+                                           Write_handler>,
+            "Derived class must implement async_write_some()");
         static_cast<Derived*>(this)->async_write_some_at(
             offset, buffers, std::forward<Write_handler>(handler));
     }
@@ -80,37 +84,39 @@ public:
  * if both the Bucket and the RAB are no longer reachable.
  *
  */
-template<typename Derived> class LIBHYPHANET_EXPORT Random_access
+template<typename Derived>
+class LIBHYPHANET_EXPORT Random_access
     : public virtual Bucket<Random_access<Derived>>,
       public Random_access_read_device<Derived>,
       public Random_access_write_device<Derived> {
 public:
     // TODO: toRandomAccessBuffer()
-
-    virtual ~Random_access() = default;
 };
-template<typename T> concept DerivedFromRandomAccess
-    = std::derived_from<T, Random_access<T>>;
+template<typename T>
+concept Derived_From_Random_Access = std::derived_from<T, Random_access<T>>;
 
 class LIBHYPHANET_EXPORT Array : public virtual Random_access<Array> {};
 
-template<typename Factory, typename T> concept HasMethodMakeBucket
+template<typename Factory, typename T>
+concept Has_Method_Make_Bucket
     = requires(Factory factory, T t, executor_type executor, size_t size) {
           {
               factory.template make_bucket<T>(executor, size)
           } -> std::same_as<std::shared_ptr<T>>;
-      } && DerivedFromRandomAccess<T>;
+      } && Derived_From_Random_Access<T>;
 template<typename Factory, typename T>
-concept HasMethodMakeImutableBucket = requires(
-                                          Factory factory, T t,
-                                          executor_type executor,
-                                          const std::vector<std::byte>& data,
-                                          size_t length, size_t offset) {
+concept Has_Method_Make_Imutable_Bucket = requires(Factory factory, T t,
+                                                   executor_type executor,
+                                                   const std::vector<std::byte>&
+                                                       data,
+                                                   size_t length,
+                                                   size_t offset) {
     {
         factory.template make_immutable_bucket<T>(data, length, offset)
     } -> std::same_as<boost::asio::awaitable<std::shared_ptr<T>>>;
-} && DerivedFromRandomAccess<T>;
-template<typename Derived> class LIBHYPHANET_EXPORT Factory {
+} && Derived_From_Random_Access<T>;
+template<typename Derived>
+class LIBHYPHANET_EXPORT Factory {
 public:
     virtual ~Factory() = default;
 
@@ -122,20 +128,21 @@ public:
      *
      * @return std::unique_ptr<Random_access> a Random Access Bucket
      */
-    template<DerivedFromRandomAccess T> [[nodiscard]] std::shared_ptr<T>
-    make_bucket(executor_type executor, size_t size) const
+    template<Derived_From_Random_Access T>
+    [[nodiscard]] std::shared_ptr<T> make_bucket(executor_type executor,
+                                                 size_t size) const
     {
-        static_assert(HasMethodMakeBucket<Derived, T>,
+        static_assert(Has_Method_Make_Bucket<Derived, T>,
                       "Derived factory must implement make_bucket()");
         return static_cast<Derived*>(this)->make_bucket(executor, size);
     }
 
-    template<DerivedFromRandomAccess T>
+    template<Derived_From_Random_Access T>
     [[nodiscard]] boost::asio::awaitable<std::shared_ptr<T>>
     make_immutable_bucket(executor_type executor, std::vector<std::byte> data,
                           size_t length, size_t offset = 0) const
     {
-        static_assert(HasMethodMakeImutableBucket<Derived, T>,
+        static_assert(Has_Method_Make_Imutable_Bucket<Derived, T>,
                       "Derived factory must implement make_immutable_bucket()");
         return static_cast<Derived*>(this)->make_immutable_bucket(
             executor, data, length, offset);
@@ -144,7 +151,8 @@ public:
 
 namespace impl {
 
-    template<typename Derived> class Random_access
+    template<typename Derived>
+    class Random_access
         : public virtual bucket::random::Random_access<Derived>,
           public bucket::impl::Bucket<bucket::random::Random_access<Derived>> {
     public:
@@ -257,7 +265,7 @@ namespace impl {
             else {
                 for (const auto& buffer: buffers) {
                     auto* data = static_cast<std::byte*>(buffer.data());
-                    std::size_t size = buffer.size();
+                    const std::size_t size = buffer.size();
                     const std::size_t available = std::min(
                         size,
                         data_.size() - gsl::narrow_cast<size_t>(read_offset));

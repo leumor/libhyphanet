@@ -222,8 +222,8 @@ TEST_CASE("Fields related functions are working", "[library][support]")
 
     SECTION("testBytesToInt")
     {
-        std::vector<std::byte> bytes{std::byte{0}, std::byte{1}, std::byte{2},
-                                     std::byte{2}};
+        const std::vector<std::byte> bytes{std::byte{0}, std::byte{1},
+                                           std::byte{2}, std::byte{2}};
 
         auto out_int = bytes_to_integer<int>(bytes, 0);
 

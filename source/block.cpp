@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <gsl/util>
 #include <memory>
-#include <optional>
 #include <ranges>
 #include <stdexcept>
 #include <vector>
