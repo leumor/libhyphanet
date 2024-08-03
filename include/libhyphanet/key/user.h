@@ -17,6 +17,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <typeindex>
 #include <utility>
 #include <vector>
 
@@ -393,7 +394,7 @@ public:
     template<concepts::Key T>
     requires(!std::same_as<Any_key, std::remove_cvref_t<T>>)
     explicit(false) Any_key(T&& key)
-        : ptr_(std::make_unique<Model<T>>(std::forward<T>(key)))
+        : ptr_(std::make_shared<Model<T>>(std::forward<T>(key)))
     {}
 
     [[nodiscard]] std::vector<std::byte> get_routing_key() const
@@ -420,6 +421,19 @@ public:
     [[nodiscard]] Uri to_uri() const { return ptr_->to_uri(); }
 
     [[nodiscard]] Uri to_request_uri() const { return ptr_->to_request_uri(); }
+
+    template<typename T>
+    [[nodiscard]] bool is() const
+    {
+        return ptr_->type_id() == typeid(T);
+    }
+
+    template<typename T>
+    [[nodiscard]] std::shared_ptr<T> as()
+    {
+        if (is<T>()) { return std::static_pointer_cast<T>(ptr_); }
+        return nullptr;
+    }
 private:
     struct Concept {
         virtual ~Concept() = default;
@@ -433,6 +447,8 @@ private:
             = 0;
         [[nodiscard]] virtual Uri to_uri() const = 0;
         [[nodiscard]] virtual Uri to_request_uri() const = 0;
+
+        [[nodiscard]] virtual std::type_index type_id() const = 0;
     };
 
     template<concepts::Key T>
@@ -461,11 +477,16 @@ private:
         {
             return value_.to_request_uri();
         }
+
+        [[nodiscard]] std::type_index type_id() const override
+        {
+            return typeid(T);
+        }
     private:
         std::decay_t<T> value_;
     };
 
-    std::unique_ptr<Concept> ptr_;
+    std::shared_ptr<Concept> ptr_;
 };
 
 static_assert(concepts::Key<Any_key>);
