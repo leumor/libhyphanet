@@ -538,8 +538,9 @@ protected:
     class Token {};
     friend class Insertable;
 
-    template<concepts::Key T>
-    friend std::unique_ptr<T> create(const Uri& uri);
+    template<concepts::Key T,
+             support::concepts::Derived_From_Base<Key> Key_type>
+    friend std::unique_ptr<T> create_and_init_key(const Uri& uri);
 
     friend void init_from_url(Key& key, const Uri& uri);
 public:
@@ -1516,14 +1517,16 @@ template<typename T, typename U>
 inline constexpr bool always_false_v = false;
 
 template<concepts::Key T, support::concepts::Derived_From_Base<Key> Key_type>
-[[nodiscard]] std::unique_ptr<T>
-create_and_init_key(std::unique_ptr<Key_type> key, const Uri& uri)
+[[nodiscard]] std::unique_ptr<T> create_and_init_key(const Uri& uri)
 {
+    const Key::Token t{};
+    auto key = std::make_unique<Key_type>(t);
+
     init_from_url(*key, uri);
     if constexpr (std::is_same_v<T, Any_key>) {
         return std::make_unique<T>(*key);
     }
-    else if constexpr (std::is_same_v<T, Key_type>) {
+    else if constexpr (std::is_base_of_v<T, Key_type>) {
         return key;
     }
     else {
@@ -1554,8 +1557,6 @@ create_and_init_key(std::unique_ptr<Key_type> key, const Uri& uri)
 template<concepts::Key T>
 LIBHYPHANET_EXPORT [[nodiscard]] std::unique_ptr<T> create(const Uri& uri)
 {
-    const Key::Token t{};
-
     bool is_insertable{false};
     if (auto extra = uri.get_extra();
         !extra.empty() && extra.size() >= 5 && extra.at(1) == std::byte{1}) {
@@ -1566,25 +1567,23 @@ LIBHYPHANET_EXPORT [[nodiscard]] std::unique_ptr<T> create(const Uri& uri)
         using enum key::Uri_type;
     case usk:
         if (is_insertable) {
-            return create_and_init_key<T>(std::make_unique<Insertable_usk>(t),
-                                          uri);
+            return create_and_init_key<T, Insertable_usk>(uri);
         }
         else {
-            return create_and_init_key<T>(std::make_unique<Usk>(t), uri);
+            return create_and_init_key<T, Usk>(uri);
         }
     case ssk:
         if (is_insertable) {
-            return create_and_init_key<T>(std::make_unique<Insertable_ssk>(t),
-                                          uri);
+            return create_and_init_key<T, Insertable_ssk>(uri);
         }
         else {
-            return create_and_init_key<T>(std::make_unique<Ssk>(t), uri);
+            return create_and_init_key<T, Ssk>(uri);
         }
     case chk: {
-        return create_and_init_key<T>(std::make_unique<Chk>(t), uri);
+        return create_and_init_key<T, Chk>(uri);
     }
     case ksk: {
-        return create_and_init_key<T>(std::make_unique<Ksk>(t), uri);
+        return create_and_init_key<T, Ksk>(uri);
     }
     default:
         throw exception::Malformed_uri{"Invalid URI: unknown key type"};
