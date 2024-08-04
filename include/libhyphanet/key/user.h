@@ -393,8 +393,8 @@ class LIBHYPHANET_EXPORT Any_key {
 public:
     template<concepts::Key T>
     requires(!std::same_as<Any_key, std::remove_cvref_t<T>>)
-    explicit(false) Any_key(T&& key)
-        : ptr_(std::make_shared<Model<T>>(std::forward<T>(key)))
+    explicit(false) Any_key(std::shared_ptr<T> key)
+        : ptr_{std::make_shared<Model<T>>(key)}
     {}
 
     [[nodiscard]] std::vector<std::byte> get_routing_key() const
@@ -455,7 +455,7 @@ private:
 
     template<concepts::Key T>
     struct Model : Concept {
-        explicit(false) Model(T v): value_(std::make_shared<T>(std::move(v))) {}
+        explicit(false) Model(std::shared_ptr<T> v): value_{std::move(v)} {}
         [[nodiscard]] std::vector<std::byte> get_routing_key() const override
         {
             return value_->get_routing_key();
@@ -567,7 +567,7 @@ protected:
 
     template<concepts::Key T,
              support::concepts::Derived_From_Base<Key> Key_type>
-    friend std::unique_ptr<T> create_and_init_key(const Uri& uri);
+    friend std::shared_ptr<T> create_and_init_key(const Uri& uri);
 
     friend void init_from_url(Key& key, const Uri& uri);
 public:
@@ -1549,14 +1549,14 @@ template<typename T, typename U>
 inline constexpr bool always_false_v = false;
 
 template<concepts::Key T, support::concepts::Derived_From_Base<Key> Key_type>
-[[nodiscard]] std::unique_ptr<T> create_and_init_key(const Uri& uri)
+[[nodiscard]] std::shared_ptr<T> create_and_init_key(const Uri& uri)
 {
     const Key::Token t{};
-    auto key = std::make_unique<Key_type>(t);
+    auto key = std::make_shared<Key_type>(t);
 
     init_from_url(*key, uri);
     if constexpr (std::is_same_v<T, Any_key>) {
-        return std::make_unique<T>(*key);
+        return std::make_shared<T>(key);
     }
     else if constexpr (std::is_base_of_v<T, Key_type>) {
         return key;
@@ -1587,7 +1587,7 @@ template<concepts::Key T, support::concepts::Derived_From_Base<Key> Key_type>
  * type is unknown.
  */
 template<concepts::Key T>
-LIBHYPHANET_EXPORT [[nodiscard]] std::unique_ptr<T> create(const Uri& uri)
+LIBHYPHANET_EXPORT [[nodiscard]] std::shared_ptr<T> create(const Uri& uri)
 {
     bool is_insertable{false};
     if (auto extra = uri.get_extra();
