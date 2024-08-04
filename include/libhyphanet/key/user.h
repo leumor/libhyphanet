@@ -429,9 +429,11 @@ public:
     }
 
     template<typename T>
-    [[nodiscard]] std::shared_ptr<T> as()
+    [[nodiscard]] std::shared_ptr<std::decay_t<T>> as()
     {
-        if (is<T>()) { return std::static_pointer_cast<T>(ptr_); }
+        if (is<T>()) {
+            return std::static_pointer_cast<Model<T>>(ptr_)->get_value();
+        }
         return nullptr;
     }
 private:
@@ -453,37 +455,42 @@ private:
 
     template<concepts::Key T>
     struct Model : Concept {
-        explicit(false) Model(T v): value_(std::move(v)) {}
+        explicit(false) Model(T v): value_(std::make_shared<T>(std::move(v))) {}
         [[nodiscard]] std::vector<std::byte> get_routing_key() const override
         {
-            return value_.get_routing_key();
+            return value_->get_routing_key();
         }
         [[nodiscard]] std::array<std::byte, crypto_key_length>
         get_crypto_key() const override
         {
-            return value_.get_crypto_key();
+            return value_->get_crypto_key();
         }
         [[nodiscard]] Crypto_algorithm get_crypto_algorithm() const override
         {
-            return value_.get_crypto_algorithm();
+            return value_->get_crypto_algorithm();
         }
         [[nodiscard]] const std::vector<std::string>&
         get_meta_strings() const override
         {
-            return value_.get_meta_strings();
+            return value_->get_meta_strings();
         }
-        [[nodiscard]] Uri to_uri() const override { return value_.to_uri(); }
+        [[nodiscard]] Uri to_uri() const override { return value_->to_uri(); }
         [[nodiscard]] Uri to_request_uri() const override
         {
-            return value_.to_request_uri();
+            return value_->to_request_uri();
         }
 
         [[nodiscard]] std::type_index type_id() const override
         {
             return typeid(T);
         }
+
+        [[nodiscard]] std::shared_ptr<std::decay_t<T>> get_value() const
+        {
+            return value_;
+        }
     private:
-        std::decay_t<T> value_;
+        std::shared_ptr<std::decay_t<T>> value_;
     };
 
     std::shared_ptr<Concept> ptr_;

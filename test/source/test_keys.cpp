@@ -62,6 +62,8 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
 
     SECTION("added valid schema prefixes are ignored")
     {
+        using namespace key::user;
+
         for (const auto& prefix: std::vector<std::string>{
                  "freenet", "web+freenet", "ext+freenet", "hypha", "hyphanet",
                  "web+hypha", "web+hyphanet", "ext+hypha", "ext+hyphanet"}) {
@@ -70,6 +72,15 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
             REQUIRE(uri->to_string() == wanna_usk_1);
             auto key = key::user::create_key(*uri);
             REQUIRE(key->to_uri().to_string() == wanna_usk_1);
+            REQUIRE(key->is<Usk>());
+            REQUIRE(!key->is<Ksk>());
+
+            if (auto usk = key->as<Usk>(); usk != nullptr) {
+                REQUIRE(usk->get_suggested_edition() == 17);
+            }
+            else {
+                REQUIRE(false);
+            }
 
             uri = key::Uri::create(fmt::format("{}:{}", prefix, wanna_ssk_1));
             REQUIRE(uri->to_string() == wanna_ssk_1);
