@@ -65,6 +65,9 @@ namespace concepts {
         { T::max_decompressed_data_length } -> std::convertible_to<size_t>;
     };
 
+    template<typename T>
+    concept Ssk = Key<T> && Has_Max_Decompressed_Data_Length<T>;
+
 } // namespace concepts
 
 /**
