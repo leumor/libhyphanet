@@ -1,4 +1,5 @@
 #include "libhyphanet/support.h"
+
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -69,7 +70,8 @@ namespace util {
         for (unsigned int i = 0; i < hex.length(); i += 2) {
             auto byte_string = hex.substr(i, 2);
             auto byte = static_cast<std::byte>(
-                std::stoi(std::string{byte_string}, nullptr, 16));
+                std::stoi(std::string{byte_string}, nullptr, 16)
+            );
             bytes.push_back(byte);
         }
 
@@ -89,6 +91,7 @@ namespace util {
     }
 
 } // namespace util
+
 namespace url {
 
     std::string url_decode(std::string_view str, bool tolerant)
@@ -103,7 +106,8 @@ namespace url {
             if (*iter == '%') {
                 if (std::distance(iter, std::cend(str)) < 3) {
                     throw Url_decode_error(
-                        "There should be at least 2 characters after '%'");
+                        "There should be at least 2 characters after '%'"
+                    );
                 }
 
                 std::array<char, 2> hex_chars{*(++iter), *(++iter)};
@@ -115,8 +119,8 @@ namespace url {
                     }
                     // hex_val should always fit in a byte as it's converted
                     // to a two chars hex string
-                    decoded_bytes.push_back(
-                        gsl::narrow_cast<std::byte>(hex_val));
+                    decoded_bytes.push_back(gsl::narrow_cast<std::byte>(hex_val)
+                    );
 
                     has_decoded_something = true;
                 }
@@ -124,8 +128,9 @@ namespace url {
                     // Not encoded?
                     if (tolerant && !has_decoded_something) {
                         auto buf = util::str_to_bytes('%' + hex_str);
-                        decoded_bytes.insert(decoded_bytes.end(), buf.begin(),
-                                             buf.end());
+                        decoded_bytes.insert(
+                            decoded_bytes.end(), buf.begin(), buf.end()
+                        );
                         ++iter;
                         continue;
                     }
@@ -142,9 +147,12 @@ namespace url {
         return util::bytes_to_str(decoded_bytes);
     }
 
-    std::string url_encode(std::string_view uri, bool ascii,
-                           std::string_view force,
-                           std::string_view extra_safe_chars)
+    std::string url_encode(
+        std::string_view uri,
+        bool ascii,
+        std::string_view force,
+        std::string_view extra_safe_chars
+    )
     {
         static const auto safe_url_characters_uni
             = icu::UnicodeString::fromUTF8(safe_url_characters);
@@ -173,8 +181,9 @@ namespace url {
             }
             else {
                 for (const auto& b: c_utf8) {
-                    ss << fmt::format("%{:02x}",
-                                      std::bit_cast<unsigned char>(b));
+                    ss << fmt::format(
+                        "%{:02x}", std::bit_cast<unsigned char>(b)
+                    );
                 }
             }
         }
