@@ -1,7 +1,7 @@
 ---
 # Stroustrup c++ style
 AccessModifierOffset: -4
-AlignAfterOpenBracket: Align
+AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveAssignments: None
 AlignConsecutiveBitFields: None
 AlignConsecutiveDeclarations: None
@@ -10,6 +10,7 @@ AlignEscapedNewlines: Right
 AlignTrailingComments: false
 AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
+AllowBreakBeforeNoexceptSpecifier: Never
 AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortEnumsOnASingleLine: true
@@ -20,9 +21,11 @@ AllowShortLoopsOnASingleLine: true
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: Yes
-BinPackArguments: true
-BinPackParameters: true
+BinPackArguments: false
+BinPackParameters: false
 BitFieldColonSpacing: Both
+BreakAdjacentStringLiterals: true
+BreakAfterAttributes: Leave
 BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel: false
@@ -42,7 +45,7 @@ BraceWrapping:
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
 BreakBeforeBinaryOperators: All
-BreakBeforeConceptDeclarations: false
+BreakBeforeConceptDeclarations: Always
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeColon
 BreakInheritanceList: BeforeColon
@@ -51,19 +54,33 @@ ColumnLimit: 80
 CompactNamespaces: false
 Cpp11BracedListStyle: true
 DerivePointerAlignment: false
-EmptyLineBeforeAccessModifier: Never
+EmptyLineBeforeAccessModifier: Always
+EmptyLineAfterAccessModifier: Never
 FixNamespaceComments: true
-IncludeBlocks: Merge
+IncludeBlocks: Regroup
 IndentCaseLabels: false
 IndentExternBlock: Indent
-IndentRequires: false
+IndentPPDirectives: BeforeHash
+IndentRequiresClause: false
 IndentWidth: 4
 IndentWrappedFunctionNames: false
+InsertBraces: true
+InsertNewlineAtEOF: true
 KeepEmptyLinesAtTheStartOfBlocks: false
+LambdaBodyIndentation: Signature
+LineEnding: LF
+MaxEmptyLinesToKeep: 1
 NamespaceIndentation: Inner
+PackConstructorInitializers: Never
 PointerAlignment: Left
-# ReflowComments: true
-SortUsingDeclarations: true
+ReferenceAlignment: Left
+ReflowComments: true
+RemoveParentheses: ReturnStatement
+RequiresClausePosition: OwnLine
+RequiresExpressionIndentation: OuterScope
+SeparateDefinitionBlocks: Always
+SortIncludes: CaseInsensitive
+SortUsingDeclarations: LexicographicNumeric
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: false
@@ -76,12 +93,17 @@ SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements
 SpaceBeforeRangeBasedForLoopColon: false
 SpaceBeforeSquareBrackets: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles: Never
 SpaceInEmptyBlock: false
 SpaceInEmptyParentheses: false
 SpacesInCStyleCastParentheses: false
 SpacesInConditionalStatement: false
 SpacesInContainerLiterals: false
-# SpacesInLineCommentPrefix: 1
+SpacesInLineCommentPrefix:
+  Minimum: 1
+  Maximum: -1
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
+Standard: Latest
 UseTab: Never
