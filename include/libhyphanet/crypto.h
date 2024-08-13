@@ -12,6 +12,7 @@
 #include <libhyphanet/libhyphanet_export.h>
 #include <ranges>
 #include <vector>
+
 /**
  * @brief The crypto namespace contains functions and classes for cryptographic
  * operations.
@@ -50,8 +51,9 @@ namespace exception {
  * @return The encrypted data as a 32-byte array.
  */
 [[nodiscard]] LIBHYPHANET_EXPORT std::array<std::byte, 32>
-rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
-                        const std::array<std::byte, 32>& input);
+rijndael256_256_encrypt(
+    const std::array<std::byte, 32>& key, const std::array<std::byte, 32>& input
+);
 
 /**
  * @brief Decrypts data using the Rijndael algorithm with a 256-bit key and
@@ -68,18 +70,23 @@ rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
  * @return The decrypted data as a 32-byte array.
  */
 [[nodiscard]] LIBHYPHANET_EXPORT std::array<std::byte, 32>
-rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
-                        const std::array<std::byte, 32>& input);
+rijndael256_256_decrypt(
+    const std::array<std::byte, 32>& key, const std::array<std::byte, 32>& input
+);
 
 [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
-rijndael256_256_pcfb_encrypt(const std::array<std::byte, 32>& key,
-                             const std::array<std::byte, 32>& iv,
-                             const std::vector<std::byte>& input);
+rijndael256_256_pcfb_encrypt(
+    const std::array<std::byte, 32>& key,
+    const std::array<std::byte, 32>& iv,
+    const std::vector<std::byte>& input
+);
 
 [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
-rijndael256_256_pcfb_decrypt(const std::array<std::byte, 32>& key,
-                             const std::array<std::byte, 32>& iv,
-                             const std::vector<std::byte>& input);
+rijndael256_256_pcfb_decrypt(
+    const std::array<std::byte, 32>& key,
+    const std::array<std::byte, 32>& iv,
+    const std::vector<std::byte>& input
+);
 
 /**
  * @brief Class for computing SHA-256 hashes.
@@ -130,6 +137,7 @@ public:
      * @return The SHA-256 digest as a 32-byte array.
      */
     [[nodiscard]] std::array<std::byte, 32> digest();
+
 private:
     void update(const std::byte* data, std::size_t length);
     CryptoPP::SHA256 hasher_;
@@ -172,7 +180,8 @@ namespace dsa {
     } // namespace exception
 
     static const boost::multiprecision::mpz_int signature_mask{
-        boost::multiprecision::pow(boost::multiprecision::mpz_int{2}, 255) - 1};
+        boost::multiprecision::pow(boost::multiprecision::mpz_int{2}, 255) - 1
+    };
 
     [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
     truncate_hash(const std::vector<std::byte>& hash);
@@ -267,9 +276,10 @@ namespace dsa {
      *
      * @return The signature as a byte vector.
      */
-    [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte>
-    sign(const std::vector<std::byte>& priv_key_bytes,
-         const std::vector<std::byte>& message_bytes);
+    [[nodiscard]] LIBHYPHANET_EXPORT std::vector<std::byte> sign(
+        const std::vector<std::byte>& priv_key_bytes,
+        const std::vector<std::byte>& message_bytes
+    );
 
     /**
      * @brief Verifies a signature using a DSA public key.
@@ -285,10 +295,11 @@ namespace dsa {
      *
      * @return `true` if the signature is valid, `false` otherwise.
      */
-    [[nodiscard]] LIBHYPHANET_EXPORT bool
-    verify(const std::vector<std::byte>& pub_key_bytes,
-           const std::vector<std::byte>& message_bytes,
-           const std::vector<std::byte>& signature);
+    [[nodiscard]] LIBHYPHANET_EXPORT bool verify(
+        const std::vector<std::byte>& pub_key_bytes,
+        const std::vector<std::byte>& message_bytes,
+        const std::vector<std::byte>& signature
+    );
 
     /**
      * @brief Converts private key bytes to MPI (Multiple Precision Integer)

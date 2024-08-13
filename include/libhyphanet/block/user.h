@@ -4,6 +4,7 @@
 #include "libhyphanet/block/node.h"
 #include "libhyphanet/bucket.h"
 #include "libhyphanet/key/user.h"
+
 #include <vector>
 
 namespace block::user {
@@ -58,7 +59,8 @@ namespace concepts {
     concept Key = Has_Is_Metadata<T> && Has_Memory_Decode<T>
                   && Has_Get_User_Key<T> && Has_Get_Node_Block<T>;
 
-    template<typename T> concept Chk = Key<T>;
+    template<typename T>
+    concept Chk = Key<T>;
 
     template<typename T>
     concept Has_Max_Decompressed_Data_Length = requires {
@@ -112,6 +114,7 @@ public:
     {
         return node_block_->get_node_key();
     }
+
 private:
     std::shared_ptr<key::user::Key> user_key_;
     std::shared_ptr<block::node::Key> node_block_;
@@ -127,6 +130,7 @@ public:
 class Ssk : public Key {
 public:
     static const size_t max_decompressed_data_length = 32768;
+
 private:
     /**
      * @brief Is metadata. Set on decode.

@@ -1,6 +1,7 @@
 #include "libhyphanet/support.h"
 #include "libhyphanet/support/base64.h"
 #include "test/utf_util.h"
+
 #include <bit>
 #include <catch2/catch_message.hpp>
 #include <catch2/catch_test_macros.hpp>
@@ -14,7 +15,8 @@
 #include <vector>
 
 bool are_correctly_encoded_decoded(
-    const std::vector<std::string_view>& to_encode, bool ascii)
+    const std::vector<std::string_view>& to_encode, bool ascii
+)
 {
     using namespace support::url;
 
@@ -37,9 +39,11 @@ bool are_correctly_encoded_decoded(
                 auto orig_char = orig.at(j);
                 auto decoded_char = decoded.at(j);
                 if (j > decoded.size() || orig_char != decoded_char) {
-                    fmt::println("orig: %{:02x}, decoded: %{:02x}",
-                                 std::bit_cast<unsigned char>(orig_char),
-                                 std::bit_cast<unsigned char>(decoded_char));
+                    fmt::println(
+                        "orig: %{:02x}, decoded: %{:02x}",
+                        std::bit_cast<unsigned char>(orig_char),
+                        std::bit_cast<unsigned char>(decoded_char)
+                    );
                     return false;
                 }
             }
@@ -70,16 +74,19 @@ TEST_CASE("url can be encoded and decoded", "[library][support]") // NOLINT
         auto all_chars_except_null
             = icu::UnicodeString(all_characters.data(), all_characters.size());
 
-        all_chars_except_null.findAndReplace(icu::UnicodeString{u'\u0000'},
-                                             icu::UnicodeString{});
+        all_chars_except_null.findAndReplace(
+            icu::UnicodeString{u'\u0000'}, icu::UnicodeString{}
+        );
 
         std::string all_chars_except_null_utf8;
         all_chars_except_null.toUTF8String(all_chars_except_null_utf8);
 
         REQUIRE(are_correctly_encoded_decoded(
-            std::vector<std::string_view>{all_chars_except_null_utf8}, false));
+            std::vector<std::string_view>{all_chars_except_null_utf8}, false
+        ));
         REQUIRE(are_correctly_encoded_decoded(
-            std::vector<std::string_view>{all_chars_except_null_utf8}, true));
+            std::vector<std::string_view>{all_chars_except_null_utf8}, true
+        ));
     }
 
     SECTION("test if encoding and decoding work correctly together with both "
@@ -117,7 +124,8 @@ TEST_CASE("url can be encoded and decoded", "[library][support]") // NOLINT
     }
 
     SECTION(
-        "test if the force parameter is well-managed for each safe url chars")
+        "test if the force parameter is well-managed for each safe url chars"
+    )
     {
         using namespace support::url;
 
@@ -146,8 +154,10 @@ TEST_CASE("url can be encoded and decoded", "[library][support]") // NOLINT
                     + utf_util::uchar_arr_to_str(utf_util::stressed_utf);
 
         for (size_t i = 0; i < to_decode.size(); ++i) {
-            REQUIRE_THROWS_AS(url_decode("%" + to_decode.substr(i, 1), false),
-                              Url_decode_error);
+            REQUIRE_THROWS_AS(
+                url_decode("%" + to_decode.substr(i, 1), false),
+                Url_decode_error
+            );
         }
 
         // Tolerant decoding
@@ -164,10 +174,23 @@ TEST_CASE("Freenet specified versions of base64", "[library][support]")
     using namespace support::util;
 
     std::vector<std::byte> decoded{
-        std::byte{0xFF}, std::byte{0xEE}, std::byte{0xDD}, std::byte{0xCC},
-        std::byte{0xBB}, std::byte{0xAA}, std::byte{0x99}, std::byte{0x88},
-        std::byte{0x77}, std::byte{0x66}, std::byte{0x55}, std::byte{0x44},
-        std::byte{0x33}, std::byte{0x22}, std::byte{0x11}, std::byte{0x00}};
+        std::byte{0xFF},
+        std::byte{0xEE},
+        std::byte{0xDD},
+        std::byte{0xCC},
+        std::byte{0xBB},
+        std::byte{0xAA},
+        std::byte{0x99},
+        std::byte{0x88},
+        std::byte{0x77},
+        std::byte{0x66},
+        std::byte{0x55},
+        std::byte{0x44},
+        std::byte{0x33},
+        std::byte{0x22},
+        std::byte{0x11},
+        std::byte{0x00}
+    };
 
     auto encoded = encode_freenet(decoded);
     REQUIRE_THAT(encoded, Equals("-~7dzLuqmYh3ZlVEMyIRAA"));
@@ -180,8 +203,9 @@ TEST_CASE("Freenet specified versions of base64", "[library][support]")
     std::u8string u8str{u8"Hello World! こんにちは 世界"};
 
     encoded = encode_u8str_standard(u8str);
-    REQUIRE_THAT(encoded,
-                 Equals("SGVsbG8gV29ybGQhIOOBk+OCk+OBq+OBoeOBryDkuJbnlYw="));
+    REQUIRE_THAT(
+        encoded, Equals("SGVsbG8gV29ybGQhIOOBk+OCk+OBq+OBoeOBryDkuJbnlYw=")
+    );
     auto decoded_str = decode_str_standard(encoded);
     auto decoded_u8str = str_to_u8str(decoded_str);
     REQUIRE(decoded_u8str == u8str);
@@ -189,8 +213,9 @@ TEST_CASE("Freenet specified versions of base64", "[library][support]")
     REQUIRE(decoded_u8str == u8str);
 
     encoded = encode_u8str_freenet(u8str);
-    REQUIRE_THAT(encoded,
-                 Equals("SGVsbG8gV29ybGQhIOOBk~OCk~OBq~OBoeOBryDkuJbnlYw"));
+    REQUIRE_THAT(
+        encoded, Equals("SGVsbG8gV29ybGQhIOOBk~OCk~OBq~OBoeOBryDkuJbnlYw")
+    );
     decoded_str = decode_str_freenet(encoded);
     decoded_u8str = str_to_u8str(decoded_str);
     REQUIRE(decoded_u8str == u8str);
@@ -222,8 +247,9 @@ TEST_CASE("Fields related functions are working", "[library][support]")
 
     SECTION("testBytesToInt")
     {
-        const std::vector<std::byte> bytes{std::byte{0}, std::byte{1},
-                                           std::byte{2}, std::byte{2}};
+        const std::vector<std::byte> bytes{
+            std::byte{0}, std::byte{1}, std::byte{2}, std::byte{2}
+        };
 
         auto out_int = bytes_to_integer<int>(bytes, 0);
 

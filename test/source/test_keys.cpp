@@ -1,5 +1,6 @@
 #include "libhyphanet/key.h"
 #include "libhyphanet/key/user.h"
+
 #include <catch2/catch_test_macros.hpp>
 #include <fmt/core.h>
 #include <memory>
@@ -36,13 +37,15 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
 
         uri_ssk = Uri::create(
             "SSK@5hH~39FtjA7A9~VXWtBKI~prUDTuJZURudDG0xFn3KA,GDgRGt5f6xqbmo-"
-            "WraQtU54x4H~871Sho9Hz6hC-0RA,AQACAAE/Search-17XXXX/index_d51.xml");
+            "WraQtU54x4H~871Sho9Hz6hC-0RA,AQACAAE/Search-17XXXX/index_d51.xml"
+        );
         ssk = user::create<user::Ssk>(*uri_ssk);
         REQUIRE_NOTHROW(dynamic_cast<user::Ssk*>(ssk.get())->to_usk());
 
         uri_ssk = Uri::create(
             "SSK@5hH~39FtjA7A9~VXWtBKI~prUDTuJZURudDG0xFn3KA,GDgRGt5f6xqbmo-"
-            "WraQtU54x4H~871Sho9Hz6hC-0RA,AQACAAE/Search17/index_d51.xml");
+            "WraQtU54x4H~871Sho9Hz6hC-0RA,AQACAAE/Search17/index_d51.xml"
+        );
         ssk = user::create<user::Ssk>(*uri_ssk);
         REQUIRE(dynamic_cast<user::Ssk*>(ssk.get())->to_usk() == nullptr);
     }
@@ -51,13 +54,15 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
     {
         // Broken USK
         auto uri = key::Uri::create("USK@/broken/0");
-        REQUIRE_THROWS_AS(key::user::create_key(*uri),
-                          key::exception::Malformed_uri);
+        REQUIRE_THROWS_AS(
+            key::user::create_key(*uri), key::exception::Malformed_uri
+        );
 
         // Broken SSK
         uri = key::Uri::create("SSK@/broken-0");
-        REQUIRE_THROWS_AS(key::user::create_key(*uri),
-                          key::exception::Malformed_uri);
+        REQUIRE_THROWS_AS(
+            key::user::create_key(*uri), key::exception::Malformed_uri
+        );
     }
 
     SECTION("added valid schema prefixes are ignored")
@@ -65,8 +70,16 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
         using namespace key::user;
 
         for (const auto& prefix: std::vector<std::string>{
-                 "freenet", "web+freenet", "ext+freenet", "hypha", "hyphanet",
-                 "web+hypha", "web+hyphanet", "ext+hypha", "ext+hyphanet"}) {
+                 "freenet",
+                 "web+freenet",
+                 "ext+freenet",
+                 "hypha",
+                 "hyphanet",
+                 "web+hypha",
+                 "web+hyphanet",
+                 "ext+hypha",
+                 "ext+hyphanet"
+             }) {
             auto uri
                 = key::Uri::create(fmt::format("{}:{}", prefix, wanna_usk_1));
             REQUIRE(uri->to_string() == wanna_usk_1);

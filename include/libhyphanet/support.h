@@ -59,7 +59,8 @@ namespace concepts {
         requires std::same_as<typename R::value_type, T>;
     };
 
-    template<typename T> concept Integer = std::is_integral_v<T>;
+    template<typename T>
+    concept Integer = std::is_integral_v<T>;
 
     template<typename Derived, typename Base>
     concept Derived_From_Base = std::is_base_of_v<Base, Derived>;
@@ -73,8 +74,8 @@ namespace util {
      * @param s the string to be trimmed
      * @param chars the characters to be trimmed (default: " \t\r\v\n")
      */
-    LIBHYPHANET_EXPORT inline void ltrim(std::string_view& s,
-                                         std::string_view chars = " \t\r\v\n")
+    LIBHYPHANET_EXPORT inline void
+    ltrim(std::string_view& s, std::string_view chars = " \t\r\v\n")
     {
         s.remove_prefix(std::min(s.find_first_not_of(chars), s.size()));
     }
@@ -86,11 +87,12 @@ namespace util {
      * @param s the string to be trimmed
      * @param chars the characters to be trimmed (default: " \t\r\v\n")
      */
-    LIBHYPHANET_EXPORT inline void rtrim(std::string_view& s,
-                                         std::string_view chars = " \t\r\v\n")
+    LIBHYPHANET_EXPORT inline void
+    rtrim(std::string_view& s, std::string_view chars = " \t\r\v\n")
     {
         s.remove_suffix(
-            std::min(s.size() - s.find_last_not_of(chars) - 1, s.size()));
+            std::min(s.size() - s.find_last_not_of(chars) - 1, s.size())
+        );
     }
 
     /**
@@ -102,8 +104,8 @@ namespace util {
      *
      * @throws None
      */
-    LIBHYPHANET_EXPORT inline void trim(std::string_view& s,
-                                        std::string_view chars = " \t\r\v\n")
+    LIBHYPHANET_EXPORT inline void
+    trim(std::string_view& s, std::string_view chars = " \t\r\v\n")
     {
         ltrim(s, chars);
         rtrim(s, chars);
@@ -134,10 +136,11 @@ namespace util {
      *
      * @return a copy of the trimmed string
      */
-    [[nodiscard]] LIBHYPHANET_EXPORT inline std::string_view
-    rtrim_copy(std::string_view s,
+    [[nodiscard]] LIBHYPHANET_EXPORT inline std::string_view rtrim_copy(
+        std::string_view s,
 
-               std::string_view chars = " \t\r\v\n")
+        std::string_view chars = " \t\r\v\n"
+    )
     {
         rtrim(s, chars);
         return s;
@@ -264,8 +267,9 @@ namespace util {
     {
         std::basic_string<T> str;
         str.reserve(bytes.size());
-        std::ranges::transform(bytes, std::back_inserter(str),
-                               [](std::byte b) { return std::bit_cast<T>(b); });
+        std::ranges::transform(bytes, std::back_inserter(str), [](std::byte b) {
+            return std::bit_cast<T>(b);
+        });
         return str;
     }
 
@@ -342,8 +346,8 @@ namespace util {
     }
 
     template<class T, std::size_t N>
-    [[nodiscard]] LIBHYPHANET_EXPORT bool equal(const std::vector<T>& v,
-                                                const std::array<T, N>& a)
+    [[nodiscard]] LIBHYPHANET_EXPORT bool
+    equal(const std::vector<T>& v, const std::array<T, N>& a)
     {
         if (v.size() != N) { return false; }
         return std::equal(v.begin(), v.end(), a.begin());
@@ -362,8 +366,9 @@ namespace compressor {
         lzma = 2,
         lzma_new = 3
     };
-    static constexpr std::array<int16_t, 5> valid_compressor_types{-1, 0, 1, 2,
-                                                                   3};
+    static constexpr std::array<int16_t, 5> valid_compressor_types{
+        -1, 0, 1, 2, 3
+    };
 } // namespace compressor
 
 namespace url {
@@ -391,11 +396,15 @@ namespace url {
 
     static const std::string safe_url_characters{
         "*-_./"
-        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"};
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz"
+    };
 
-    [[nodiscard]] LIBHYPHANET_EXPORT std::string
-    url_encode(std::string_view uri, bool ascii, std::string_view force = "",
-               std::string_view extra_safe_chars = "");
+    [[nodiscard]] LIBHYPHANET_EXPORT std::string url_encode(
+        std::string_view uri,
+        bool ascii,
+        std::string_view force = "",
+        std::string_view extra_safe_chars = ""
+    );
 } // namespace url
 
 namespace field {

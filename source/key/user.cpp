@@ -1,8 +1,10 @@
 #include "libhyphanet/key/user.h"
+
 #include "libhyphanet/crypto.h"
 #include "libhyphanet/key.h"
 #include "libhyphanet/key/node.h"
 #include "libhyphanet/support.h"
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -47,7 +49,8 @@ void Key::check_invariants() const
 {
     if (routing_key_.empty()) {
         throw exception::Malformed_uri{
-            "Invalid URI: missing routing key, crypto key or extra data"};
+            "Invalid URI: missing routing key, crypto key or extra data"
+        };
     }
 }
 
@@ -103,10 +106,10 @@ std::vector<std::byte> Subspace_key::get_extra_bytes() const
     std::vector<std::byte> extra_bytes{
         std::byte{node::Ssk::ssk_version}, // Node SSK version
         std::byte{0}, // 0 = fetch (public) URI; 1 = insert (private) URI
-        std::byte{static_cast<std::byte>(
-            Key::get_crypto_algorithm())}, // Crypto algorithm
-        std::byte{
-            static_cast<std::byte>(1 >> 8)}, // TODO: KeyBlock.HASH_SHA256 >> 8
+        std::byte{static_cast<std::byte>(Key::get_crypto_algorithm())
+        }, // Crypto algorithm
+        std::byte{static_cast<std::byte>(1 >> 8)
+        }, // TODO: KeyBlock.HASH_SHA256 >> 8
         std::byte{1}, // TODO: KeyBlock.HASH_SHA256
     };
 
@@ -159,7 +162,8 @@ void Ssk::set_pub_key(const std::vector<std::byte>& pub_key)
             Key::get_routing_key()
             != support::util::array_to_vector(new_key_hash)) {
             throw std::invalid_argument{
-                "New public key's hash does not match routing key"};
+                "New public key's hash does not match routing key"
+            };
         }
     }
 
@@ -174,7 +178,8 @@ void Ssk::check_invariants() const
         auto routing_key = Key::get_routing_key();
         if (routing_key != support::util::array_to_vector(pub_key_hash)) {
             throw exception::Malformed_uri{
-                "Invalid URI: invalid routing key or public key"};
+                "Invalid URI: invalid routing key or public key"
+            };
         }
     }
 }
@@ -195,7 +200,8 @@ Uri Ssk::to_request_uri() const
 std::optional<std::pair<std::string, long>> Ssk::parse_sitename_edition() const
 {
     static const std::regex docname_with_edition_re{
-        fmt::format("(.*)\\{}([0-9]+)", separator)};
+        fmt::format("(.*)\\{}([0-9]+)", separator)
+    };
     std::smatch match;
 
     if (auto docname = Subspace_key::get_docname();
@@ -225,8 +231,11 @@ std::unique_ptr<node::Key> Ssk::get_node_key() const
 {
     // TODO Cache node key
     return std::make_unique<node::impl::Ssk>(
-        Key::get_routing_key(), encrypted_hashed_docname_,
-        Key::get_crypto_algorithm(), pub_key_);
+        Key::get_routing_key(),
+        encrypted_hashed_docname_,
+        Key::get_crypto_algorithm(),
+        pub_key_
+    );
 }
 
 // =============================================================================
@@ -251,7 +260,8 @@ void Insertable_ssk::init_from_uri(const Uri& uri)
     set_pub_key(pub_key);
 
     set_routing_key(
-        support::util::array_to_vector(crypto::dsa::pub_key_hash(pub_key)));
+        support::util::array_to_vector(crypto::dsa::pub_key_hash(pub_key))
+    );
 }
 
 Uri Insertable_ssk::to_uri() const
@@ -312,7 +322,8 @@ void Usk::init_from_uri(const Uri& uri)
         }
         catch (const std::invalid_argument&) {
             throw exception::Malformed_uri{
-                "Invalid URI: invalid suggested edition number"};
+                "Invalid URI: invalid suggested edition number"
+            };
         }
         catch (const std::out_of_range&) {
             suggested_edition_ = -1;
@@ -352,7 +363,8 @@ std::unique_ptr<key::user::Ssk> Usk::to_ssk() const
     auto docname = get_docname();
 
     return std::make_unique<Ssk>(
-        params, fmt::format("{}{}{}", docname, Ssk::separator, edition));
+        params, fmt::format("{}{}{}", docname, Ssk::separator, edition)
+    );
 }
 
 // =============================================================================
@@ -373,7 +385,8 @@ void Insertable_usk::init_from_uri(const Uri& uri)
     auto pub_key = crypto::dsa::make_pub_key(get_priv_key());
 
     set_routing_key(
-        support::util::array_to_vector(crypto::dsa::pub_key_hash(pub_key)));
+        support::util::array_to_vector(crypto::dsa::pub_key_hash(pub_key))
+    );
 }
 
 Uri Insertable_usk::to_request_uri() const
@@ -398,6 +411,7 @@ std::vector<std::byte> Insertable_usk::get_extra_bytes() const
 
     return bytes;
 }
+
 // =============================================================================
 // class Ksk
 // =============================================================================
@@ -421,8 +435,9 @@ void Ksk::init_from_uri(const Uri& uri)
     set_priv_key(priv_key_bytes);
     set_pub_key(pub_key_bytes);
 
-    set_routing_key(support::util::array_to_vector(
-        crypto::dsa::pub_key_hash(pub_key_bytes)));
+    set_routing_key(
+        support::util::array_to_vector(crypto::dsa::pub_key_hash(pub_key_bytes))
+    );
 }
 
 Uri Ksk::to_uri() const
@@ -476,7 +491,8 @@ void Chk::parse_algo(std::byte algo_byte)
 {
     if (!support::util::in_range(algo_byte, valid_crypto_algorithms)) {
         throw exception::Malformed_uri{
-            "Invalid URI: invalid extra data (crypto algorithm)"};
+            "Invalid URI: invalid extra data (crypto algorithm)"
+        };
     }
 
     set_crypto_algorithm(static_cast<Crypto_algorithm>(algo_byte));
@@ -484,15 +500,17 @@ void Chk::parse_algo(std::byte algo_byte)
 
 void Chk::parse_compressor(std::byte byte_1, std::byte byte_2)
 {
-    const auto compressor_value
-        = gsl::narrow_cast<int16_t>(((std::to_integer<int>(byte_1) & 0xff) << 8)
-                                    + (std::to_integer<int>(byte_2) & 0xff));
+    const auto compressor_value = gsl::narrow_cast<int16_t>(
+        ((std::to_integer<int>(byte_1) & 0xff) << 8)
+        + (std::to_integer<int>(byte_2) & 0xff)
+    );
 
     using namespace support;
 
     if (!util::in_range(compressor_value, compressor::valid_compressor_types)) {
         throw exception::Malformed_uri{
-            "Invalid URI: invalid extra data (compressor)"};
+            "Invalid URI: invalid extra data (compressor)"
+        };
     }
 
     compressor_ = static_cast<compressor::Compressor_type>(compressor_value);
@@ -536,8 +554,9 @@ Uri Chk::to_request_uri() const
 std::unique_ptr<node::Key> Chk::get_node_key() const
 {
     // TODO Cache node key
-    return std::make_unique<node::impl::Chk>(get_routing_key(),
-                                             get_crypto_algorithm());
+    return std::make_unique<node::impl::Chk>(
+        get_routing_key(), get_crypto_algorithm()
+    );
 }
 
 } // namespace key::user

@@ -1,6 +1,8 @@
 #include "libhyphanet/key.h"
+
 #include "libhyphanet/support.h"
 #include "libhyphanet/support/base64.h"
+
 #include <array>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <cstddef>
@@ -23,12 +25,15 @@ namespace key {
 Uri::Uri(Uri_params url_params)
     : uri_type_{url_params.uri_type},
       routing_key_{std::move(url_params.routing_key)},
-      crypto_key_{url_params.crypto_key}, extra_{std::move(url_params.extra)},
+      crypto_key_{url_params.crypto_key},
+      extra_{std::move(url_params.extra)},
       meta_strings_{std::move(url_params.meta_strings)}
 {
     // routing_key_ and crypto_key_ and extra_ are all existent or non-existent
-    Expects((!routing_key_.empty() && crypto_key_ && !extra_.empty())
-            || (routing_key_.empty() && !crypto_key_ && extra_.empty()));
+    Expects(
+        (!routing_key_.empty() && crypto_key_ && !extra_.empty())
+        || (routing_key_.empty() && !crypto_key_ && extra_.empty())
+    );
 }
 
 std::unique_ptr<Uri> Uri::create(std::string_view uri, bool no_trim)
@@ -56,16 +61,19 @@ std::unique_ptr<Uri> Uri::create(std::string_view uri, bool no_trim)
         catch (const Url_decode_error&) {
             throw exception::Malformed_uri{
                 "Invalid URI: no @ or /, or @ or / is escaped but there are "
-                "invalid escapes"};
+                "invalid escapes"
+            };
         }
     }
 
     // Strip http(s):// and (web+|ext+)(freenet|hyphanet|hypha): prefix
     static const std::regex re{
-        "^(https?://[^/]+/+)?(((ext|web)\\+)?(freenet|hyphanet|hypha):)?"};
+        "^(https?://[^/]+/+)?(((ext|web)\\+)?(freenet|hyphanet|hypha):)?"
+    };
 
     const auto processed_uri_const = std::regex_replace(
-        processed_uri, re, "", std::regex_constants::format_first_only);
+        processed_uri, re, "", std::regex_constants::format_first_only
+    );
     // END Preprocessing the URI
 
     // BEGIN Parsing the URI
@@ -137,10 +145,10 @@ Uri_type Uri::parse_uri_type_str(std::string_view str)
     return uri_type;
 }
 
-std::optional<
-    std::tuple<std::vector<std::byte>,
-               std::optional<std::array<std::byte, crypto_key_length>>,
-               std::vector<std::byte>>>
+std::optional<std::tuple<
+    std::vector<std::byte>,
+    std::optional<std::array<std::byte, crypto_key_length>>,
+    std::vector<std::byte>>>
 Uri::parse_routing_crypto_keys(const std::string_view keys_str)
 {
     auto keys_str_copy = keys_str;
@@ -175,7 +183,8 @@ Uri::parse_routing_crypto_keys(const std::string_view keys_str)
         return std::tuple{
             decode_freenet(routing_key),
             vector_to_array<std::byte, crypto_key_length>(crypto_key_bytes),
-            decode_freenet(extra)};
+            decode_freenet(extra)
+        };
     }
     return std::nullopt;
 }
@@ -204,8 +213,9 @@ std::vector<std::string> Uri::parse_meta_strings(std::string_view uri_path)
         end = uri_path.find(uri_separator, start);
 
         if (end != std::string_view::npos) {
-            append_meta_string(meta_strings,
-                               uri_path.substr(start, end - start));
+            append_meta_string(
+                meta_strings, uri_path.substr(start, end - start)
+            );
 
             start = end + 1;
         }
@@ -214,7 +224,8 @@ std::vector<std::string> Uri::parse_meta_strings(std::string_view uri_path)
                 // Last part of the URI Path
                 append_meta_string(
                     meta_strings,
-                    uri_path.substr(start, uri_path.size() - start));
+                    uri_path.substr(start, uri_path.size() - start)
+                );
             }
             break;
         }
@@ -254,10 +265,14 @@ std::string Uri::to_ascii_string() const
 }
 
 void Uri::append_meta_strings(
-    const std::vector<std::string>& additional_meta_strings)
+    const std::vector<std::string>& additional_meta_strings
+)
 {
-    meta_strings_.insert(meta_strings_.end(), additional_meta_strings.begin(),
-                         additional_meta_strings.end());
+    meta_strings_.insert(
+        meta_strings_.end(),
+        additional_meta_strings.begin(),
+        additional_meta_strings.end()
+    );
 }
 
 void Uri::append_meta_string(std::string_view additional_meta_string)
@@ -265,8 +280,10 @@ void Uri::append_meta_string(std::string_view additional_meta_string)
     append_meta_string(meta_strings_, additional_meta_string);
 }
 
-void Uri::append_meta_string(std::vector<std::string>& meta_strings,
-                             std::string_view additional_meta_string)
+void Uri::append_meta_string(
+    std::vector<std::string>& meta_strings,
+    std::string_view additional_meta_string
+)
 {
     if (additional_meta_string != std::string(1, uri_separator)) {
         try {

@@ -2,6 +2,7 @@
 #define LIBHYPHANET_KEY_NODE_H
 
 #include "libhyphanet/key.h"
+
 #include <cstddef>
 #include <gsl/assert>
 #include <libhyphanet/libhyphanet_export.h>
@@ -128,22 +129,27 @@ namespace impl {
         {
             return crypto_algorithm_;
         }
+
     protected:
-        explicit Key(Crypto_algorithm algo): crypto_algorithm_(algo) {}
+        explicit Key(Crypto_algorithm algo)
+            : crypto_algorithm_(algo)
+        {}
 
         Key(const std::vector<std::byte>& node_routing_key,
             Crypto_algorithm algo)
-            : node_routing_key_(node_routing_key), crypto_algorithm_(algo)
+            : node_routing_key_(node_routing_key),
+              crypto_algorithm_(algo)
         {
             Expects(!node_routing_key_.empty());
         }
 
-        void
-        set_node_routing_key(const std::vector<std::byte>& node_routing_key)
+        void set_node_routing_key(const std::vector<std::byte>& node_routing_key
+        )
         {
             Expects(!node_routing_key.empty());
             node_routing_key_ = node_routing_key;
         }
+
     private:
         /**
          * @brief Node Routing Key.
@@ -170,7 +176,8 @@ namespace impl {
          * @brief The cryptographic algorithm used for encryption/decryption.
          */
         Crypto_algorithm crypto_algorithm_{
-            Crypto_algorithm::algo_aes_ctr_256_sha_256};
+            Crypto_algorithm::algo_aes_ctr_256_sha_256
+        };
 
         double cached_normalized_double_{-1.0};
     };
@@ -211,10 +218,12 @@ namespace impl {
         {
             return pub_key_;
         }
+
     private:
         [[nodiscard]] static std::vector<std::byte> make_routing_key(
             const std::vector<std::byte>& user_routing_key,
-            const std::array<std::byte, 32>& encrypted_hashed_docname);
+            const std::array<std::byte, 32>& encrypted_hashed_docname
+        );
 
         std::array<std::byte, 32> user_routing_key_;
         std::array<std::byte, 32> encrypted_hashed_docname_{};
@@ -225,10 +234,11 @@ namespace impl {
         : public virtual key::node::Archive_ssk,
           public Ssk {
     public:
-        Archive_ssk(const std::vector<std::byte>& user_routing_key,
-                    const std::array<std::byte, 32>& encrypted_hashed_docname,
-                    Crypto_algorithm algo
-                    = Crypto_algorithm::algo_aes_ctr_256_sha_256)
+        Archive_ssk(
+            const std::vector<std::byte>& user_routing_key,
+            const std::array<std::byte, 32>& encrypted_hashed_docname,
+            Crypto_algorithm algo = Crypto_algorithm::algo_aes_ctr_256_sha_256
+        )
             : Ssk{user_routing_key, encrypted_hashed_docname, algo}
         {}
     };

@@ -1,7 +1,9 @@
 #include "libhyphanet/crypto.h"
+
 #include "cppcrypto/block_cipher.h"
 #include "cppcrypto/rijndael.h"
 #include "libhyphanet/support.h"
+
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -47,8 +49,10 @@ namespace {
         std_bytes.reserve(cryptopp_bytes.size());
 
         std::ranges::transform(
-            cryptopp_bytes, std::back_inserter(std_bytes),
-            [](CryptoPP::byte b) { return std::bit_cast<std::byte>(b); });
+            cryptopp_bytes,
+            std::back_inserter(std_bytes),
+            [](CryptoPP::byte b) { return std::bit_cast<std::byte>(b); }
+        );
         return std_bytes;
     }
 
@@ -89,27 +93,33 @@ namespace {
         std::vector<CryptoPP::byte> cryptopp_bytes;
         cryptopp_bytes.reserve(bytes.size());
         std::ranges::transform(
-            bytes, std::back_inserter(cryptopp_bytes),
-            [](std::byte b) { return std::bit_cast<CryptoPP::byte>(b); });
+            bytes,
+            std::back_inserter(cryptopp_bytes),
+            [](std::byte b) { return std::bit_cast<CryptoPP::byte>(b); }
+        );
         return cryptopp_bytes;
     }
 
     template<std::size_t N>
     [[nodiscard]] std::array<std::byte, N> cryptoppbytearr_to_bytearr(
-        const std::array<CryptoPP::byte, N>& cryptopp_bytearr)
+        const std::array<CryptoPP::byte, N>& cryptopp_bytearr
+    )
     {
         std::array<std::byte, N> bytearr;
         std::ranges::copy(cryptopp_bytearr, bytearr.begin());
         return bytearr;
     }
 
-    template<std::size_t N> [[nodiscard]] std::array<CryptoPP::byte, N>
+    template<std::size_t N>
+    [[nodiscard]] std::array<CryptoPP::byte, N>
     bytearr_to_cryptoppbytearr(const std::array<std::byte, N>& bytearr)
     {
         std::array<CryptoPP::byte, N> cryptopp_bytearr{};
         std::ranges::transform(
-            bytearr, cryptopp_bytearr.begin(),
-            [](std::byte b) { return std::bit_cast<CryptoPP::byte>(b); });
+            bytearr,
+            cryptopp_bytearr.begin(),
+            [](std::byte b) { return std::bit_cast<CryptoPP::byte>(b); }
+        );
         return cryptopp_bytearr;
     }
 
@@ -178,42 +188,49 @@ namespace {
                             public CryptoPP::BlockCipherDocumentation {
         class Base : public CryptoPP::BlockCipherImpl<Rijndael256_256_info> {
         public:
-            void
-            UncheckedSetKey(const CryptoPP::byte* user_key,
-                            unsigned int key_length,
-                            const CryptoPP::NameValuePairs& /*unused*/) override
+            void UncheckedSetKey(
+                const CryptoPP::byte* user_key,
+                unsigned int key_length,
+                const CryptoPP::NameValuePairs& /*unused*/
+            ) override
             {
                 AssertValidKeyLength(key_length);
                 key_.Assign(user_key, key_length);
             }
+
         protected:
             [[nodiscard]] const CryptoPP::SecByteBlock& get_key() const
             {
                 return key_;
             }
+
         private:
             CryptoPP::SecByteBlock key_;
         };
 
         class Enc : public Base {
         public:
-            void ProcessAndXorBlock(const CryptoPP::byte* in_block,
-                                    const CryptoPP::byte* xor_block,
-                                    CryptoPP::byte* out_block) const override
+            void ProcessAndXorBlock(
+                const CryptoPP::byte* in_block,
+                const CryptoPP::byte* xor_block,
+                CryptoPP::byte* out_block
+            ) const override
             {
                 auto key = get_key();
                 std::array<std::byte, 32> key_array{};
-                std::ranges::transform(key, key_array.begin(),
-                                       [](CryptoPP::byte b) {
-                                           return std::bit_cast<std::byte>(b);
-                                       });
+                std::ranges::transform(
+                    key,
+                    key_array.begin(),
+                    [](CryptoPP::byte b) { return std::bit_cast<std::byte>(b); }
+                );
 
                 std::array<std::byte, 32> input_array{};
-                std::transform(in_block,
-                               in_block + 32, // NOLINT
-                               input_array.begin(), [](CryptoPP::byte b) {
-                                   return std::bit_cast<std::byte>(b);
-                               });
+                std::transform(
+                    in_block,
+                    in_block + 32, // NOLINT
+                    input_array.begin(),
+                    [](CryptoPP::byte b) { return std::bit_cast<std::byte>(b); }
+                );
 
                 auto encrypted
                     = rijndael256_256_encrypt(key_array, input_array);
@@ -228,7 +245,8 @@ namespace {
                            auto xor_val) { // Lambda to process each element
                             auto b = std::bit_cast<CryptoPP::byte>(enc);
                             return b ^ xor_val;
-                        });
+                        }
+                    );
                 }
                 else {
                     std::transform(
@@ -238,29 +256,34 @@ namespace {
                         [](auto enc) { // Lambda to process each element
                             auto b = std::bit_cast<CryptoPP::byte>(enc);
                             return b;
-                        });
+                        }
+                    );
                 }
             }
         };
 
         class Dec : public Base {
-            void ProcessAndXorBlock(const CryptoPP::byte* in_block,
-                                    const CryptoPP::byte* xor_block,
-                                    CryptoPP::byte* out_block) const override
+            void ProcessAndXorBlock(
+                const CryptoPP::byte* in_block,
+                const CryptoPP::byte* xor_block,
+                CryptoPP::byte* out_block
+            ) const override
             {
                 auto key = get_key();
                 std::array<std::byte, 32> key_array{};
-                std::ranges::transform(key, key_array.begin(),
-                                       [](CryptoPP::byte b) {
-                                           return std::bit_cast<std::byte>(b);
-                                       });
+                std::ranges::transform(
+                    key,
+                    key_array.begin(),
+                    [](CryptoPP::byte b) { return std::bit_cast<std::byte>(b); }
+                );
 
                 std::array<std::byte, 32> input_array{};
-                std::transform(in_block,
-                               in_block + 32, // NOLINT
-                               input_array.begin(), [](CryptoPP::byte b) {
-                                   return std::bit_cast<std::byte>(b);
-                               });
+                std::transform(
+                    in_block,
+                    in_block + 32, // NOLINT
+                    input_array.begin(),
+                    [](CryptoPP::byte b) { return std::bit_cast<std::byte>(b); }
+                );
 
                 auto decrypted
                     = rijndael256_256_decrypt(key_array, input_array);
@@ -275,7 +298,8 @@ namespace {
                            auto xor_val) { // Lambda to process each element
                             auto b = std::bit_cast<CryptoPP::byte>(enc);
                             return b ^ xor_val;
-                        });
+                        }
+                    );
                 }
                 else {
                     std::transform(
@@ -285,10 +309,12 @@ namespace {
                         [](auto enc) { // Lambda to process each element
                             auto b = std::bit_cast<CryptoPP::byte>(enc);
                             return b;
-                        });
+                        }
+                    );
                 }
             }
         };
+
     public:
         using Encryption // NOLINT
             = CryptoPP::BlockCipherFinal<CryptoPP::ENCRYPTION, Enc>;
@@ -328,16 +354,17 @@ namespace {
 
 } // namespace
 
-std::array<std::byte, 32>
-rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
-                        const std::array<std::byte, 32>& input)
+std::array<std::byte, 32> rijndael256_256_encrypt(
+    const std::array<std::byte, 32>& key, const std::array<std::byte, 32>& input
+)
 {
     using namespace cppcrypto;
     using namespace support::util;
 
     auto rijndael = std::make_unique<rijndael256_256>();
-    rijndael->init(bytes_to_chars(key).data(),
-                   block_cipher::direction::encryption);
+    rijndael->init(
+        bytes_to_chars(key).data(), block_cipher::direction::encryption
+    );
 
     std::array<unsigned char, 32> output{};
     rijndael->encrypt_block(bytes_to_chars(input).data(), output.data());
@@ -345,16 +372,17 @@ rijndael256_256_encrypt(const std::array<std::byte, 32>& key,
     return chars_to_bytes(output);
 }
 
-std::array<std::byte, 32>
-rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
-                        const std::array<std::byte, 32>& input)
+std::array<std::byte, 32> rijndael256_256_decrypt(
+    const std::array<std::byte, 32>& key, const std::array<std::byte, 32>& input
+)
 {
     using namespace cppcrypto;
     using namespace support::util;
 
     auto rijndael = std::make_unique<rijndael256_256>();
-    rijndael->init(bytes_to_chars(key).data(),
-                   block_cipher::direction::decryption);
+    rijndael->init(
+        bytes_to_chars(key).data(), block_cipher::direction::decryption
+    );
 
     std::array<unsigned char, 32> output{};
     rijndael->decrypt_block(bytes_to_chars(input).data(), output.data());
@@ -362,10 +390,11 @@ rijndael256_256_decrypt(const std::array<std::byte, 32>& key,
     return chars_to_bytes(output);
 }
 
-std::vector<std::byte>
-rijndael256_256_pcfb_encrypt(const std::array<std::byte, 32>& key,
-                             const std::array<std::byte, 32>& iv,
-                             const std::vector<std::byte>& input)
+std::vector<std::byte> rijndael256_256_pcfb_encrypt(
+    const std::array<std::byte, 32>& key,
+    const std::array<std::byte, 32>& iv,
+    const std::vector<std::byte>& input
+)
 {
     auto key_bytes = bytearr_to_cryptoppbytearr(key);
     CryptoPP::SecByteBlock key_cryptopp{key_bytes.data(), key_bytes.size()};
@@ -375,16 +404,20 @@ rijndael256_256_pcfb_encrypt(const std::array<std::byte, 32>& key,
 
     try {
         CryptoPP::CFB_Mode<Rijndael256_256>::Encryption enc;
-        enc.SetKeyWithIV(key_cryptopp, key_cryptopp.size(), iv_bytes.data(),
-                         iv_bytes.size());
+        enc.SetKeyWithIV(
+            key_cryptopp, key_cryptopp.size(), iv_bytes.data(), iv_bytes.size()
+        );
 
         auto input_cryptopp = bytes_to_cryptoppbytes_ptr(input);
 
         const CryptoPP::ArraySource ss1(
-            input_cryptopp, input.size(), true,
+            input_cryptopp,
+            input.size(),
+            true,
             new CryptoPP::StreamTransformationFilter(
                 enc,
-                new CryptoPP::VectorSink(cipher)) // StreamTransformationFilter
+                new CryptoPP::VectorSink(cipher)
+            ) // StreamTransformationFilter
         ); // StringSource
     }
     catch (CryptoPP::Exception& e) {
@@ -394,10 +427,11 @@ rijndael256_256_pcfb_encrypt(const std::array<std::byte, 32>& key,
     return cryptoppbytes_to_bytes(cipher);
 }
 
-std::vector<std::byte>
-rijndael256_256_pcfb_decrypt(const std::array<std::byte, 32>& key,
-                             const std::array<std::byte, 32>& iv,
-                             const std::vector<std::byte>& input)
+std::vector<std::byte> rijndael256_256_pcfb_decrypt(
+    const std::array<std::byte, 32>& key,
+    const std::array<std::byte, 32>& iv,
+    const std::vector<std::byte>& input
+)
 {
     auto key_bytes = bytearr_to_cryptoppbytearr(key);
     CryptoPP::SecByteBlock key_cryptopp{key_bytes.data(), key_bytes.size()};
@@ -407,16 +441,20 @@ rijndael256_256_pcfb_decrypt(const std::array<std::byte, 32>& key,
 
     try {
         CryptoPP::CFB_Mode<Rijndael256_256>::Decryption dec;
-        dec.SetKeyWithIV(key_cryptopp, key_cryptopp.size(), iv_bytes.data(),
-                         iv_bytes.size());
+        dec.SetKeyWithIV(
+            key_cryptopp, key_cryptopp.size(), iv_bytes.data(), iv_bytes.size()
+        );
 
         auto input_cryptopp = bytes_to_cryptoppbytes_ptr(input);
 
         const CryptoPP::ArraySource ss1(
-            input_cryptopp, input.size(), true,
+            input_cryptopp,
+            input.size(),
+            true,
             new CryptoPP::StreamTransformationFilter(
                 dec,
-                new CryptoPP::VectorSink(plain)) // StreamTransformationFilter
+                new CryptoPP::VectorSink(plain)
+            ) // StreamTransformationFilter
         ); // StringSource
     }
     catch (CryptoPP::Exception& e) {
@@ -455,8 +493,9 @@ bytes_to_mpz_int(const std::vector<std::byte>& bytes)
     // NOLINTBEGIN(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
     mpz_t num_gmp;
     mpz_init(num_gmp);
-    mpz_import(num_gmp, bytes.size(), 1, sizeof(CryptoPP::byte), 1, 0,
-               bytes.data());
+    mpz_import(
+        num_gmp, bytes.size(), 1, sizeof(CryptoPP::byte), 1, 0, bytes.data()
+    );
 
     boost::multiprecision::mpz_int result{num_gmp};
 
@@ -550,7 +589,8 @@ namespace dsa {
                               "11e714a112ee84a9d8"
                               "d6c9bc9e74e336560bb5cd4e91eabf6dad26bf0ca048"
                               "07f8c31a2fc18ea7d4"
-                              "5baab7cc997b53c356"}};
+                              "5baab7cc997b53c356"}
+        };
 
         /**
          * @brief Loads a DSA private key from a byte vector.
@@ -580,8 +620,8 @@ namespace dsa {
 
             DSA::PrivateKey private_key;
             private_key.AccessGroupParameters().Initialize(
-                group_big_a_params.p, group_big_a_params.q,
-                group_big_a_params.g);
+                group_big_a_params.p, group_big_a_params.q, group_big_a_params.g
+            );
 
             auto bytes_ptr = bytes_to_cryptoppbytes_ptr(key_bytes);
 
@@ -592,12 +632,14 @@ namespace dsa {
             }
             catch (CryptoPP::Exception&) {
                 throw exception::Invalid_priv_key_error(
-                    "Unable to load dsa private key");
+                    "Unable to load dsa private key"
+                );
             }
 
             if (!private_key.Validate(prng, 3)) {
                 throw exception::Invalid_pub_key_error(
-                    "Dsa private key validation failed");
+                    "Dsa private key validation failed"
+                );
             }
 
             return private_key;
@@ -630,9 +672,9 @@ namespace dsa {
             AutoSeededRandomPool prng;
 
             DSA::PublicKey pub_key;
-            pub_key.AccessGroupParameters().Initialize(group_big_a_params.p,
-                                                       group_big_a_params.q,
-                                                       group_big_a_params.g);
+            pub_key.AccessGroupParameters().Initialize(
+                group_big_a_params.p, group_big_a_params.q, group_big_a_params.g
+            );
 
             auto bytes_ptr = bytes_to_cryptoppbytes_ptr(key_bytes);
 
@@ -642,12 +684,14 @@ namespace dsa {
             }
             catch (CryptoPP::Exception&) {
                 throw exception::Invalid_pub_key_error(
-                    "Unable to load dsa public key");
+                    "Unable to load dsa public key"
+                );
             }
 
             if (!pub_key.Validate(prng, 3)) {
                 throw exception::Invalid_pub_key_error(
-                    "Dsa public key validation failed");
+                    "Dsa public key validation failed"
+                );
             }
 
             return pub_key;
@@ -774,8 +818,12 @@ namespace dsa {
 
         while (true) {
             // Generate Private Key
-            priv_key.Initialize(rng, group_big_a_params.p, group_big_a_params.q,
-                                group_big_a_params.g);
+            priv_key.Initialize(
+                rng,
+                group_big_a_params.p,
+                group_big_a_params.q,
+                group_big_a_params.g
+            );
 
             // Generate Public Key
             pub_key.AssignFrom(priv_key);
@@ -801,9 +849,10 @@ namespace dsa {
         return pub_key_to_bytes(pub_key);
     }
 
-    std::vector<std::byte>
-    sign(const std::vector<std::byte>& priv_key_bytes, // NOLINT
-         const std::vector<std::byte>& message_bytes) // NOLINT
+    std::vector<std::byte> sign(
+        const std::vector<std::byte>& priv_key_bytes, // NOLINT
+        const std::vector<std::byte>& message_bytes
+    ) // NOLINT
     {
         using namespace CryptoPP;
 
@@ -816,17 +865,24 @@ namespace dsa {
 
         const DSA::Signer signer(priv_key);
         const ArraySource ss1(
-            message, message_bytes.size(), true,
-            new SignerFilter(prng, signer,
-                             new StringSink(signature)) // SignerFilter
+            message,
+            message_bytes.size(),
+            true,
+            new SignerFilter(
+                prng,
+                signer,
+                new StringSink(signature)
+            ) // SignerFilter
         ); // StringSource
 
         return support::util::str_to_bytes(signature);
     }
 
-    bool verify(const std::vector<std::byte>& pub_key_bytes, // NOLINT
-                const std::vector<std::byte>& message_bytes, // NOLINT
-                const std::vector<std::byte>& signature) // NOLINT
+    bool verify(
+        const std::vector<std::byte>& pub_key_bytes, // NOLINT
+        const std::vector<std::byte>& message_bytes, // NOLINT
+        const std::vector<std::byte>& signature
+    ) // NOLINT
     {
         using namespace CryptoPP;
 
@@ -836,20 +892,26 @@ namespace dsa {
 
         const DSA::Verifier verifier(pub_key);
         std::vector<std::byte> data_to_verify;
-        data_to_verify.insert(data_to_verify.end(), message_bytes.begin(),
-                              message_bytes.end());
-        data_to_verify.insert(data_to_verify.end(), signature.begin(),
-                              signature.end());
+        data_to_verify.insert(
+            data_to_verify.end(), message_bytes.begin(), message_bytes.end()
+        );
+        data_to_verify.insert(
+            data_to_verify.end(), signature.begin(), signature.end()
+        );
 
         auto data_to_verify_ptr = bytes_to_cryptoppbytes_ptr(data_to_verify);
 
         const ArraySource ss(
-            data_to_verify_ptr, data_to_verify.size(), true,
+            data_to_verify_ptr,
+            data_to_verify.size(),
+            true,
             new SignatureVerificationFilter(
                 verifier,
                 new ArraySink(std::bit_cast<byte*>(&result), sizeof(result)),
                 SignatureVerificationFilter::PUT_RESULT
-                    | SignatureVerificationFilter::SIGNATURE_AT_END));
+                    | SignatureVerificationFilter::SIGNATURE_AT_END
+            )
+        );
 
         return result;
     }

@@ -2,6 +2,7 @@
 #define LIBHYPHANET_SUPPORT_BASE64_H
 
 #include "libhyphanet/support.h"
+
 #include <cryptopp/config_int.h>
 #include <string_view>
 #include <vector>
@@ -13,7 +14,8 @@ namespace support::base64 {
  */
 static const std::string base64_alphabet_freenet{
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012"
-    "3456789~-"};
+    "3456789~-"
+};
 
 /**
  * @brief Encode bytes using Base64 encoding.
@@ -31,9 +33,11 @@ static const std::string base64_alphabet_freenet{
  *
  * @return The encoded string.
  */
-[[nodiscard]] LIBHYPHANET_EXPORT std::string
-encode(const std::vector<std::byte>& bytes, bool equals_pad,
-       std::string_view alphabet);
+[[nodiscard]] LIBHYPHANET_EXPORT std::string encode(
+    const std::vector<std::byte>& bytes,
+    bool equals_pad,
+    std::string_view alphabet
+);
 
 /**
  * @brief Encodes the given bytes using Base64 encoding with [Freenet specific

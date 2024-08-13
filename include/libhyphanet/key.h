@@ -88,8 +88,9 @@ enum class Crypto_algorithm : std::underlying_type_t<std::byte> {
      */
     algo_aes_ctr_256_sha_256 = 3,
 };
-static constexpr std::array<std::byte, 2> valid_crypto_algorithms{std::byte{2},
-                                                                  std::byte{3}};
+static constexpr std::array<std::byte, 2> valid_crypto_algorithms{
+    std::byte{2}, std::byte{3}
+};
 
 /**
  * @brief Struct to hold parameters for constructing a Uri object.
@@ -146,6 +147,7 @@ class LIBHYPHANET_EXPORT Uri {
     friend class user::Insertable_usk;
     friend class user::Ksk;
     friend class user::Chk;
+
 public:
     /**
      * @brief Construct a new `Uri` object
@@ -182,8 +184,8 @@ public:
      * @return A std::unique_ptr<Uri> pointing to the newly created Uri
      * object.
      */
-    static std::unique_ptr<Uri> create(std::string_view uri,
-                                       bool no_trim = false);
+    static std::unique_ptr<Uri>
+    create(std::string_view uri, bool no_trim = false);
 
     /**
      * @brief Converts the Uri object to a string representation.
@@ -199,8 +201,8 @@ public:
      *
      * @return std::string The Hyphanet URI as a string
      */
-    [[nodiscard]] std::string to_string(bool prefix = false,
-                                        bool pure_ascii = false) const;
+    [[nodiscard]] std::string
+    to_string(bool prefix = false, bool pure_ascii = false) const;
 
     /**
      * @brief Converts the Uri object to a pure ASCII string representation.
@@ -261,6 +263,7 @@ public:
     {
         return meta_strings_;
     }
+
 private:
     /**
      * @brief Parses the URI type from a string.
@@ -291,10 +294,10 @@ private:
      *
      * @throw exception::Malformed_uri If the crypto key is invalid.
      */
-    static std::optional<
-        std::tuple<std::vector<std::byte>,
-                   std::optional<std::array<std::byte, crypto_key_length>>,
-                   std::vector<std::byte>>>
+    static std::optional<std::tuple<
+        std::vector<std::byte>,
+        std::optional<std::array<std::byte, crypto_key_length>>,
+        std::vector<std::byte>>>
     parse_routing_crypto_keys(std::string_view keys_str);
 
     /**
@@ -310,8 +313,8 @@ private:
      * @return std::vector<std::string> A vector of meta strings extracted from
      * the URI path.
      */
-    static std::vector<std::string>
-    parse_meta_strings(std::string_view uri_path);
+    static std::vector<std::string> parse_meta_strings(std::string_view uri_path
+    );
 
     static const char uri_separator = '/';
 
@@ -357,8 +360,9 @@ private:
      *
      * @param additional_meta_strings The additional meta strings to append.
      */
-    void append_meta_strings(
-        const std::vector<std::string>& additional_meta_strings);
+    void
+    append_meta_strings(const std::vector<std::string>& additional_meta_strings
+    );
 
     /**
      * @brief Appends a single meta string to the `Uri` object.
@@ -385,8 +389,10 @@ private:
      *
      * @throw exception::Malformed_uri If the meta string is invalid.
      */
-    static void append_meta_string(std::vector<std::string>& meta_strings,
-                                   std::string_view additional_meta_string);
+    static void append_meta_string(
+        std::vector<std::string>& meta_strings,
+        std::string_view additional_meta_string
+    );
 
     /**
      * @brief The three-letter abbreviation of the key.

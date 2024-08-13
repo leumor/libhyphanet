@@ -1,7 +1,9 @@
 #include "libhyphanet/key/node.h"
+
 #include "libhyphanet/crypto.h"
 #include "libhyphanet/key.h"
 #include "libhyphanet/support.h"
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -30,7 +32,8 @@ double Key::to_normalized_double()
     auto digest = sha256.digest();
 
     cached_normalized_double_ = support::util::key_digest_as_normalized_double(
-        support::util::array_to_vector(digest));
+        support::util::array_to_vector(digest)
+    );
 
     return cached_normalized_double_;
 }
@@ -61,7 +64,9 @@ short Chk::get_type() const
     return static_cast<short>(
         static_cast<signed char>(base_type << 8)
         + static_cast<signed char>(
-            static_cast<std::byte>(get_crypto_algorithm()) & std::byte{0xFF}));
+            static_cast<std::byte>(get_crypto_algorithm()) & std::byte{0xFF}
+        )
+    );
 }
 
 std::unique_ptr<key::node::Key> Chk::archival_copy() const
@@ -73,24 +78,30 @@ std::unique_ptr<key::node::Key> Chk::archival_copy() const
 // Ssk
 // =============================================================================
 
-Ssk::Ssk(const std::vector<std::byte>& user_routing_key,
-         const std::array<std::byte, 32>& encrypted_hashed_docname,
-         Crypto_algorithm algo, std::vector<std::byte> pub_key)
+Ssk::Ssk(
+    const std::vector<std::byte>& user_routing_key,
+    const std::array<std::byte, 32>& encrypted_hashed_docname,
+    Crypto_algorithm algo,
+    std::vector<std::byte> pub_key
+)
     : Key{algo},
       user_routing_key_{
-          support::util::vector_to_array<std::byte, 32>(user_routing_key)},
+          support::util::vector_to_array<std::byte, 32>(user_routing_key)
+      },
       encrypted_hashed_docname_{encrypted_hashed_docname},
       pub_key_{std::move(pub_key)}
 {
     Expects(user_routing_key.size() == 32);
 
     set_node_routing_key(
-        make_routing_key(user_routing_key, encrypted_hashed_docname));
+        make_routing_key(user_routing_key, encrypted_hashed_docname)
+    );
 }
 
-std::vector<std::byte>
-Ssk::make_routing_key(const std::vector<std::byte>& user_routing_key,
-                      const std::array<std::byte, 32>& encrypted_hashed_docname)
+std::vector<std::byte> Ssk::make_routing_key(
+    const std::vector<std::byte>& user_routing_key,
+    const std::array<std::byte, 32>& encrypted_hashed_docname
+)
 {
     using support::util::array_to_vector;
 
@@ -118,7 +129,9 @@ std::unique_ptr<key::node::Key> Ssk::archival_copy() const
 {
     return std::make_unique<Archive_ssk>(
         support::util::array_to_vector(user_routing_key_),
-        encrypted_hashed_docname_, get_crypto_algorithm());
+        encrypted_hashed_docname_,
+        get_crypto_algorithm()
+    );
 }
 
 short Ssk::get_type() const
@@ -126,7 +139,9 @@ short Ssk::get_type() const
     return static_cast<short>(
         static_cast<signed char>(base_type << 8)
         + static_cast<signed char>(
-            static_cast<std::byte>(get_crypto_algorithm()) & std::byte{0xFF}));
+            static_cast<std::byte>(get_crypto_algorithm()) & std::byte{0xFF}
+        )
+    );
 }
 
 std::vector<std::byte> Ssk::get_key_bytes() const

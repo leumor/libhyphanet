@@ -1,5 +1,6 @@
 #include "libhyphanet/bucket.h"
 #include "libhyphanet/bucket/random.h"
+
 #include <boost/asio/any_io_executor.hpp>
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/buffer.hpp>
@@ -24,7 +25,8 @@ boost::asio::awaitable<void> perform_io(boost::asio::any_io_executor executor)
 
     std::vector<std::byte> buffer(10);
     auto bytes_read = co_await boost::asio::async_read(
-        *bucket, boost::asio::buffer(buffer), boost::asio::use_awaitable);
+        *bucket, boost::asio::buffer(buffer), boost::asio::use_awaitable
+    );
 
     fmt::println("{} bytes read", bytes_read);
     fmt::println("buffer: {:02x}", fmt::join(buffer, " "));
@@ -48,8 +50,9 @@ boost::asio::awaitable<void> perform_io(boost::asio::any_io_executor executor)
 TEST_CASE("freenet buckets are functional", "[library][bucket]") // NOLINT
 {
     boost::asio::io_context io_context;
-    boost::asio::co_spawn(io_context, perform_io(io_context.get_executor()),
-                          boost::asio::detached);
+    boost::asio::co_spawn(
+        io_context, perform_io(io_context.get_executor()), boost::asio::detached
+    );
 
     io_context.run();
 }

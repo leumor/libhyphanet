@@ -4,6 +4,7 @@
 #include "libhyphanet/key.h"
 #include "libhyphanet/key/node.h"
 #include "libhyphanet/support.h"
+
 #include <algorithm>
 #include <array>
 #include <concepts>
@@ -192,7 +193,8 @@ namespace concepts {
      * which the node level does not know about, but which are in the URI -
      * usually the second part, after the comma.
      */
-    template<typename T> concept Client = Has_Get_Node_Key<T>;
+    template<typename T>
+    concept Client = Has_Get_Node_Key<T>;
 
     template<typename T>
     concept Has_Get_Priv_Key = requires(const T t) {
@@ -206,7 +208,8 @@ namespace concepts {
      * A Insertable key contains a private key from the [Key](#Key) owner,
      * so a user can use it to insert new versions of data.
      */
-    template<typename T> concept Insertable = Has_Get_Priv_Key<T>;
+    template<typename T>
+    concept Insertable = Has_Get_Priv_Key<T>;
 
     /**
      * @brief Converts an Ssk (Signed Subspace Key) to a Usk (Updatable
@@ -359,7 +362,8 @@ namespace concepts {
      * human-readable string. They are less secure than SSKs or USKs but
      * offer a straightforward way to share and access static content.
      */
-    template<typename T, typename U> concept Ksk = Insertable_Ssk<T, U>;
+    template<typename T, typename U>
+    concept Ksk = Insertable_Ssk<T, U>;
 
     template<typename T>
     concept Has_Get_Control_Document = requires(const T t) {
@@ -436,6 +440,7 @@ public:
         }
         return nullptr;
     }
+
 private:
     struct Concept {
         virtual ~Concept() = default;
@@ -455,26 +460,34 @@ private:
 
     template<concepts::Key T>
     struct Model : Concept {
-        explicit(false) Model(std::shared_ptr<T> v): value_{std::move(v)} {}
+        explicit(false) Model(std::shared_ptr<T> v)
+            : value_{std::move(v)}
+        {}
+
         [[nodiscard]] std::vector<std::byte> get_routing_key() const override
         {
             return value_->get_routing_key();
         }
+
         [[nodiscard]] std::array<std::byte, crypto_key_length>
         get_crypto_key() const override
         {
             return value_->get_crypto_key();
         }
+
         [[nodiscard]] Crypto_algorithm get_crypto_algorithm() const override
         {
             return value_->get_crypto_algorithm();
         }
+
         [[nodiscard]] const std::vector<std::string>&
         get_meta_strings() const override
         {
             return value_->get_meta_strings();
         }
+
         [[nodiscard]] Uri to_uri() const override { return value_->to_uri(); }
+
         [[nodiscard]] Uri to_request_uri() const override
         {
             return value_->to_request_uri();
@@ -489,6 +502,7 @@ private:
         {
             return value_;
         }
+
     private:
         std::shared_ptr<std::decay_t<T>> value_;
     };
@@ -523,8 +537,8 @@ struct LIBHYPHANET_EXPORT Key_params {
      * @brief The cryptographic algorithm used for
      * encryption/decryption.
      */
-    Crypto_algorithm crypto_algorithm{
-        Crypto_algorithm::algo_aes_ctr_256_sha_256};
+    Crypto_algorithm crypto_algorithm{Crypto_algorithm::algo_aes_ctr_256_sha_256
+    };
     /**
      * @brief Meta strings associated with the Key object.
      */
@@ -565,11 +579,13 @@ protected:
     class Token {};
     friend class Insertable;
 
-    template<concepts::Key T,
-             support::concepts::Derived_From_Base<Key> Key_type>
+    template<
+        concepts::Key T,
+        support::concepts::Derived_From_Base<Key> Key_type>
     friend std::shared_ptr<T> create_and_init_key(const Uri& uri);
 
     friend void init_from_url(Key& key, const Uri& uri);
+
 public:
     /**
      * @brief Constructs a Key object with specified parameters.
@@ -589,7 +605,8 @@ public:
      * check_invariants() which may throw an exception.
      */
     explicit Key(Key_params key)
-        : routing_key_(std::move(key.routing_key)), crypto_key_(key.crypto_key),
+        : routing_key_(std::move(key.routing_key)),
+          crypto_key_(key.crypto_key),
           crypto_algorithm_(key.crypto_algorithm),
           meta_strings_(key.meta_strings)
     {
@@ -597,6 +614,7 @@ public:
     }
 
     explicit Key(Token /*unused*/) {}
+
     Key() = delete;
     virtual ~Key() = default;
 
@@ -641,6 +659,7 @@ public:
     {
         return meta_strings_;
     }
+
 protected:
     /**
      * @brief Initializes a Key object from a Uri.
@@ -664,14 +683,17 @@ protected:
     {
         routing_key_ = std::move(key);
     }
+
     void set_crypto_key(const std::array<std::byte, crypto_key_length>& key)
     {
         crypto_key_ = key;
     }
+
     void set_crypto_algorithm(Crypto_algorithm algo)
     {
         crypto_algorithm_ = algo;
     }
+
     void set_meta_strings(const std::vector<std::string>& meta_strings)
     {
         meta_strings_ = meta_strings;
@@ -690,6 +712,7 @@ protected:
      * available, or an empty string if there are no meta strings left.
      */
     std::string pop_meta_strings();
+
 private:
     /**
      * @brief Checks the invariants of the Key object.
@@ -741,7 +764,8 @@ private:
      *
      */
     Crypto_algorithm crypto_algorithm_{
-        Crypto_algorithm::algo_aes_pcfb_256_sha_256};
+        Crypto_algorithm::algo_aes_pcfb_256_sha_256
+    };
 
     std::vector<std::string> meta_strings_;
 };
@@ -774,6 +798,7 @@ public:
     {}
 
     explicit Insertable(Key::Token /*unused*/) {}
+
     Insertable() = delete;
     virtual ~Insertable() = default;
 
@@ -786,6 +811,7 @@ public:
     {
         return priv_key_;
     }
+
 protected:
     /**
      * @brief Set the private key for the current Key.
@@ -796,6 +822,7 @@ protected:
     {
         priv_key_ = std::move(key);
     }
+
 private:
     /**
      * @brief Private key for current Key.
@@ -850,7 +877,8 @@ public:
      * check_invariants() which may throw an exception.
      */
     Subspace_key(Key_params key, std::string_view docname)
-        : Key{std::move(key)}, docname_(docname)
+        : Key{std::move(key)},
+          docname_(docname)
     {
         check_invariants();
 
@@ -860,7 +888,10 @@ public:
         Key::get_routing_key().reserve(routing_key_size);
     }
 
-    explicit Subspace_key(Token t): Key{t} {}
+    explicit Subspace_key(Token t)
+        : Key{t}
+    {}
+
     Subspace_key() = delete;
     Subspace_key(const Subspace_key& other) = default;
     Subspace_key(Subspace_key&& other) noexcept = default;
@@ -913,6 +944,7 @@ public:
      */
     static const size_t routing_key_size
         = 32; // TODO: same as Node_ssk::pubkey_hash_size
+
 protected:
     void init_from_uri(const Uri& uri) override;
 
@@ -934,7 +966,9 @@ protected:
      * Key's URI.
      */
     [[nodiscard]] virtual std::vector<std::byte> get_extra_bytes() const;
+
     void set_docname(std::string_view docname) { docname_ = docname; }
+
 private:
     void check_invariants() const;
 
@@ -1005,15 +1039,20 @@ public:
      * @param pub_key An optional vector of bytes representing the
      * public key, used for content verification.
      */
-    Ssk(Key_params key, std::string_view docname,
+    Ssk(Key_params key,
+        std::string_view docname,
         const std::vector<std::byte>& pub_key = {})
-        : Subspace_key{std::move(key), docname}, pub_key_{pub_key}
+        : Subspace_key{std::move(key), docname},
+          pub_key_{pub_key}
     {
         calculate_encrypted_hashed_docname();
         check_invariants();
     }
 
-    explicit Ssk(Token t): Subspace_key{t} {}
+    explicit Ssk(Token t)
+        : Subspace_key{t}
+    {}
+
     Ssk() = delete;
     Ssk(const Ssk& other) = default;
     Ssk(Ssk&& other) noexcept = default;
@@ -1072,9 +1111,11 @@ public:
     {
         return pub_key_;
     }
+
 protected:
     void init_from_uri(const Uri& uri) override;
     void set_pub_key(const std::vector<std::byte>& pub_key);
+
 private:
     /**
      * @brief Calculates and stores the encrypted and hashed version of
@@ -1151,9 +1192,13 @@ public:
      * @param priv_key A vector of bytes representing the private key,
      * used for data insertion.
      */
-    Insertable_ssk(Key_params key, std::string_view docname,
-                   const std::vector<std::byte>& priv_key)
-        : Ssk{std::move(key), docname}, Insertable(priv_key)
+    Insertable_ssk(
+        Key_params key,
+        std::string_view docname,
+        const std::vector<std::byte>& priv_key
+    )
+        : Ssk{std::move(key), docname},
+          Insertable(priv_key)
     {}
 
     /**
@@ -1171,10 +1216,15 @@ public:
      * used for data insertion.
      */
     Insertable_ssk(Ssk ssk, const std::vector<std::byte>& priv_key)
-        : Ssk{std::move(ssk)}, Insertable{priv_key}
+        : Ssk{std::move(ssk)},
+          Insertable{priv_key}
     {}
 
-    explicit Insertable_ssk(Token t): Ssk{t}, Insertable{t} {}
+    explicit Insertable_ssk(Token t)
+        : Ssk{t},
+          Insertable{t}
+    {}
+
     Insertable_ssk() = delete;
     Insertable_ssk(const Insertable_ssk& other) = default;
     Insertable_ssk(Insertable_ssk&& other) noexcept = default;
@@ -1184,6 +1234,7 @@ public:
 
     [[nodiscard]] Uri to_uri() const override;
     [[nodiscard]] Uri to_request_uri() const override;
+
 protected:
     void init_from_uri(const Uri& uri) override;
     [[nodiscard]] std::vector<std::byte> get_extra_bytes() const override;
@@ -1222,7 +1273,10 @@ public:
           suggested_edition_(suggested_edition)
     {}
 
-    explicit Usk(Token t): Subspace_key{t} {}
+    explicit Usk(Token t)
+        : Subspace_key{t}
+    {}
+
     Usk() = delete;
     Usk(const Usk& other) = default;
     Usk(Usk&& other) noexcept = default;
@@ -1277,8 +1331,10 @@ public:
      * content identified by the current Usk.
      */
     [[nodiscard]] std::unique_ptr<Ssk> to_ssk() const;
+
 protected:
     void init_from_uri(const Uri& uri) override;
+
 private:
     /**
      * @brief Suggestion edition.
@@ -1342,13 +1398,19 @@ public:
      * used for data insertion.
      */
     Insertable_usk(Usk usk, const std::vector<std::byte>& priv_key)
-        : Usk(std::move(usk)), Insertable(priv_key)
+        : Usk(std::move(usk)),
+          Insertable(priv_key)
     {}
 
-    explicit Insertable_usk(Token t): Usk{t}, Insertable{t} {}
+    explicit Insertable_usk(Token t)
+        : Usk{t},
+          Insertable{t}
+    {}
+
     Insertable_usk() = delete;
 
     [[nodiscard]] Uri to_request_uri() const override;
+
 protected:
     void init_from_uri(const Uri& uri) override;
     [[nodiscard]] std::vector<std::byte> get_extra_bytes() const override;
@@ -1369,7 +1431,10 @@ class LIBHYPHANET_EXPORT Ksk : public Insertable_ssk {
 public:
     explicit Ksk(std::string keyword);
 
-    explicit Ksk(Token t): Insertable_ssk{t} {}
+    explicit Ksk(Token t)
+        : Insertable_ssk{t}
+    {}
+
     Ksk() = delete;
 
     [[nodiscard]] Uri to_uri() const override;
@@ -1383,8 +1448,10 @@ public:
      * @return Uri The request URI for this Ksk.
      */
     [[nodiscard]] Uri to_request_uri() const override;
+
 protected:
     void init_from_uri(const Uri& uri) override;
+
 private:
     /**
      * @brief The keyword from which the KSK is derived.
@@ -1415,13 +1482,18 @@ public:
      * control document.
      * @param compressor Compression algorithm used on the content.
      */
-    Chk(Key_params key, bool control_document,
+    Chk(Key_params key,
+        bool control_document,
         support::compressor::Compressor_type compressor)
-        : Key(std::move(key)), control_document_(control_document),
+        : Key(std::move(key)),
+          control_document_(control_document),
           compressor_(compressor)
     {}
 
-    explicit Chk(Token t): Key{t} {}
+    explicit Chk(Token t)
+        : Key{t}
+    {}
+
     Chk() = delete;
 
     /**
@@ -1495,8 +1567,10 @@ public:
      * compatibility across the network.
      */
     static const short routing_key_size = 32;
+
 protected:
     void init_from_uri(const Uri& uri) override;
+
 private:
     /**
      * @brief Parses and sets the encryption algorithm from a byte.
@@ -1535,7 +1609,8 @@ private:
      * @brief Compression type used.
      */
     support::compressor::Compressor_type compressor_{
-        support::compressor::Compressor_type::gzip};
+        support::compressor::Compressor_type::gzip
+    };
 };
 
 static_assert(concepts::Chk<Chk>);

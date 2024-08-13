@@ -1,5 +1,7 @@
 #include "libhyphanet/support/base64.h"
+
 #include "libhyphanet/support.h"
+
 #include <algorithm>
 #include <array>
 #include <cryptopp/algparam.h>
@@ -39,8 +41,11 @@ namespace {
     }
 } // namespace
 
-std::string encode(const std::vector<std::byte>& bytes, bool equals_pad,
-                   std::string_view alphabet)
+std::string encode(
+    const std::vector<std::byte>& bytes,
+    bool equals_pad,
+    std::string_view alphabet
+)
 {
     using namespace CryptoPP;
 
@@ -65,15 +70,17 @@ std::string encode(const std::vector<std::byte>& bytes, bool equals_pad,
 
     encoder.Attach(new StringSink(encoded)); // NOLINT
 
-    const StringSource ss(decoded, true,
-                          new Redirector(encoder) // Base64Encoder
+    const StringSource ss(
+        decoded,
+        true,
+        new Redirector(encoder) // Base64Encoder
     ); // StringSource
 
     return encoded;
 }
 
-std::vector<std::byte> decode(std::string_view encoded,
-                              std::string_view alphabet)
+std::vector<std::byte>
+decode(std::string_view encoded, std::string_view alphabet)
 {
     using namespace CryptoPP;
 
@@ -84,7 +91,8 @@ std::vector<std::byte> decode(std::string_view encoded,
     if (!alphabet.empty()) {
         const auto alphabet_bytes = alphabet_str_to_bytes(alphabet);
         Base64Decoder::InitializeDecodingLookupArray(
-            lookup.data(), alphabet_bytes.data(), 64, false);
+            lookup.data(), alphabet_bytes.data(), 64, false
+        );
         const int* lookup_ptr = lookup.data();
         params = params(Name::DecodingLookupArray(), lookup_ptr);
     }
@@ -96,8 +104,10 @@ std::vector<std::byte> decode(std::string_view encoded,
 
     decoder.Attach(new StringSink(decoded)); // NOLINT
 
-    const StringSource ss(encoded_str, true, // NOLINT
-                          new Redirector(decoder) // Base64Decoder
+    const StringSource ss(
+        encoded_str,
+        true, // NOLINT
+        new Redirector(decoder) // Base64Decoder
     ); // StringSource
 
     return util::str_to_bytes(decoded);
