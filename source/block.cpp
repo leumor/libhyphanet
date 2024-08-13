@@ -3,8 +3,8 @@
 #include "libhyphanet/key.h"
 #include "libhyphanet/key/node.h"
 #include "libhyphanet/support.h"
+
 #include <algorithm>
-#include <array>
 #include <cstddef>
 #include <gsl/util>
 #include <memory>
@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <vector>
 
-namespace block::node::impl {
+namespace block::node {
 // =========================================================================
 // Key
 // =========================================================================
@@ -21,10 +21,13 @@ namespace block::node::impl {
 // Chk
 // =========================================================================
 
-Chk::Chk(const std::vector<std::byte>& data,
-         const std::vector<std::byte>& headers,
-         const std::shared_ptr<key::node::Chk>& node_key, bool verify,
-         key::Crypto_algorithm algo)
+Chk::Chk(
+    const std::vector<std::byte>& data,
+    const std::vector<std::byte>& headers,
+    const std::shared_ptr<key::node::Chk>& node_key,
+    bool verify,
+    key::Crypto_algorithm algo
+)
     : Key(data, headers, node_key)
 {
     if (headers.size() != total_headers_length) {
@@ -34,7 +37,8 @@ Chk::Chk(const std::vector<std::byte>& data,
     if (node_key == nullptr || verify) {
         set_hash_identifier(gsl::narrow_cast<short>(
             static_cast<signed char>((headers.at(0) & std::byte{0xff}) << 8)
-            + static_cast<signed char>(headers.at(1) & std::byte{0xff})));
+            + static_cast<signed char>(headers.at(1) & std::byte{0xff})
+        ));
 
         // Minimal verification
         // Check the hash
@@ -50,8 +54,8 @@ Chk::Chk(const std::vector<std::byte>& data,
         auto hash_vec = support::util::array_to_vector(hash);
 
         if (node_key == nullptr) {
-            set_node_key(
-                std::make_shared<key::node::impl::Chk>(hash_vec, algo));
+            set_node_key(std::make_shared<key::node::impl::Chk>(hash_vec, algo)
+            );
         }
         else {
             auto check = get_node_key();
@@ -76,9 +80,12 @@ std::vector<std::byte> Chk::get_full_key() const
 // Ssk
 // =========================================================================
 
-Ssk::Ssk(const std::vector<std::byte>& data,
-         const std::vector<std::byte>& headers,
-         const std::shared_ptr<key::node::Ssk>& node_key, bool verify)
+Ssk::Ssk(
+    const std::vector<std::byte>& data,
+    const std::vector<std::byte>& headers,
+    const std::shared_ptr<key::node::Ssk>& node_key,
+    bool verify
+)
     : Key(data, headers, node_key)
 {
     if (headers.size() != total_headers_length) {
@@ -97,22 +104,25 @@ Ssk::Ssk(const std::vector<std::byte>& data,
 
     set_hash_identifier(gsl::narrow_cast<short>(
         static_cast<signed char>((headers.at(0) & std::byte{0xff}) << 8)
-        + static_cast<signed char>(headers.at(1) & std::byte{0xff})));
+        + static_cast<signed char>(headers.at(1) & std::byte{0xff})
+    ));
 
     size_t x = 2;
 
     sym_cipher_identifier_ = gsl::narrow_cast<short>(
         static_cast<signed char>((headers.at(x) & std::byte{0xff}) << 8)
-        + static_cast<signed char>(headers.at(x + 1) & std::byte{0xff}));
+        + static_cast<signed char>(headers.at(x + 1) & std::byte{0xff})
+    );
 
     x += 2;
 
     // Then E(H(docname))
     std::array<std::byte, e_h_docname_length> e_h_docname{};
-    std::ranges::copy(headers.begin() + gsl::narrow_cast<long>(x),
-                      headers.begin() + gsl::narrow_cast<long>(x)
-                          + e_h_docname_length,
-                      e_h_docname.begin());
+    std::ranges::copy(
+        headers.begin() + gsl::narrow_cast<long>(x),
+        headers.begin() + gsl::narrow_cast<long>(x) + e_h_docname_length,
+        e_h_docname.begin()
+    );
 
     x += e_h_docname_length;
 
@@ -132,10 +142,12 @@ Ssk::Ssk(const std::vector<std::byte>& data,
 
         std::array<std::byte, sig_r_length + sig_s_length> signature{};
 
-        std::ranges::copy(headers.begin() + gsl::narrow_cast<long>(x),
-                          headers.begin() + gsl::narrow_cast<long>(x)
-                              + sig_r_length + sig_s_length,
-                          signature.begin());
+        std::ranges::copy(
+            headers.begin() + gsl::narrow_cast<long>(x),
+            headers.begin() + gsl::narrow_cast<long>(x) + sig_r_length
+                + sig_s_length,
+            signature.begin()
+        );
 
         // x isn't verified otherwise so no need to += sig_r_length +
         // sig_s_length
@@ -147,7 +159,8 @@ Ssk::Ssk(const std::vector<std::byte>& data,
 
         // All headers up to and not including the signature
         sha265.update(
-            std::views::take(data, headers_offset_ + encrypted_headers_length));
+            std::views::take(data, headers_offset_ + encrypted_headers_length)
+        );
         // Then the implicit data hash
         sha265.update(data_hash);
         // Makes the implicit overall hash
@@ -160,19 +173,24 @@ Ssk::Ssk(const std::vector<std::byte>& data,
         if (!(crypto::dsa::verify(
                   pub_key_,
                   crypto::dsa::truncate_hash(
-                      support::util::array_to_vector(overall_hash)),
-                  support::util::array_to_vector(signature))
+                      support::util::array_to_vector(overall_hash)
+                  ),
+                  support::util::array_to_vector(signature)
+              )
               || crypto::dsa::verify(
-                  pub_key_, support::util::array_to_vector(overall_hash),
-                  support::util::array_to_vector(signature)))) {
+                  pub_key_,
+                  support::util::array_to_vector(overall_hash),
+                  support::util::array_to_vector(signature)
+              ))) {
             throw exception::Invalid_signature(
-                "Signature verification failed for node-level SSK");
+                "Signature verification failed for node-level SSK"
+            );
         }
     }
 
     if (e_h_docname != node_key->get_encrypted_hashed_docname()) {
-        throw exception::Invalid_e_h_docname(
-            "E(H(docname)) wrong - wrong key?");
+        throw exception::Invalid_e_h_docname("E(H(docname)) wrong - wrong key?"
+        );
     }
 }
-} // namespace block::node::impl
+} // namespace block::node

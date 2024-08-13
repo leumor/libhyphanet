@@ -2,6 +2,7 @@
 #define LIBHYPHANET_BLOCK_NODE_H
 
 #include "libhyphanet/key/node.h"
+
 #include <cstddef>
 #include <libhyphanet/libhyphanet_export.h>
 #include <vector>
@@ -234,11 +235,14 @@ public:
     }
 
     static const short hash_sha_256 = 1;
+
 protected:
     Key(const std::vector<std::byte>& data,
         const std::vector<std::byte>& headers,
         const std::shared_ptr<key::node::Key>& node_key)
-        : data_{data}, headers_{headers}, node_key_{node_key}
+        : data_{data},
+          headers_{headers},
+          node_key_{node_key}
     {}
 
     void set_raw_headers(const std::vector<std::byte>& headers)
@@ -254,6 +258,7 @@ protected:
     }
 
     void set_hash_identifier(short id) { hash_identifier_ = id; }
+
 private:
     std::vector<std::byte> data_;
     std::vector<std::byte> headers_;
@@ -318,7 +323,36 @@ class Ssk : public Key {
 public:
     Ssk(const std::vector<std::byte>& data,
         const std::vector<std::byte>& headers,
-        const std::shared_ptr<key::node::Ssk>& node_key, bool verify);
+        const std::shared_ptr<key::node::Ssk>& node_key,
+        bool verify);
+
+    /**
+     * @brief how much of the headers we compare in order to consider
+     * two SSKBlocks equal.
+     *
+     * @details
+     * It's necessary because the last 64 bytes need not be
+     * the same for the same data and the same key (see comments above)
+     *
+     */
+    static const size_t header_compare_to = 71;
+
+    static const size_t data_length = 1024;
+
+    /**
+     * @brief Maximum length of compressed payload
+     */
+    static const size_t max_compressed_data_length = data_length - 2;
+
+    static const size_t sig_r_length = 32;
+    static const size_t sig_s_length = 32;
+    static const size_t e_h_docname_length = 32;
+    static const size_t encrypted_headers_length = 36;
+
+    static const size_t total_headers_length = 2 + sig_r_length + sig_s_length
+                                               + 2 + e_h_docname_length
+                                               + ssk_data_decrypt_key_length;
+
 private:
     /**
      * @brief The index of the first byte of encrypted fields in the

@@ -13,86 +13,15 @@
 #include <utility>
 
 namespace bucket {
+
 using executor_type = boost::asio::any_io_executor;
 
-template<typename T, typename Mutable_buffer_sequence, typename Read_handler>
-concept Has_Method_Async_Read_Some = requires(
-    T t, const Mutable_buffer_sequence& buffers, Read_handler&& handler) {
-    {
-        t.template async_read_some<Mutable_buffer_sequence, Read_handler>(
-            buffers, handler)
-    } -> std::same_as<void>;
-};
-template<typename Derived>
-class Read_stream {
-public:
-    /**
-     * @brief Start an asynchronous read.
-     *
-     * @details
-     * It's a requirement of AsyncReadStream.
-     */
-    template<typename Mutable_buffer_sequence, typename Read_handler>
-    void async_read_some(const Mutable_buffer_sequence& buffers,
-                         Read_handler&& handler)
-    {
-        static_assert(
-            Has_Method_Async_Read_Some<Derived, Mutable_buffer_sequence,
-                                       Read_handler>,
-            "Derived class must implement async_read_some()");
-        static_cast<Derived*>(this)->async_read_some(
-            buffers, std::forward<Read_handler>(handler));
-    }
-};
+namespace concepts {
 
-template<typename T, typename Const_buffer_sequence, typename Write_handler>
-concept Has_Method_Async_Write_Some = requires(
-    T t, const Const_buffer_sequence& buffers, Write_handler&& handler) {
-    {
-        t.template async_write_some<Const_buffer_sequence, Write_handler>(
-            buffers, handler)
-    } -> std::same_as<void>;
-};
-template<typename Derived>
-class Write_stream {
-public:
-    /**
-     * @brief Start an asynchronous write.
-     *
-     * @details
-     * It's a requirement of AsyncWriteStream.
-     */
-    template<typename Const_buffer_sequence, typename Write_handler>
-    void async_write_some(const Const_buffer_sequence& buffers,
-                          Write_handler&& handler)
-    {
-        static_assert(
-            Has_Method_Async_Write_Some<Derived, Const_buffer_sequence,
-                                        Write_handler>,
-            "Derived class must implement async_write_some()");
-        static_cast<Derived*>(this)->async_write_some(
-            buffers, std::forward<Write_handler>(handler));
-    }
-};
-
-template<typename T, typename Bucket>
-concept Has_Method_Create_Shadow = requires(T t) {
-    { t.create_shadow() } -> std::same_as<std::unique_ptr<T>>;
-} && std::is_base_of_v<Bucket, T>;
-template<typename Derived>
-class LIBHYPHANET_EXPORT Bucket : public Read_stream<Derived>,
-                                  public Write_stream<Derived> {
-public:
-    // explicit Bucket(const executor_type& executor)
-    //     : bucket::Reader_writer{executor}
-    // {
-    // Static assertion to ensure correct CRTP usage
-    // static_assert(support::concepts::DerivedFromBase<Derived,
-    // Bucket<Derived>>,
-    //               "Derived class must inherit from Bucket<Derived>");
-    // }
-
-    virtual ~Bucket() = default;
+    template<typename T>
+    concept Has_Get_Executor = requires(const T t) {
+        { t.get_executor() } noexcept -> std::same_as<executor_type>;
+    };
 
     /**
      * @brief Returns a name for the bucket.
@@ -100,22 +29,34 @@ public:
      * @details
      * It may be used to identify them in certain situations.
      */
-    [[nodiscard]] virtual std::string get_name() const = 0;
+    template<typename T>
+    concept Has_Get_Name = requires(const T t) {
+        { t.get_name() } -> std::same_as<std::string>;
+    };
 
     /**
      * @brief Returns the amount of data currently in this bucket in bytes.
      */
-    [[nodiscard]] virtual size_t size() const = 0;
+    template<typename T>
+    concept Has_Size = requires(const T t) {
+        { t.size() } -> std::same_as<size_t>;
+    };
 
     /**
      * @brief Is the bucket read-only?
      */
-    [[nodiscard]] virtual bool is_readonly() const = 0;
+    template<typename T>
+    concept Has_Is_Readonly = requires(const T t) {
+        { t.is_readonly() } -> std::same_as<bool>;
+    };
 
     /**
      * @brief Make the bucket read-only. Irreversible.
      */
-    virtual void set_read_only() = 0;
+    template<typename T>
+    concept Has_Set_Read_Only = requires(T t) {
+        { t.set_read_only() } -> std::same_as<void>;
+    };
 
     /**
      * @brief Create a shallow read-only copy of this bucket, using
@@ -130,79 +71,76 @@ public:
      * @return std::unique_ptr<Bucket> A shadow copy of this bucket. nullptr if
      * it's not possible to create one.
      */
-    [[nodiscard]] std::unique_ptr<Bucket<Derived>> create_shadow()
+    template<typename T>
+    concept Has_Create_Shadow = requires(T t) {
+        { t.create_shadow() } -> std::same_as<std::unique_ptr<T>>;
+    };
+
+    template<typename T>
+    concept Bucket
+        = Has_Get_Executor<T> && Has_Get_Name<T> && Has_Size<T>
+          && Has_Is_Readonly<T> && Has_Set_Read_Only<T> && Has_Create_Shadow<T>;
+} // namespace concepts
+
+class LIBHYPHANET_EXPORT Reader_writer {
+public:
+    virtual ~Reader_writer() = default;
+
+    explicit Reader_writer(const executor_type& executor)
+        : executor_{executor}
+    {}
+
+    [[nodiscard]] virtual executor_type get_executor() const noexcept
     {
-        static_assert(Has_Method_Create_Shadow<Derived, Bucket<Derived>>,
-                      "Derived class must implement create_shadow()");
-
-        auto ptr = static_cast<Derived*>(this)->create_shadow();
-
-        return std::move(ptr);
+        return executor_;
     }
+
+private:
+    boost::asio::strand<executor_type> executor_;
 };
 
-namespace impl {
-
-    class Reader_writer {
-    public:
-        virtual ~Reader_writer() = default;
-
-        explicit Reader_writer(const executor_type& executor)
-            : executor_{executor}
-        {}
-
-        [[nodiscard]] virtual executor_type get_executor() const noexcept
-        {
-            return executor_;
-        }
-    private:
-        boost::asio::strand<executor_type> executor_;
-    };
+/**
+ * @brief A bucket is any arbitrary object can temporarily store data.
+ *
+ * @details
+ * In other words, it is the equivalent of a temporary file, but it
+ * could be in RAM, on disk, encrypted, part of a file on disk, composed
+ * of a chain of other buckets etc.
+ *
+ * A bucket also meets the requirements of Boost Asio's AsyncReadStream
+ * and AsyncWriteStream.
+ *
+ */
+class Bucket : public Reader_writer {
+public:
+    using Reader_writer::Reader_writer;
 
     /**
-     * @brief A bucket is any arbitrary object can temporarily store data.
+     * @brief Returns a name for the bucket.
      *
      * @details
-     * In other words, it is the equivalent of a temporary file, but it
-     * could be in RAM, on disk, encrypted, part of a file on disk, composed
-     * of a chain of other buckets etc.
-     *
-     * A bucket also meets the requirements of Boost Asio's AsyncReadStream
-     * and AsyncWriteStream.
-     *
+     * It may be used to identify them in certain situations.
      */
-    template<typename Derived>
-    class Bucket : public virtual bucket::Bucket<Derived>,
-                   public Reader_writer {
-    public:
-        explicit Bucket(const executor_type& executor): Reader_writer{executor}
-        {}
+    [[nodiscard]] virtual std::string get_name() const { return name_; }
 
-        /**
-         * @brief Returns a name for the bucket.
-         *
-         * @details
-         * It may be used to identify them in certain situations.
-         */
-        [[nodiscard]] std::string get_name() const override { return name_; }
+    /**
+     * @brief Is the bucket read-only?
+     */
+    [[nodiscard]] virtual bool is_readonly() const { return readonly_; }
 
-        /**
-         * @brief Is the bucket read-only?
-         */
-        [[nodiscard]] bool is_readonly() const override { return readonly_; }
+    /**
+     * @brief Make the bucket read-only. Irreversible.
+     */
+    void virtual set_read_only() { readonly_ = true; }
 
-        /**
-         * @brief Make the bucket read-only. Irreversible.
-         */
-        void set_read_only() override { readonly_ = true; }
-    protected:
-        void set_name(std::string_view name) { name_ = name; }
-    private:
-        std::string name_;
-        bool readonly_ = false;
-    };
+protected:
+    void set_name(std::string_view name) { name_ = name; }
 
-} // namespace impl
+private:
+    std::string name_;
+    bool readonly_ = false;
+};
+
 } // namespace bucket
 
 #endif /* LIBHYPHANET_BUCKET_H */
