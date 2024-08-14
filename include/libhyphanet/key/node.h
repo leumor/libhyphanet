@@ -142,7 +142,7 @@ namespace concepts {
 /**
  * @brief Base class for node keys.
  */
-class Key {
+class LIBHYPHANET_EXPORT Key {
 public:
     virtual ~Key() = default;
 
@@ -226,7 +226,7 @@ private:
     double cached_normalized_double_{-1.0};
 };
 
-class Chk : public Key {
+class LIBHYPHANET_EXPORT Chk : public Key {
 public:
     Chk(const std::vector<std::byte>& node_routing_key, Crypto_algorithm algo)
         : Key{node_routing_key, algo}
@@ -241,7 +241,7 @@ public:
     static const size_t full_key_length = 34;
 };
 
-class Ssk : public Key {
+class LIBHYPHANET_EXPORT Ssk : public Key {
 public:
     Ssk(const std::vector<std::byte>& user_routing_key,
         const std::array<std::byte, 32>& encrypted_hashed_docname,
