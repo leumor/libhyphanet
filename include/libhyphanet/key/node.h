@@ -11,13 +11,7 @@
 
 namespace key::node {
 
-/**
- * @brief Base class for node keys.
- */
-class LIBHYPHANET_EXPORT Key {
-public:
-    virtual ~Key() = default;
-
+namespace concepts {
     /**
      * @brief Get the full key.
      *
@@ -27,7 +21,10 @@ public:
      *
      * @return std::vector<std::byte> the full key bytes.
      */
-    [[nodiscard]] virtual std::vector<std::byte> get_full_key() const = 0;
+    template<typename T>
+    concept Has_Get_Full_Key = requires(const T t) {
+        { t.get_full_key() } -> std::same_as<std::vector<std::byte>>;
+    };
 
     /**
      * @brief Get a copy of the key with any unnecessary information
@@ -41,7 +38,10 @@ public:
      *
      * @return Key the copy of the key.
      */
-    [[nodiscard]] virtual std::unique_ptr<Key> archival_copy() const = 0;
+    template<typename T>
+    concept Has_Archival_Copy = requires(const T t) {
+        { t.archival_copy() } -> std::same_as<std::unique_ptr<T>>;
+    };
 
     /**
      * @brief Get key type
@@ -54,7 +54,10 @@ public:
      *
      * @return short the key type.
      */
-    [[nodiscard]] virtual short get_type() const = 0;
+    template<typename T>
+    concept Has_Get_Type = requires(const T t) {
+        { t.get_type() } -> std::same_as<short>;
+    };
 
     /**
      * @brief Get the key bytes.
@@ -65,184 +68,226 @@ public:
      *
      * @return std::vector<std::byte> the key bytes.
      */
-    [[nodiscard]] virtual std::vector<std::byte> get_key_bytes() const = 0;
+    template<typename T>
+    concept Has_Get_Key_Bytes = requires(const T t) {
+        { t.get_key_bytes() } -> std::same_as<std::vector<std::byte>>;
+    };
 
-    [[nodiscard]] virtual double to_normalized_double() = 0;
+    template<typename T>
+    concept Has_To_Normalized_Double = requires(T t) {
+        { t.to_normalized_double() } -> std::same_as<double>;
+    };
+
+    template<typename T>
+    concept Has_Get_Node_Routing_Key = requires(const T t) {
+        { t.get_node_routing_key() } -> std::same_as<std::vector<std::byte>&>;
+    };
+
+    template<typename T>
+    concept Has_Get_Crypto_Algorithm = requires(const T t) {
+        { t.get_crypto_algorithm() } -> std::same_as<Crypto_algorithm>;
+    };
+
+    /**
+     * @brief Base class for node keys.
+     */
+    template<typename T>
+    concept Key = Has_Get_Full_Key<T> && Has_Archival_Copy<T> && Has_Get_Type<T>
+                  && Has_Get_Key_Bytes<T> && Has_To_Normalized_Double<T>
+                  && Has_Get_Node_Routing_Key<T> && Has_Get_Crypto_Algorithm<T>;
+
+    template<typename T>
+    concept Has_Base_Type = requires {
+        { T::base_type } -> std::same_as<std::byte>;
+    };
+
+    template<typename T>
+    concept Has_Key_Length = requires {
+        { T::key_length } -> std::same_as<size_t>;
+    };
+
+    template<typename T>
+    concept Has_Full_Key_Length = requires {
+        { T::full_key_length } -> std::same_as<size_t>;
+    };
+
+    template<typename T>
+    concept Chk = Key<T> && Has_Base_Type<T> && Has_Key_Length<T>
+                  && Has_Full_Key_Length<T>;
+
+    template<typename T>
+    concept Has_Get_Encrypted_Hashed_Docname = requires(const T t) {
+        {
+            t.get_encrypted_hashed_docname()
+        } -> std::same_as<std::array<std::byte, 32>>;
+    };
+
+    template<typename T>
+    concept Has_Get_Pub_Key = requires(const T t) {
+        { t.get_pub_key() } -> std::same_as<std::vector<std::byte>>;
+    };
+
+    template<typename T>
+    concept Has_Ssk_Version = requires {
+        { T::ssk_version } -> std::same_as<std::byte>;
+    };
+
+    template<typename T>
+    concept Ssk
+        = Key<T> && Has_Get_Encrypted_Hashed_Docname<T> && Has_Get_Pub_Key<T>
+          && Has_Ssk_Version<T> && Has_Base_Type<T> && Has_Full_Key_Length<T>;
+
+} // namespace concepts
+
+/**
+ * @brief Base class for node keys.
+ */
+class Key {
+public:
+    virtual ~Key() = default;
+
+    [[nodiscard]] virtual short get_type() const = 0;
+    [[nodiscard]] virtual std::vector<std::byte> get_full_key() const = 0;
+
+    /**
+     * @brief Get the key bytes.
+     *
+     * @details
+     * Not just the routing key, enough data to reconstruct the key
+     * (excluding any pubkey needed).
+     *
+     * @return std::vector<std::byte> the key bytes.
+     */
+    [[nodiscard]] virtual std::vector<std::byte> get_key_bytes() const
+    {
+        return node_routing_key_;
+    }
+
+    [[nodiscard]] virtual double to_normalized_double();
 
     [[nodiscard]] virtual const std::vector<std::byte>&
     get_node_routing_key() const
-        = 0;
-    [[nodiscard]] virtual Crypto_algorithm get_crypto_algorithm() const = 0;
+    {
+        return node_routing_key_;
+    }
+
+    [[nodiscard]] virtual Crypto_algorithm get_crypto_algorithm() const
+    {
+        return crypto_algorithm_;
+    }
+
+protected:
+    explicit Key(Crypto_algorithm algo)
+        : crypto_algorithm_(algo)
+    {}
+
+    Key(const std::vector<std::byte>& node_routing_key, Crypto_algorithm algo)
+        : node_routing_key_(node_routing_key),
+          crypto_algorithm_(algo)
+    {
+        Expects(!node_routing_key_.empty());
+    }
+
+    void set_node_routing_key(const std::vector<std::byte>& node_routing_key)
+    {
+        Expects(!node_routing_key.empty());
+        node_routing_key_ = node_routing_key;
+    }
+
+private:
+    /**
+     * @brief Node Routing Key.
+     *
+     * @details
+     * The **Node Routing Key** is based on the hash of the data or the
+     * public key of the owner ([Client Routing
+     * Key](#user::Key#routing_key_)), and it determines how close a node is
+     * to the data. Nodes use the routing key to forward requests to the
+     * node that is most responsible for storing the data, or the closest
+     * one they know of.
+     *
+     * For [CHKs](#user::Chk), the **Node Routing Key** is the [Client
+     * Routing Key](#user::Key#routing_key_).
+     *
+     * For [Subspace Keys](#user::Subspace_key), **Node Routing Key** is a
+     * SHA-256 hash of the [Encrypted Hashed Document
+     * Name](#user::Ssk#encrypted_hashed_docname_) and the [Client Routing
+     * Key](#user::Key#routing_key_).
+     */
+    std::vector<std::byte> node_routing_key_;
+
+    /**
+     * @brief The cryptographic algorithm used for encryption/decryption.
+     */
+    Crypto_algorithm crypto_algorithm_{
+        Crypto_algorithm::algo_aes_ctr_256_sha_256
+    };
+
+    double cached_normalized_double_{-1.0};
 };
 
-class LIBHYPHANET_EXPORT Chk : public virtual Key {
+class Chk : public Key {
 public:
+    Chk(const std::vector<std::byte>& node_routing_key, Crypto_algorithm algo)
+        : Key{node_routing_key, algo}
+    {}
+
+    [[nodiscard]] std::vector<std::byte> get_full_key() const override;
+    [[nodiscard]] std::unique_ptr<key::node::Key> archival_copy() const;
+    [[nodiscard]] short get_type() const override;
+
     static const std::byte base_type = std::byte{1};
     static const size_t key_length = 32;
     static const size_t full_key_length = 34;
 };
 
-class LIBHYPHANET_EXPORT Ssk : public virtual Key {
+class Ssk : public Key {
 public:
-    [[nodiscard]] virtual std::array<std::byte, 32>
-    get_encrypted_hashed_docname() const = 0;
+    Ssk(const std::vector<std::byte>& user_routing_key,
+        const std::array<std::byte, 32>& encrypted_hashed_docname,
+        Crypto_algorithm algo = Crypto_algorithm::algo_aes_ctr_256_sha_256,
+        std::vector<std::byte> pub_key = {});
 
-    [[nodiscard]] virtual std::vector<std::byte> get_pub_key() const = 0;
+    [[nodiscard]] std::vector<std::byte> get_full_key() const override;
+    [[nodiscard]] std::unique_ptr<key::node::Key> archival_copy() const;
+    [[nodiscard]] short get_type() const override;
+    [[nodiscard]] std::vector<std::byte> get_key_bytes() const override;
+
+    [[nodiscard]] std::array<std::byte, 32> get_encrypted_hashed_docname() const
+    {
+        return encrypted_hashed_docname_;
+    }
+
+    [[nodiscard]] std::vector<std::byte> get_pub_key() const
+    {
+        return pub_key_;
+    }
 
     static const std::byte ssk_version = std::byte{1};
     static const std::byte base_type = std::byte{2};
     static const size_t full_key_length = 66;
+
+private:
+    [[nodiscard]] static std::vector<std::byte> make_routing_key(
+        const std::vector<std::byte>& user_routing_key,
+        const std::array<std::byte, 32>& encrypted_hashed_docname
+    );
+
+    std::array<std::byte, 32> user_routing_key_;
+    std::array<std::byte, 32> encrypted_hashed_docname_{};
+    std::vector<std::byte> pub_key_;
 };
 
-class LIBHYPHANET_EXPORT Archive_ssk : public virtual Ssk {};
-
-namespace impl {
-
-    /**
-     * @brief Base class for node keys.
-     */
-    class Key : public virtual key::node::Key {
-    public:
-        /**
-         * @brief Get the key bytes.
-         *
-         * @details
-         * Not just the routing key, enough data to reconstruct the key
-         * (excluding any pubkey needed).
-         *
-         * @return std::vector<std::byte> the key bytes.
-         */
-        [[nodiscard]] std::vector<std::byte> get_key_bytes() const override
-        {
-            return node_routing_key_;
-        }
-
-        [[nodiscard]] double to_normalized_double() override;
-
-        [[nodiscard]] const std::vector<std::byte>&
-        get_node_routing_key() const override
-        {
-            return node_routing_key_;
-        }
-
-        [[nodiscard]] Crypto_algorithm get_crypto_algorithm() const override
-        {
-            return crypto_algorithm_;
-        }
-
-    protected:
-        explicit Key(Crypto_algorithm algo)
-            : crypto_algorithm_(algo)
-        {}
-
-        Key(const std::vector<std::byte>& node_routing_key,
-            Crypto_algorithm algo)
-            : node_routing_key_(node_routing_key),
-              crypto_algorithm_(algo)
-        {
-            Expects(!node_routing_key_.empty());
-        }
-
-        void set_node_routing_key(const std::vector<std::byte>& node_routing_key
-        )
-        {
-            Expects(!node_routing_key.empty());
-            node_routing_key_ = node_routing_key;
-        }
-
-    private:
-        /**
-         * @brief Node Routing Key.
-         *
-         * @details
-         * The **Node Routing Key** is based on the hash of the data or the
-         * public key of the owner ([Client Routing
-         * Key](#user::Key#routing_key_)), and it determines how close a node is
-         * to the data. Nodes use the routing key to forward requests to the
-         * node that is most responsible for storing the data, or the closest
-         * one they know of.
-         *
-         * For [CHKs](#user::Chk), the **Node Routing Key** is the [Client
-         * Routing Key](#user::Key#routing_key_).
-         *
-         * For [Subspace Keys](#user::Subspace_key), **Node Routing Key** is a
-         * SHA-256 hash of the [Encrypted Hashed Document
-         * Name](#user::Ssk#encrypted_hashed_docname_) and the [Client Routing
-         * Key](#user::Key#routing_key_).
-         */
-        std::vector<std::byte> node_routing_key_;
-
-        /**
-         * @brief The cryptographic algorithm used for encryption/decryption.
-         */
-        Crypto_algorithm crypto_algorithm_{
-            Crypto_algorithm::algo_aes_ctr_256_sha_256
-        };
-
-        double cached_normalized_double_{-1.0};
-    };
-
-    class Chk : public virtual key::node::Chk, public Key {
-    public:
-        Chk(const std::vector<std::byte>& node_routing_key,
-            Crypto_algorithm algo)
-            : Key{node_routing_key, algo}
-        {}
-
-        [[nodiscard]] std::vector<std::byte> get_full_key() const override;
-        [[nodiscard]] std::unique_ptr<key::node::Key>
-        archival_copy() const override;
-        [[nodiscard]] short get_type() const override;
-    };
-
-    class Ssk : public virtual key::node::Ssk, public Key {
-    public:
-        Ssk(const std::vector<std::byte>& user_routing_key,
-            const std::array<std::byte, 32>& encrypted_hashed_docname,
-            Crypto_algorithm algo = Crypto_algorithm::algo_aes_ctr_256_sha_256,
-            std::vector<std::byte> pub_key = {});
-
-        [[nodiscard]] std::vector<std::byte> get_full_key() const override;
-        [[nodiscard]] std::unique_ptr<key::node::Key>
-        archival_copy() const override;
-        [[nodiscard]] short get_type() const override;
-        [[nodiscard]] std::vector<std::byte> get_key_bytes() const override;
-
-        [[nodiscard]] std::array<std::byte, 32>
-        get_encrypted_hashed_docname() const override
-        {
-            return encrypted_hashed_docname_;
-        }
-
-        [[nodiscard]] std::vector<std::byte> get_pub_key() const override
-        {
-            return pub_key_;
-        }
-
-    private:
-        [[nodiscard]] static std::vector<std::byte> make_routing_key(
-            const std::vector<std::byte>& user_routing_key,
-            const std::array<std::byte, 32>& encrypted_hashed_docname
-        );
-
-        std::array<std::byte, 32> user_routing_key_;
-        std::array<std::byte, 32> encrypted_hashed_docname_{};
-        std::vector<std::byte> pub_key_;
-    };
-
-    class LIBHYPHANET_EXPORT Archive_ssk
-        : public virtual key::node::Archive_ssk,
-          public Ssk {
-    public:
-        Archive_ssk(
-            const std::vector<std::byte>& user_routing_key,
-            const std::array<std::byte, 32>& encrypted_hashed_docname,
-            Crypto_algorithm algo = Crypto_algorithm::algo_aes_ctr_256_sha_256
-        )
-            : Ssk{user_routing_key, encrypted_hashed_docname, algo}
-        {}
-    };
-} // namespace impl
+class LIBHYPHANET_EXPORT Archive_ssk : public Ssk {
+public:
+    Archive_ssk(
+        const std::vector<std::byte>& user_routing_key,
+        const std::array<std::byte, 32>& encrypted_hashed_docname,
+        Crypto_algorithm algo = Crypto_algorithm::algo_aes_ctr_256_sha_256
+    )
+        : Ssk{user_routing_key, encrypted_hashed_docname, algo}
+    {}
+};
 } // namespace key::node
 
 #endif /* LIBHYPHANET_KEY_NODE_H */

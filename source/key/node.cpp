@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-namespace key::node::impl {
+namespace key::node {
 
 // =============================================================================
 // Key
@@ -149,4 +149,4 @@ std::vector<std::byte> Ssk::get_key_bytes() const
     return support::util::array_to_vector(encrypted_hashed_docname_);
 }
 
-} // namespace key::node::impl
+} // namespace key::node

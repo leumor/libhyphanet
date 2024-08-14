@@ -134,7 +134,7 @@ namespace concepts {
      * accommodate these details.
      */
     template<typename T>
-    concept Has_Extra_Length = requires(T t) {
+    concept Has_Extra_Length = requires {
         { T::extra_length } -> std::convertible_to<size_t>;
     };
 

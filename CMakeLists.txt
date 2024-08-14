@@ -97,6 +97,9 @@ generate_export_header(
 # Fix Windows build of std::min and std::max which has min/max macro by default
 target_compile_definitions(libhyphanet_libhyphanet PRIVATE NOMINMAX)
 
+# Disable WD4275 warnings
+target_compile_options(libhyphanet_libhyphanet PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/wd4275>)
+
 if(NOT BUILD_SHARED_LIBS)
   target_compile_definitions(libhyphanet_libhyphanet PUBLIC LIBHYPHANET_STATIC_DEFINE)
 endif()
