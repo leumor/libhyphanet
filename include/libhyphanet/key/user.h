@@ -1662,7 +1662,7 @@ template<concepts::Key T, support::concepts::Derived_From_Base<Key> Key_type>
  * type is unknown.
  */
 template<concepts::Key T>
-LIBHYPHANET_EXPORT [[nodiscard]] std::shared_ptr<T> create(const Uri& uri)
+[[nodiscard]] LIBHYPHANET_EXPORT std::shared_ptr<T> create(const Uri& uri)
 {
     bool is_insertable{false};
     if (auto extra = uri.get_extra();
