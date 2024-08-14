@@ -69,7 +69,7 @@ short Chk::get_type() const
     );
 }
 
-std::unique_ptr<key::node::Key> Chk::archival_copy() const
+std::unique_ptr<Chk> Chk::archival_copy() const
 {
     return std::make_unique<Chk>(*this);
 }
@@ -125,7 +125,7 @@ std::vector<std::byte> Ssk::get_full_key() const
     return buf;
 }
 
-std::unique_ptr<key::node::Key> Ssk::archival_copy() const
+std::unique_ptr<Ssk> Ssk::archival_copy() const
 {
     return std::make_unique<Archive_ssk>(
         support::util::array_to_vector(user_routing_key_),

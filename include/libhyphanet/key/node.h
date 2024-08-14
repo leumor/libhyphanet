@@ -38,9 +38,9 @@ namespace concepts {
      *
      * @return Key the copy of the key.
      */
-    template<typename T>
+    template<typename T, typename U>
     concept Has_Archival_Copy = requires(const T t) {
-        { t.archival_copy() } -> std::same_as<std::unique_ptr<T>>;
+        { t.archival_copy() } -> std::same_as<std::unique_ptr<U>>;
     };
 
     /**
@@ -80,7 +80,9 @@ namespace concepts {
 
     template<typename T>
     concept Has_Get_Node_Routing_Key = requires(const T t) {
-        { t.get_node_routing_key() } -> std::same_as<std::vector<std::byte>&>;
+        {
+            t.get_node_routing_key()
+        } -> std::same_as<const std::vector<std::byte>&>;
     };
 
     template<typename T>
@@ -92,27 +94,31 @@ namespace concepts {
      * @brief Base class for node keys.
      */
     template<typename T>
-    concept Key = Has_Get_Full_Key<T> && Has_Archival_Copy<T> && Has_Get_Type<T>
-                  && Has_Get_Key_Bytes<T> && Has_To_Normalized_Double<T>
-                  && Has_Get_Node_Routing_Key<T> && Has_Get_Crypto_Algorithm<T>;
+    concept Base_Key
+        = Has_Get_Full_Key<T> && Has_Get_Type<T> && Has_Get_Key_Bytes<T>
+          && Has_To_Normalized_Double<T> && Has_Get_Node_Routing_Key<T>
+          && Has_Get_Crypto_Algorithm<T>;
+
+    template<typename T, typename U>
+    concept Key = Base_Key<T> && Base_Key<U> && Has_Archival_Copy<T, U>;
 
     template<typename T>
     concept Has_Base_Type = requires {
-        { T::base_type } -> std::same_as<std::byte>;
+        { T::base_type } -> std::same_as<const std::byte&>;
     };
 
     template<typename T>
     concept Has_Key_Length = requires {
-        { T::key_length } -> std::same_as<size_t>;
+        { T::key_length } -> std::same_as<const size_t&>;
     };
 
     template<typename T>
     concept Has_Full_Key_Length = requires {
-        { T::full_key_length } -> std::same_as<size_t>;
+        { T::full_key_length } -> std::same_as<const size_t&>;
     };
 
-    template<typename T>
-    concept Chk = Key<T> && Has_Base_Type<T> && Has_Key_Length<T>
+    template<typename T, typename U>
+    concept Chk = Key<T, U> && Has_Base_Type<T> && Has_Key_Length<T>
                   && Has_Full_Key_Length<T>;
 
     template<typename T>
@@ -129,12 +135,12 @@ namespace concepts {
 
     template<typename T>
     concept Has_Ssk_Version = requires {
-        { T::ssk_version } -> std::same_as<std::byte>;
+        { T::ssk_version } -> std::same_as<const std::byte&>;
     };
 
-    template<typename T>
+    template<typename T, typename U>
     concept Ssk
-        = Key<T> && Has_Get_Encrypted_Hashed_Docname<T> && Has_Get_Pub_Key<T>
+        = Key<T, U> && Has_Get_Encrypted_Hashed_Docname<T> && Has_Get_Pub_Key<T>
           && Has_Ssk_Version<T> && Has_Base_Type<T> && Has_Full_Key_Length<T>;
 
 } // namespace concepts
@@ -233,13 +239,15 @@ public:
     {}
 
     [[nodiscard]] std::vector<std::byte> get_full_key() const override;
-    [[nodiscard]] std::unique_ptr<key::node::Key> archival_copy() const;
+    [[nodiscard]] std::unique_ptr<Chk> archival_copy() const;
     [[nodiscard]] short get_type() const override;
 
     static const std::byte base_type = std::byte{1};
     static const size_t key_length = 32;
     static const size_t full_key_length = 34;
 };
+
+static_assert(concepts::Chk<Chk, Chk>);
 
 class LIBHYPHANET_EXPORT Ssk : public Key {
 public:
@@ -249,7 +257,7 @@ public:
         std::vector<std::byte> pub_key = {});
 
     [[nodiscard]] std::vector<std::byte> get_full_key() const override;
-    [[nodiscard]] std::unique_ptr<key::node::Key> archival_copy() const;
+    [[nodiscard]] virtual std::unique_ptr<Ssk> archival_copy() const;
     [[nodiscard]] short get_type() const override;
     [[nodiscard]] std::vector<std::byte> get_key_bytes() const override;
 
@@ -288,6 +296,9 @@ public:
         : Ssk{user_routing_key, encrypted_hashed_docname, algo}
     {}
 };
+
+static_assert(concepts::Ssk<Ssk, Ssk> && concepts::Ssk<Archive_ssk, Ssk>);
+
 } // namespace key::node
 
 #endif /* LIBHYPHANET_KEY_NODE_H */
