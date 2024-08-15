@@ -87,7 +87,7 @@ namespace util {
         }
 
         return static_cast<double>(as_long)
-               / static_cast<double>(std::numeric_limits<long>::max());
+             / static_cast<double>(std::numeric_limits<long>::max());
     }
 
 } // namespace util
@@ -154,10 +154,10 @@ namespace url {
         std::string_view extra_safe_chars
     )
     {
-        static const auto safe_url_characters_uni
-            = icu::UnicodeString::fromUTF8(safe_url_characters);
-        auto extra_safe_chars_unicode
-            = icu::UnicodeString::fromUTF8(extra_safe_chars);
+        static const auto safe_url_characters_uni =
+            icu::UnicodeString::fromUTF8(safe_url_characters);
+        auto extra_safe_chars_unicode =
+            icu::UnicodeString::fromUTF8(extra_safe_chars);
         auto force_unicode = icu::UnicodeString::fromUTF8(force);
 
         std::stringstream ss;

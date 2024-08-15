@@ -45,13 +45,13 @@ TEST_CASE("rijndael256_256", "[library][crypto]")
         11,  -54, 38,  119,  4,   -105, -35, 101, 7,   -116,
     });
 
-    const std::array<std::byte, 32> encrypted
-        = crypto::rijndael256_256_encrypt(key, plain);
+    const std::array<std::byte, 32> encrypted =
+        crypto::rijndael256_256_encrypt(key, plain);
 
     REQUIRE(encrypted == cipher);
 
-    const std::array<std::byte, 32> decrypted
-        = crypto::rijndael256_256_decrypt(key, cipher);
+    const std::array<std::byte, 32> decrypted =
+        crypto::rijndael256_256_decrypt(key, cipher);
 
     REQUIRE(decrypted == plain);
 
@@ -156,9 +156,9 @@ TEST_CASE("SHA-256", "[library][crypto]")
     auto digest = hasher.digest();
     fmt::println("SHA-256: {:02x}", fmt::join(digest, " "));
 
-    auto bytes_to_verify
-        = support::util::hex_to_bytes("F00E3F70A268FBA990296B32FF2B6CE7A07"
-                                      "57F31EC3059B13D3DB1E60D9E885C");
+    auto bytes_to_verify =
+        support::util::hex_to_bytes("F00E3F70A268FBA990296B32FF2B6CE7A07"
+                                    "57F31EC3059B13D3DB1E60D9E885C");
     std::array<std::byte, 32> digest_to_verify{};
     std::ranges::copy(bytes_to_verify, digest_to_verify.begin());
 

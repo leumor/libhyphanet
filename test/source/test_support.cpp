@@ -71,8 +71,8 @@ TEST_CASE("url can be encoded and decoded", "[library][support]") // NOLINT
             "and tests whether it is decoded correctly")
     {
         using namespace utf_util;
-        auto all_chars_except_null
-            = icu::UnicodeString(all_characters.data(), all_characters.size());
+        auto all_chars_except_null =
+            icu::UnicodeString(all_characters.data(), all_characters.size());
 
         all_chars_except_null.findAndReplace(
             icu::UnicodeString{u'\u0000'}, icu::UnicodeString{}
@@ -131,8 +131,8 @@ TEST_CASE("url can be encoded and decoded", "[library][support]") // NOLINT
 
         for (auto& c: safe_url_characters) {
             const std::string to_encode{c};
-            std::string expected_result
-                = fmt::format("%{:02x}", std::bit_cast<unsigned char>(c));
+            std::string expected_result =
+                fmt::format("%{:02x}", std::bit_cast<unsigned char>(c));
 
             REQUIRE(url_encode(to_encode, true, to_encode) == expected_result);
             REQUIRE(url_encode(to_encode, false, to_encode) == expected_result);
@@ -150,8 +150,8 @@ TEST_CASE("url can be encoded and decoded", "[library][support]") // NOLINT
 
         // Invalid hex
         to_decode = "123456789abcde"
-                    + utf_util::uchar_arr_to_str(utf_util::printable_ascii)
-                    + utf_util::uchar_arr_to_str(utf_util::stressed_utf);
+                  + utf_util::uchar_arr_to_str(utf_util::printable_ascii)
+                  + utf_util::uchar_arr_to_str(utf_util::stressed_utf);
 
         for (size_t i = 0; i < to_decode.size(); ++i) {
             REQUIRE_THROWS_AS(

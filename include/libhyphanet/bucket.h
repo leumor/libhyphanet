@@ -77,9 +77,9 @@ namespace concepts {
     };
 
     template<typename T>
-    concept Bucket
-        = Has_Get_Executor<T> && Has_Get_Name<T> && Has_Size<T>
-          && Has_Is_Readonly<T> && Has_Set_Read_Only<T> && Has_Create_Shadow<T>;
+    concept Bucket =
+        Has_Get_Executor<T> && Has_Get_Name<T> && Has_Size<T>
+        && Has_Is_Readonly<T> && Has_Set_Read_Only<T> && Has_Create_Shadow<T>;
 } // namespace concepts
 
 class LIBHYPHANET_EXPORT Reader_writer {

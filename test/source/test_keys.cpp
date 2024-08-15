@@ -9,15 +9,15 @@
 
 TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
 {
-    static const std::string wanna_usk_1
-        = "USK@5hH~39FtjA7A9~VXWtBKI~prUDTuJZURudDG0xFn3KA,GDgRGt5f6xqbmo-"
-          "WraQtU54x4H~871Sho9Hz6hC-0RA,AQACAAE/Search/17/index_d51.xml";
-    static const std::string wanna_ssk_1
-        = "SSK@5hH~39FtjA7A9~VXWtBKI~prUDTuJZURudDG0xFn3KA,GDgRGt5f6xqbmo-"
-          "WraQtU54x4H~871Sho9Hz6hC-0RA,AQACAAE/Search-17/index_d51.xml";
-    static const std::string wanna_chk_1
-        = "CHK@DTCDUmnkKFlrJi9UlDDVqXlktsIXvAJ~ZTseyx5cAZs,PmA2rLgWZKVyMXxSn-"
-          "ZihSskPYDTY19uhrMwqDV-~Sk,AAMC--8/index_d51.xml";
+    static const std::string wanna_usk_1 =
+        "USK@5hH~39FtjA7A9~VXWtBKI~prUDTuJZURudDG0xFn3KA,GDgRGt5f6xqbmo-"
+        "WraQtU54x4H~871Sho9Hz6hC-0RA,AQACAAE/Search/17/index_d51.xml";
+    static const std::string wanna_ssk_1 =
+        "SSK@5hH~39FtjA7A9~VXWtBKI~prUDTuJZURudDG0xFn3KA,GDgRGt5f6xqbmo-"
+        "WraQtU54x4H~871Sho9Hz6hC-0RA,AQACAAE/Search-17/index_d51.xml";
+    static const std::string wanna_chk_1 =
+        "CHK@DTCDUmnkKFlrJi9UlDDVqXlktsIXvAJ~ZTseyx5cAZs,PmA2rLgWZKVyMXxSn-"
+        "ZihSskPYDTY19uhrMwqDV-~Sk,AAMC--8/index_d51.xml";
     static const std::string ksk_example = "KSK@gpl.txt";
 
     SECTION("ssk/usk conversion")
@@ -80,8 +80,8 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
                  "ext+hypha",
                  "ext+hyphanet"
              }) {
-            auto uri
-                = key::Uri::create(fmt::format("{}:{}", prefix, wanna_usk_1));
+            auto uri =
+                key::Uri::create(fmt::format("{}:{}", prefix, wanna_usk_1));
             REQUIRE(uri->to_string() == wanna_usk_1);
             auto key = key::user::create_key(*uri);
             REQUIRE(key->to_uri().to_string() == wanna_usk_1);
@@ -117,9 +117,9 @@ TEST_CASE("derive request uri", "[library][keys]")
 {
     using namespace key;
 
-    auto chk_uri
-        = "CHK@DTCDUmnkKFlrJi9UlDDVqXlktsIXvAJ~ZTseyx5cAZs,PmA2rLgWZKVyMXxSn-"
-          "ZihSskPYDTY19uhrMwqDV-~Sk,AAICAAI/index_d51.xml";
+    auto chk_uri =
+        "CHK@DTCDUmnkKFlrJi9UlDDVqXlktsIXvAJ~ZTseyx5cAZs,PmA2rLgWZKVyMXxSn-"
+        "ZihSskPYDTY19uhrMwqDV-~Sk,AAICAAI/index_d51.xml";
     auto chk = user::create_key(*Uri::create(chk_uri));
     REQUIRE(chk->to_request_uri().to_string() == chk_uri);
 
@@ -127,25 +127,25 @@ TEST_CASE("derive request uri", "[library][keys]")
     auto ksk = user::create_key(*Uri::create(ksk_uri));
     REQUIRE(ksk->to_request_uri().to_string() == ksk_uri);
 
-    auto request_uri_usk
-        = "USK@sdFxM0Z4zx4-gXhGwzXAVYvOUi6NRfdGbyJa797bNAg,"
-          "ZP4aASnyZax8nYOvCOlUebegsmbGQIXfVzw7iyOsXEc,AQACAAE/WebOfTrust/5";
+    auto request_uri_usk =
+        "USK@sdFxM0Z4zx4-gXhGwzXAVYvOUi6NRfdGbyJa797bNAg,"
+        "ZP4aASnyZax8nYOvCOlUebegsmbGQIXfVzw7iyOsXEc,AQACAAE/WebOfTrust/5";
     auto request_usk = user::create_key(*Uri::create(request_uri_usk));
-    auto insert_uri_usk
-        = "USK@ZTeIa1g4T3OYCdUFfHrFSlRnt5coeFFDCIZxWSb7abs,"
-          "ZP4aASnyZax8nYOvCOlUebegsmbGQIXfVzw7iyOsXEc,AQECAAE/WebOfTrust/5";
+    auto insert_uri_usk =
+        "USK@ZTeIa1g4T3OYCdUFfHrFSlRnt5coeFFDCIZxWSb7abs,"
+        "ZP4aASnyZax8nYOvCOlUebegsmbGQIXfVzw7iyOsXEc,AQECAAE/WebOfTrust/5";
     auto insert_usk = user::create_key(*Uri::create(insert_uri_usk));
     REQUIRE(insert_usk->to_request_uri().to_string() == request_uri_usk);
     // Request uri's request uri is itself
     REQUIRE(request_usk->to_request_uri().to_string() == request_uri_usk);
 
-    auto request_uri_ssk
-        = "SSK@sdFxM0Z4zx4-gXhGwzXAVYvOUi6NRfdGbyJa797bNAg,"
-          "ZP4aASnyZax8nYOvCOlUebegsmbGQIXfVzw7iyOsXEc,AQACAAE/WebOfTrust-5";
+    auto request_uri_ssk =
+        "SSK@sdFxM0Z4zx4-gXhGwzXAVYvOUi6NRfdGbyJa797bNAg,"
+        "ZP4aASnyZax8nYOvCOlUebegsmbGQIXfVzw7iyOsXEc,AQACAAE/WebOfTrust-5";
     auto request_ssk = user::create_key(*Uri::create(request_uri_ssk));
-    auto insert_uri_ssk
-        = "SSK@ZTeIa1g4T3OYCdUFfHrFSlRnt5coeFFDCIZxWSb7abs,"
-          "ZP4aASnyZax8nYOvCOlUebegsmbGQIXfVzw7iyOsXEc,AQECAAE/WebOfTrust-5";
+    auto insert_uri_ssk =
+        "SSK@ZTeIa1g4T3OYCdUFfHrFSlRnt5coeFFDCIZxWSb7abs,"
+        "ZP4aASnyZax8nYOvCOlUebegsmbGQIXfVzw7iyOsXEc,AQECAAE/WebOfTrust-5";
     auto insert_ssk = user::create_key(*Uri::create(insert_uri_ssk));
     REQUIRE(insert_ssk->to_request_uri().to_string() == request_uri_ssk);
     // Request uri's request uri is itself

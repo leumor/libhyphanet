@@ -94,10 +94,10 @@ namespace concepts {
      * @brief Base class for node keys.
      */
     template<typename T>
-    concept Base_Key
-        = Has_Get_Full_Key<T> && Has_Get_Type<T> && Has_Get_Key_Bytes<T>
-          && Has_To_Normalized_Double<T> && Has_Get_Node_Routing_Key<T>
-          && Has_Get_Crypto_Algorithm<T>;
+    concept Base_Key =
+        Has_Get_Full_Key<T> && Has_Get_Type<T> && Has_Get_Key_Bytes<T>
+        && Has_To_Normalized_Double<T> && Has_Get_Node_Routing_Key<T>
+        && Has_Get_Crypto_Algorithm<T>;
 
     template<typename T, typename U>
     concept Key = Base_Key<T> && Base_Key<U> && Has_Archival_Copy<T, U>;
@@ -119,7 +119,7 @@ namespace concepts {
 
     template<typename T, typename U>
     concept Chk = Key<T, U> && Has_Base_Type<T> && Has_Key_Length<T>
-                  && Has_Full_Key_Length<T>;
+               && Has_Full_Key_Length<T>;
 
     template<typename T>
     concept Has_Get_Encrypted_Hashed_Docname = requires(const T t) {
@@ -139,9 +139,9 @@ namespace concepts {
     };
 
     template<typename T, typename U>
-    concept Ssk
-        = Key<T, U> && Has_Get_Encrypted_Hashed_Docname<T> && Has_Get_Pub_Key<T>
-          && Has_Ssk_Version<T> && Has_Base_Type<T> && Has_Full_Key_Length<T>;
+    concept Ssk =
+        Key<T, U> && Has_Get_Encrypted_Hashed_Docname<T> && Has_Get_Pub_Key<T>
+        && Has_Ssk_Version<T> && Has_Base_Type<T> && Has_Full_Key_Length<T>;
 
 } // namespace concepts
 

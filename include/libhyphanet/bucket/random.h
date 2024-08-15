@@ -42,32 +42,34 @@ namespace concepts {
      *
      * @return std::unique_ptr<Random_access> a Random Access Bucket
      */
-    template<typename Factory, typename T>
-    concept Has_Method_Make_Bucket
-        = requires(Factory factory, T t, executor_type executor, size_t size) {
-              {
-                  factory.make_bucket(executor, size)
-              } -> std::same_as<std::shared_ptr<T>>;
-          } && Random_Access<T>;
+    template<typename T, typename Bucket>
+    concept Has_Method_Make_Bucket =
+        Random_Access<Bucket>
+        && requires(T t, executor_type executor, size_t size) {
+               {
+                   t.make_bucket(executor, size)
+               } -> std::same_as<std::shared_ptr<Bucket>>;
+           };
 
-    template<typename Factory, typename T>
-    concept Has_Method_Make_Imutable_Bucket = requires(
-                                                  Factory factory,
-                                                  T t,
-                                                  executor_type executor,
-                                                  const std::vector<std::byte>&
-                                                      data,
-                                                  size_t length,
-                                                  size_t offset
-                                              ) {
-        {
-            factory.make_immutable_bucket(executor, data, length, offset)
-        } -> std::same_as<boost::asio::awaitable<std::shared_ptr<T>>>;
-    } && Random_Access<T>;
+    template<typename T, typename Bucket>
+    concept Has_Method_Make_Imutable_Bucket =
+        Random_Access<Bucket>
+        && requires(
+            T t,
+            executor_type executor,
+            const std::vector<std::byte>& data,
+            size_t length,
+            size_t offset
+        ) {
+               {
+                   t.make_immutable_bucket(executor, data, length, offset)
+               }
+               -> std::same_as<boost::asio::awaitable<std::shared_ptr<Bucket>>>;
+           };
 
-    template<typename F, typename T>
-    concept Factory
-        = Has_Method_Make_Bucket<F, T> && Has_Method_Make_Imutable_Bucket<F, T>;
+    template<typename T, typename Bucket>
+    concept Factory = Has_Method_Make_Bucket<T, Bucket>
+                   && Has_Method_Make_Imutable_Bucket<T, Bucket>;
 
 } // namespace concepts
 

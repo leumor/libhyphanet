@@ -113,8 +113,8 @@ namespace concepts {
 
     template<typename T>
     concept Key = Has_To_Uri<T> && Has_To_Request_Uri<T>
-                  && Has_Get_Routing_Key<T> && Has_Get_Crypto_Key<T>
-                  && Has_Get_Crypto_Algorithm<T> && Has_Get_Meta_Strings<T>;
+               && Has_Get_Routing_Key<T> && Has_Get_Crypto_Key<T>
+               && Has_Get_Crypto_Algorithm<T> && Has_Get_Meta_Strings<T>;
 
     template<typename T>
     concept Has_Get_Docname = requires(const T t) {
@@ -170,7 +170,7 @@ namespace concepts {
      */
     template<typename T>
     concept Subspace_Key = Key<T> && Has_Get_Docname<T> && Has_Extra_Length<T>
-                           && Has_Routing_Key_Size<T>;
+                        && Has_Routing_Key_Size<T>;
 
     /**
      * @brief Returns the node key corresponding to this key.
@@ -269,7 +269,7 @@ namespace concepts {
      */
     template<typename T, typename U>
     concept Ssk = Subspace_Key<T> && Client<T> && Has_To_Usk<T, U>
-                  && Has_Get_Pub_Key<T> && Has_Separator<T>;
+               && Has_Get_Pub_Key<T> && Has_Separator<T>;
 
     /**
      * @brief An insertable version of an Ssk, containing a private key for
@@ -338,8 +338,8 @@ namespace concepts {
      * - [Document edition number](#suggested_edition_).
      */
     template<typename T, typename U>
-    concept Usk
-        = Subspace_Key<T> && Has_Get_Suggested_Edition<T> && Has_To_Ssk<T, U>;
+    concept Usk =
+        Subspace_Key<T> && Has_Get_Suggested_Edition<T> && Has_To_Ssk<T, U>;
 
     /**
      * @brief An insertable version of a Usk, containing a private key for
@@ -389,8 +389,8 @@ namespace concepts {
      */
     template<typename T>
     concept Chk = Key<T> && Client<T> && Has_Get_Control_Document<T>
-                  && Has_Get_Compressor<T> && Has_Extra_Length<T>
-                  && Has_Routing_Key_Size<T>;
+               && Has_Get_Compressor<T> && Has_Extra_Length<T>
+               && Has_Routing_Key_Size<T>;
 } // namespace concepts
 
 class LIBHYPHANET_EXPORT Any_key {
@@ -444,14 +444,13 @@ public:
 private:
     struct Concept {
         virtual ~Concept() = default;
-        [[nodiscard]] virtual std::vector<std::byte> get_routing_key() const
-            = 0;
+        [[nodiscard]] virtual std::vector<std::byte>
+        get_routing_key() const = 0;
         [[nodiscard]] virtual std::array<std::byte, crypto_key_length>
         get_crypto_key() const = 0;
         [[nodiscard]] virtual Crypto_algorithm get_crypto_algorithm() const = 0;
         [[nodiscard]] virtual const std::vector<std::string>&
-        get_meta_strings() const
-            = 0;
+        get_meta_strings() const = 0;
         [[nodiscard]] virtual Uri to_uri() const = 0;
         [[nodiscard]] virtual Uri to_request_uri() const = 0;
 
@@ -940,8 +939,8 @@ public:
      * length is fixed at 32 bytes to ensure consistency and
      * compatibility across the network.
      */
-    static const size_t routing_key_size
-        = 32; // TODO: same as Node_ssk::pubkey_hash_size
+    static const size_t routing_key_size =
+        32; // TODO: same as Node_ssk::pubkey_hash_size
 
 protected:
     void init_from_uri(const Uri& uri) override;

@@ -26,16 +26,16 @@ namespace concepts {
      * is int.
      */
     template<typename T>
-    concept Enum_With_Int
-        = std::is_enum_v<T> && std::same_as<std::underlying_type_t<T>, int>;
+    concept Enum_With_Int =
+        std::is_enum_v<T> && std::same_as<std::underlying_type_t<T>, int>;
 
     /**
      * @brief checks if the given type T is either char (underlying type of
      * std::string) or char8_t (underlying type of std::u8string).
      */
     template<typename T>
-    concept Char_Or_Char8_T
-        = std::is_same_v<T, char> || std::is_same_v<T, char8_t>;
+    concept Char_Or_Char8_T =
+        std::is_same_v<T, char> || std::is_same_v<T, char8_t>;
 
     /**
      * @brief check if a given type R meets specific requirements to be

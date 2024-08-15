@@ -3,8 +3,11 @@
 
 #include "libhyphanet/block/node.h"
 #include "libhyphanet/bucket.h"
+#include "libhyphanet/bucket/random.h"
 #include "libhyphanet/key/user.h"
 
+#include <cstddef>
+#include <memory>
 #include <vector>
 
 namespace block::user {
@@ -45,6 +48,18 @@ namespace concepts {
         } -> std::same_as<std::shared_ptr<block::node::Key>>;
     };
 
+    template<typename T, typename Bucket, typename Bucket_factory>
+    concept Has_Decode =
+        bucket::concepts::Bucket<Bucket>
+        && bucket::random::concepts::Factory<Bucket_factory, Bucket>
+        && requires(
+            T t, Bucket_factory bf, size_t max_length, bool dont_decompress
+        ) {
+               {
+                   t.decode(bf, max_length, dont_decompress)
+               } -> std::same_as<std::unique_ptr<Bucket>>;
+           };
+
     /**
      * @brief A Key Block with a key::user::Key. Can be decoded. Not a child of
      * data::block::node::Key because of issues with equals.
@@ -55,20 +70,22 @@ namespace concepts {
      * not equals too. Hence it's really a different kind of object, so not a
      * child.
      */
-    template<typename T>
-    concept Key = Has_Is_Metadata<T> && Has_Memory_Decode<T>
-                  && Has_Get_User_Key<T> && Has_Get_Node_Block<T>;
+    template<typename T, typename Bucket, typename Bucket_factory>
+    concept Key =
+        Has_Is_Metadata<T> && Has_Memory_Decode<T> && Has_Get_User_Key<T>
+        && Has_Get_Node_Block<T> && Has_Decode<T, Bucket, Bucket_factory>;
 
-    template<typename T>
-    concept Chk = Key<T>;
+    template<typename T, typename Bucket, typename Bucket_factory>
+    concept Chk = Key<T, Bucket, Bucket_factory>;
 
     template<typename T>
     concept Has_Max_Decompressed_Data_Length = requires {
         { T::max_decompressed_data_length } -> std::convertible_to<size_t>;
     };
 
-    template<typename T>
-    concept Ssk = Key<T> && Has_Max_Decompressed_Data_Length<T>;
+    template<typename T, typename Bucket, typename Bucket_factory>
+    concept Ssk =
+        Key<T, Bucket, Bucket_factory> && Has_Max_Decompressed_Data_Length<T>;
 
 } // namespace concepts
 
@@ -84,6 +101,8 @@ namespace concepts {
  */
 class Key {
 public:
+    virtual ~Key() = default;
+
     /**
      * @brief Get the key::user::Key for this block.
      *

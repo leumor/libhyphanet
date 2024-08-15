@@ -19,8 +19,9 @@
 boost::asio::awaitable<void> perform_io(boost::asio::any_io_executor executor)
 {
     bucket::random::factory::Array_factory factory;
-    auto data
-        = {std::byte{0x01}, std::byte{0x02}, std::byte{0x03}, std::byte{0x04}};
+    auto data = {
+        std::byte{0x01}, std::byte{0x02}, std::byte{0x03}, std::byte{0x04}
+    };
     auto bucket = co_await factory.make_immutable_bucket(executor, data, 10, 1);
 
     std::vector<std::byte> buffer(10);

@@ -148,8 +148,8 @@ void Ssk::calculate_encrypted_hashed_docname()
     crypto::Sha256 hasher;
     hasher.update(Subspace_key::get_docname());
     const auto buf = hasher.digest();
-    encrypted_hashed_docname_
-        = crypto::rijndael256_256_encrypt(Key::get_crypto_key(), buf);
+    encrypted_hashed_docname_ =
+        crypto::rijndael256_256_encrypt(Key::get_crypto_key(), buf);
 }
 
 void Ssk::set_pub_key(const std::vector<std::byte>& pub_key)

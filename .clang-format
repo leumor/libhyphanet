@@ -7,6 +7,7 @@ AlignConsecutiveBitFields: None
 AlignConsecutiveDeclarations: None
 AlignConsecutiveMacros: AcrossEmptyLinesAndComments
 AlignEscapedNewlines: Right
+AlignOperands: AlignAfterOperator
 AlignTrailingComments: false
 AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
@@ -44,7 +45,7 @@ BraceWrapping:
   BeforeWhile: true
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
-BreakBeforeBinaryOperators: All
+BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeConceptDeclarations: Always
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeColon

@@ -232,8 +232,8 @@ namespace {
                     [](CryptoPP::byte b) { return std::bit_cast<std::byte>(b); }
                 );
 
-                auto encrypted
-                    = rijndael256_256_encrypt(key_array, input_array);
+                auto encrypted =
+                    rijndael256_256_encrypt(key_array, input_array);
 
                 if (xor_block != nullptr) {
                     std::transform(
@@ -285,8 +285,8 @@ namespace {
                     [](CryptoPP::byte b) { return std::bit_cast<std::byte>(b); }
                 );
 
-                auto decrypted
-                    = rijndael256_256_decrypt(key_array, input_array);
+                auto decrypted =
+                    rijndael256_256_decrypt(key_array, input_array);
 
                 if (xor_block != nullptr) {
                     std::transform(

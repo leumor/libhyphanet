@@ -73,8 +73,8 @@ namespace concepts {
      */
     template<typename T>
     concept Key = Storable<T> && Has_Get_Pub_Key<T> && Has_Get_Node_Key<T>
-                  && Has_Get_Raw_Headers<T> && Has_Get_Raw_Data<T>
-                  && Has_Get_Hash_Identifier<T> && Has_Hash_Sha_256<T>;
+               && Has_Get_Raw_Headers<T> && Has_Get_Raw_Data<T>
+               && Has_Get_Hash_Identifier<T> && Has_Hash_Sha_256<T>;
 
     template<typename T>
     concept Has_Total_Headers_Length = requires(const T t) {
@@ -100,7 +100,7 @@ namespace concepts {
      */
     template<typename T>
     concept Chk = Key<T> && Has_Total_Headers_Length<T> && Has_Data_Length<T>
-                  && Has_Max_Compressed_Data_Length<T>;
+               && Has_Max_Compressed_Data_Length<T>;
 
     /**
      * @brief how much of the headers we compare in order to consider
@@ -166,9 +166,9 @@ namespace concepts {
      */
     template<typename T>
     concept Ssk = Key<T> && Has_Header_Compare_To<T> && Has_Data_Length<T>
-                  && Has_Max_Compressed_Data_Length<T> && Has_Sig_R_Length<T>
-                  && Has_Sig_S_Length<T> && Has_E_H_Docname_Length<T>
-                  && Has_Encrypted_Headers_Length<T>;
+               && Has_Max_Compressed_Data_Length<T> && Has_Sig_R_Length<T>
+               && Has_Sig_S_Length<T> && Has_E_H_Docname_Length<T>
+               && Has_Encrypted_Headers_Length<T>;
 
 } // namespace concepts
 
@@ -276,8 +276,8 @@ public:
         const std::vector<std::byte>& headers,
         const std::shared_ptr<key::node::Chk>& node_key = nullptr,
         bool verify = true,
-        key::Crypto_algorithm algo
-        = key::Crypto_algorithm::algo_aes_ctr_256_sha_256);
+        key::Crypto_algorithm algo =
+            key::Crypto_algorithm::algo_aes_ctr_256_sha_256);
 
     [[nodiscard]] std::vector<std::byte> get_node_routing_key() const;
     [[nodiscard]] std::vector<std::byte> get_full_key() const;
@@ -350,8 +350,8 @@ public:
     static const size_t encrypted_headers_length = 36;
 
     static const size_t total_headers_length = 2 + sig_r_length + sig_s_length
-                                               + 2 + e_h_docname_length
-                                               + ssk_data_decrypt_key_length;
+                                             + 2 + e_h_docname_length
+                                             + ssk_data_decrypt_key_length;
 
 private:
     /**

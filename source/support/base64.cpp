@@ -50,8 +50,8 @@ std::string encode(
     using namespace CryptoPP;
 
     Base64Encoder encoder;
-    AlgorithmParameters params
-        = MakeParameters(Name::InsertLineBreaks(), false);
+    AlgorithmParameters params =
+        MakeParameters(Name::InsertLineBreaks(), false);
 
     if (!equals_pad) { params = params(Name::Pad(), false); }
 
@@ -59,8 +59,8 @@ std::string encode(
     if (!alphabet.empty()) {
         alphabet_bytes = alphabet_str_to_bytes(alphabet);
         const byte* alphabet_ptr = alphabet_bytes.data();
-        params
-            = params(Name::EncodingLookupArray(), std::as_const(alphabet_ptr));
+        params =
+            params(Name::EncodingLookupArray(), std::as_const(alphabet_ptr));
     }
 
     encoder.IsolatedInitialize(params);
