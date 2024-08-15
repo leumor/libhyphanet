@@ -579,9 +579,7 @@ protected:
     class Token {};
     friend class Insertable;
 
-    template<
-        concepts::Key T,
-        support::concepts::Derived_From_Base<Key> Key_type>
+    template<concepts::Key T, concepts::Key Key_type>
     friend std::shared_ptr<T> create_and_init_key(const Uri& uri);
 
     friend void init_from_url(Key& key, const Uri& uri);
@@ -1623,7 +1621,7 @@ inline void init_from_url(Key& key, const Uri& uri)
 template<typename T, typename U>
 inline constexpr bool always_false_v = false;
 
-template<concepts::Key T, support::concepts::Derived_From_Base<Key> Key_type>
+template<concepts::Key T, concepts::Key Key_type>
 [[nodiscard]] std::shared_ptr<T> create_and_init_key(const Uri& uri)
 {
     const Key::Token t{};
