@@ -27,23 +27,6 @@ namespace concepts {
     };
 
     /**
-     * @brief Get a copy of the key with any unnecessary information
-     * stripped, for long-term in-memory storage.
-     *
-     * @details
-     * E.g. for SSKs, strips the DSAPublicKey. Copies it whether
-     * we need to copy it because the original might pick up a pubkey after
-     * this call. And the returned key will not accidentally pick up extra
-     * data.
-     *
-     * @return Key the copy of the key.
-     */
-    template<typename T, typename U>
-    concept Has_Archival_Copy = requires(const T t) {
-        { t.archival_copy() } -> std::same_as<std::unique_ptr<U>>;
-    };
-
-    /**
      * @brief Get key type
      *
      * @details
@@ -94,13 +77,9 @@ namespace concepts {
      * @brief Base class for node keys.
      */
     template<typename T>
-    concept Base_Key =
-        Has_Get_Full_Key<T> && Has_Get_Type<T> && Has_Get_Key_Bytes<T>
-        && Has_To_Normalized_Double<T> && Has_Get_Node_Routing_Key<T>
-        && Has_Get_Crypto_Algorithm<T>;
-
-    template<typename T, typename U>
-    concept Key = Base_Key<T> && Base_Key<U> && Has_Archival_Copy<T, U>;
+    concept Key = Has_Get_Full_Key<T> && Has_Get_Type<T> && Has_Get_Key_Bytes<T>
+               && Has_To_Normalized_Double<T> && Has_Get_Node_Routing_Key<T>
+               && Has_Get_Crypto_Algorithm<T>;
 
     template<typename T>
     concept Has_Base_Type = requires {
@@ -117,8 +96,8 @@ namespace concepts {
         { T::full_key_length } -> std::same_as<const size_t&>;
     };
 
-    template<typename T, typename U>
-    concept Chk = Key<T, U> && Has_Base_Type<T> && Has_Key_Length<T>
+    template<typename T>
+    concept Chk = Key<T> && Has_Base_Type<T> && Has_Key_Length<T>
                && Has_Full_Key_Length<T>;
 
     template<typename T>
@@ -138,10 +117,33 @@ namespace concepts {
         { T::ssk_version } -> std::same_as<const std::byte&>;
     };
 
-    template<typename T, typename U>
+    template<typename T>
     concept Ssk =
-        Key<T, U> && Has_Get_Encrypted_Hashed_Docname<T> && Has_Get_Pub_Key<T>
+        Key<T> && Has_Get_Encrypted_Hashed_Docname<T> && Has_Get_Pub_Key<T>
         && Has_Ssk_Version<T> && Has_Base_Type<T> && Has_Full_Key_Length<T>;
+
+    template<typename T>
+    concept Archive_Ssk = Ssk<T>;
+
+    /**
+     * @brief Get a copy of the key with any unnecessary information
+     * stripped, for long-term in-memory storage.
+     *
+     * @details
+     * E.g. for SSKs, strips the DSAPublicKey. Copies it whether
+     * we need to copy it because the original might pick up a pubkey after
+     * this call. And the returned key will not accidentally pick up extra
+     * data.
+     *
+     * @return Key the copy of the key.
+     */
+    template<typename T, typename Archival_key>
+    concept Has_Archival_Copy =
+        Key<T> && Key<Archival_key> && requires(const T t) {
+            {
+                t.archival_copy()
+            } -> std::same_as<std::unique_ptr<Archival_key>>;
+        };
 
 } // namespace concepts
 
@@ -247,7 +249,9 @@ public:
     static const size_t full_key_length = 34;
 };
 
-static_assert(concepts::Chk<Chk, Chk>);
+static_assert(concepts::Chk<Chk>);
+
+class Archive_ssk;
 
 class LIBHYPHANET_EXPORT Ssk : public Key {
 public:
@@ -257,7 +261,7 @@ public:
         std::vector<std::byte> pub_key = {});
 
     [[nodiscard]] std::vector<std::byte> get_full_key() const override;
-    [[nodiscard]] virtual std::unique_ptr<Ssk> archival_copy() const;
+    [[nodiscard]] virtual std::unique_ptr<Archive_ssk> archival_copy() const;
     [[nodiscard]] short get_type() const override;
     [[nodiscard]] std::vector<std::byte> get_key_bytes() const override;
 
@@ -297,7 +301,7 @@ public:
     {}
 };
 
-static_assert(concepts::Ssk<Ssk, Ssk> && concepts::Ssk<Archive_ssk, Ssk>);
+static_assert(concepts::Ssk<Ssk> && concepts::Archive_Ssk<Archive_ssk>);
 
 } // namespace key::node
 

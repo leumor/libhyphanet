@@ -227,7 +227,7 @@ std::unique_ptr<key::user::Usk> Ssk::to_usk() const
     return nullptr;
 }
 
-std::unique_ptr<node::Key> Ssk::get_node_key() const
+std::unique_ptr<node::Ssk> Ssk::get_node_key() const
 {
     // TODO Cache node key
     return std::make_unique<node::Ssk>(
@@ -345,26 +345,14 @@ Uri Usk::to_request_uri() const
     return this->to_uri();
 }
 
-std::unique_ptr<key::user::Ssk> Usk::to_ssk() const
+[[nodiscard]] std::unique_ptr<Ssk> Usk::to_ssk(std::string_view docname) const
 {
-    const long min_val = std::numeric_limits<long>::min();
-    const long max_val = std::numeric_limits<long>::max();
-
-    long edition = std::abs(suggested_edition_);
-
-    if (edition == min_val) { edition = max_val; }
-
     Key_params params;
     params.routing_key = Key::get_routing_key();
     params.crypto_key = Key::get_crypto_key();
     params.crypto_algorithm = Key::get_crypto_algorithm();
     params.meta_strings = Key::get_meta_strings();
-
-    auto docname = get_docname();
-
-    return std::make_unique<Ssk>(
-        params, fmt::format("{}{}{}", docname, Ssk::separator, edition)
-    );
+    return std::make_unique<Ssk>(params, docname);
 }
 
 // =============================================================================
@@ -551,7 +539,7 @@ Uri Chk::to_request_uri() const
     return this->to_uri();
 }
 
-std::unique_ptr<node::Key> Chk::get_node_key() const
+std::unique_ptr<node::Chk> Chk::get_node_key() const
 {
     // TODO Cache node key
     return std::make_unique<node::Chk>(

@@ -29,7 +29,10 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
         auto uri_ssk = Uri::create(wanna_ssk_1);
         auto ssk = user::create<user::Ssk>(*uri_ssk);
 
-        REQUIRE(wanna_ssk_1 == usk->to_ssk()->to_uri().to_string());
+        REQUIRE(
+            wanna_ssk_1
+            == user::to_ssk<user::Usk, user::Ssk>(*usk)->to_uri().to_string()
+        );
 
         auto usk_2 = ssk->to_usk();
         REQUIRE(usk_2 != nullptr);

@@ -48,6 +48,16 @@ namespace concepts {
         } -> std::same_as<std::shared_ptr<block::node::Key>>;
     };
 
+    /**
+     * @brief Returns the node key corresponding to this key.
+     *
+     * @return The node key as a `node::Node_key` object.
+     */
+    template<typename T>
+    concept Has_Get_Node_Key = requires(const T t) {
+        { t.get_node_key() } -> std::same_as<std::unique_ptr<key::node::Key>>;
+    };
+
     template<typename T, typename Bucket, typename Bucket_factory>
     concept Has_Decode =
         bucket::concepts::Bucket<Bucket>

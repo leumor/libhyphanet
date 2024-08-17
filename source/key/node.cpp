@@ -125,7 +125,7 @@ std::vector<std::byte> Ssk::get_full_key() const
     return buf;
 }
 
-std::unique_ptr<Ssk> Ssk::archival_copy() const
+std::unique_ptr<Archive_ssk> Ssk::archival_copy() const
 {
     return std::make_unique<Archive_ssk>(
         support::util::array_to_vector(user_routing_key_),

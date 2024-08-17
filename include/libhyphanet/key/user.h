@@ -11,6 +11,7 @@
 #include <cryptopp/dsa.h>
 #include <cryptopp/gfpcrypt.h>
 #include <cstddef>
+#include <fmt/core.h>
 #include <gsl/assert>
 #include <gsl/gsl>
 #include <memory>
@@ -25,6 +26,8 @@
 namespace key::user {
 
 namespace concepts {
+
+#pragma region concept Key
     /**
      * @brief Generates the URI representation of the Key object.
      *
@@ -115,7 +118,9 @@ namespace concepts {
     concept Key = Has_To_Uri<T> && Has_To_Request_Uri<T>
                && Has_Get_Routing_Key<T> && Has_Get_Crypto_Key<T>
                && Has_Get_Crypto_Algorithm<T> && Has_Get_Meta_Strings<T>;
+#pragma endregion concept Key
 
+#pragma region concept Subspace_Key
     template<typename T>
     concept Has_Get_Docname = requires(const T t) {
         { t.get_docname() } -> std::same_as<std::string>;
@@ -171,17 +176,9 @@ namespace concepts {
     template<typename T>
     concept Subspace_Key = Key<T> && Has_Get_Docname<T> && Has_Extra_Length<T>
                         && Has_Routing_Key_Size<T>;
+#pragma endregion concept Subspace_Key
 
-    /**
-     * @brief Returns the node key corresponding to this key.
-     *
-     * @return The node key as a `node::Node_key` object.
-     */
-    template<typename T>
-    concept Has_Get_Node_Key = requires(const T t) {
-        { t.get_node_key() } -> std::same_as<std::unique_ptr<key::node::Key>>;
-    };
-
+#pragma region concept Client
     /**
      * @brief A mixin class for Client Keys.
      *
@@ -194,8 +191,9 @@ namespace concepts {
      * usually the second part, after the comma.
      */
     template<typename T>
-    concept Client = Has_Get_Node_Key<T>;
+    concept Client = true;
 
+#pragma region concept Insertable
     template<typename T>
     concept Has_Get_Priv_Key = requires(const T t) {
         { t.get_priv_key() } -> std::same_as<std::vector<std::byte>>;
@@ -210,34 +208,9 @@ namespace concepts {
      */
     template<typename T>
     concept Insertable = Has_Get_Priv_Key<T>;
+#pragma endregion concept Insertable
 
-    /**
-     * @brief Converts an Ssk (Signed Subspace Key) to a Usk (Updatable
-     * Subspace Key) if possible.
-     *
-     * @details
-     * This method attempts to convert the current Ssk object into a Usk
-     * object. The conversion is based on parsing the document name of
-     * the Ssk to extract a site name and an edition number. If the
-     * document name follows the expected format that includes an
-     * edition number, a Usk object is created with the same routing
-     * key, crypto key, cryptographic algorithm, and meta strings as the
-     * Ssk, but with the addition of the extracted site name and edition
-     * number.
-     *
-     * The method is useful for scenarios where mutable content is
-     * accessed through Ssk but needs to be managed or referenced as Usk
-     * for updates or versioning purposes.
-     *
-     * @return A Usk object if the conversion is successful, or a nullptr if the
-     * document name does not include an edition number or does not follow the
-     * expected format.
-     */
-    template<typename T, typename U>
-    concept Has_To_Usk = requires(const T t) {
-        { t.to_usk() } -> std::same_as<std::unique_ptr<U>>;
-    };
-
+#pragma region concept SSK
     template<typename T>
     concept Has_Get_Pub_Key = requires(const T t) {
         { t.get_pub_key() } -> std::same_as<std::vector<std::byte>>;
@@ -267,9 +240,9 @@ namespace concepts {
      * fundamental part of Hyphanet's data storage and retrieval system,
      * allowing for secure, anonymous, and verifiable updates to content.
      */
-    template<typename T, typename U>
-    concept Ssk = Subspace_Key<T> && Client<T> && Has_To_Usk<T, U>
-               && Has_Get_Pub_Key<T> && Has_Separator<T>;
+    template<typename T>
+    concept Ssk =
+        Subspace_Key<T> && Client<T> && Has_Get_Pub_Key<T> && Has_Separator<T>;
 
     /**
      * @brief An insertable version of an Ssk, containing a private key for
@@ -280,78 +253,8 @@ namespace concepts {
      * Hyphanet network. They are crucial for maintaining mutable content
      * where the owner wishes to update the content securely.
      */
-    template<typename T, typename U>
-    concept Insertable_Ssk = Ssk<T, U> && Insertable<T>;
-
     template<typename T>
-    concept Has_Get_Suggested_Edition = requires(const T t) {
-        { t.get_suggested_edition() } -> std::same_as<long>;
-    };
-
-    /**
-     * @brief Converts a Usk (Updatable Subspace Key) to an Ssk (Signed
-     * Subspace Key).
-     *
-     * @details
-     * This method converts the current Usk object into an Ssk object.
-     * The conversion involves creating a new Ssk object with the same
-     * routing key, cryptographic key, cryptographic algorithm, and meta
-     * strings as the Usk, but with the document name and edition number
-     * formatted according to the Ssk's requirements.
-     *
-     * The Ssk created by this method represents a specific edition of
-     * the content identified by the Usk, allowing for direct access to
-     * that edition. This is particularly useful for retrieving or
-     * referencing a specific version of mutable content within the
-     * network.
-     *
-     * @return An Ssk object representing a specific edition of the
-     * content identified by the current Usk.
-     */
-    template<typename T, typename U>
-    concept Has_To_Ssk = requires(const T t) {
-        { t.to_ssk() } -> std::same_as<std::unique_ptr<U>>;
-    };
-
-    /**
-     * @brief Represents an **Updatable Subspace %Key** (USK) for dynamic
-     * content updates.
-     *
-     * @details
-     * USKs facilitate a crude updating mechanism at the client level,
-     * allowing users to request the latest version of a file without
-     * knowing the exact SSK. This is particularly useful for dynamic
-     * content such as blogs or forums.
-     *
-     * Example:
-     *
-     * ```
-     * freenet:USK@~Alice/MyBlog/2024-01-02.html/5
-     * ```
-     *
-     * It isn't really a **Client %Key** as it cannot be directly
-     * requested.
-     *
-     * It contains:
-     * - Enough information to produce a real SSK.
-     * - [Document name](#Subspace_key#docname_).
-     * - [Document edition number](#suggested_edition_).
-     */
-    template<typename T, typename U>
-    concept Usk =
-        Subspace_Key<T> && Has_Get_Suggested_Edition<T> && Has_To_Ssk<T, U>;
-
-    /**
-     * @brief An insertable version of a Usk, containing a private key for
-     * data insertion.
-     *
-     * @details
-     * Similar to Insertable SSKs, Insertable USKs allow for the insertion
-     * of new data versions but with the added functionality of USKs for
-     * dynamic content updates.
-     */
-    template<typename T, typename U>
-    concept Insertable_Usk = Usk<T, U> && Insertable<T>;
+    concept Insertable_Ssk = Ssk<T> && Insertable<T>;
 
     /**
      * @brief Represents a **Keyword Signed %Key** (KSK) in the Hyphanet
@@ -362,9 +265,11 @@ namespace concepts {
      * human-readable string. They are less secure than SSKs or USKs but
      * offer a straightforward way to share and access static content.
      */
-    template<typename T, typename U>
-    concept Ksk = Insertable_Ssk<T, U>;
+    template<typename T>
+    concept Ksk = Insertable_Ssk<T>;
+#pragma endregion concept SSK
 
+#pragma region concept Chk
     template<typename T>
     concept Has_Get_Control_Document = requires(const T t) {
         { t.get_control_document() } -> std::same_as<bool>;
@@ -391,6 +296,122 @@ namespace concepts {
     concept Chk = Key<T> && Client<T> && Has_Get_Control_Document<T>
                && Has_Get_Compressor<T> && Has_Extra_Length<T>
                && Has_Routing_Key_Size<T>;
+#pragma endregion concept Chk
+#pragma endregion concept Client
+
+#pragma region concept Usk
+    template<typename T>
+    concept Has_Get_Suggested_Edition = requires(const T t) {
+        { t.get_suggested_edition() } -> std::same_as<long>;
+    };
+
+    /**
+     * @brief Represents an **Updatable Subspace %Key** (USK) for dynamic
+     * content updates.
+     *
+     * @details
+     * USKs facilitate a crude updating mechanism at the client level,
+     * allowing users to request the latest version of a file without
+     * knowing the exact SSK. This is particularly useful for dynamic
+     * content such as blogs or forums.
+     *
+     * Example:
+     *
+     * ```
+     * freenet:USK@~Alice/MyBlog/2024-01-02.html/5
+     * ```
+     *
+     * It isn't really a **Client %Key** as it cannot be directly
+     * requested.
+     *
+     * It contains:
+     * - Enough information to produce a real SSK.
+     * - [Document name](#Subspace_key#docname_).
+     * - [Document edition number](#suggested_edition_).
+     */
+    template<typename T>
+    concept Usk = Subspace_Key<T> && Has_Get_Suggested_Edition<T>;
+
+    /**
+     * @brief An insertable version of a Usk, containing a private key for
+     * data insertion.
+     *
+     * @details
+     * Similar to Insertable SSKs, Insertable USKs allow for the insertion
+     * of new data versions but with the added functionality of USKs for
+     * dynamic content updates.
+     */
+    template<typename T>
+    concept Insertable_Usk = Usk<T> && Insertable<T>;
+#pragma endregion concept Usk
+
+    /**
+     * @brief Returns the node key corresponding to this key.
+     *
+     * @return The node key as a `node::Node_key` object.
+     */
+    template<typename T, typename Node_key>
+    concept Has_Get_Node_Key =
+        key::node::concepts::Key<Node_key> && requires(const T t) {
+            { t.get_node_key() } -> std::same_as<std::unique_ptr<Node_key>>;
+        };
+
+    /**
+     * @brief Converts a Usk (Updatable Subspace Key) to an Ssk (Signed
+     * Subspace Key).
+     *
+     * @details
+     * This method converts the current Usk object into an Ssk object.
+     * The conversion involves creating a new Ssk object with the same
+     * routing key, cryptographic key, cryptographic algorithm, and meta
+     * strings as the Usk, but with the document name and edition number
+     * formatted according to the Ssk's requirements.
+     *
+     * The Ssk created by this method represents a specific edition of
+     * the content identified by the Usk, allowing for direct access to
+     * that edition. This is particularly useful for retrieving or
+     * referencing a specific version of mutable content within the
+     * network.
+     *
+     * @return An Ssk object representing a specific edition of the
+     * content identified by the current Usk.
+     */
+    template<typename T, typename Ssk_type>
+    concept Has_To_Ssk =
+        Ssk<Ssk_type>
+        && requires(const T t, std::string_view docname, long edition) {
+               { t.to_ssk(docname) } -> std::same_as<std::unique_ptr<Ssk_type>>;
+           };
+
+    /**
+     * @brief Converts an Ssk (Signed Subspace Key) to a Usk (Updatable
+     * Subspace Key) if possible.
+     *
+     * @details
+     * This method attempts to convert the current Ssk object into a Usk
+     * object. The conversion is based on parsing the document name of
+     * the Ssk to extract a site name and an edition number. If the
+     * document name follows the expected format that includes an
+     * edition number, a Usk object is created with the same routing
+     * key, crypto key, cryptographic algorithm, and meta strings as the
+     * Ssk, but with the addition of the extracted site name and edition
+     * number.
+     *
+     * The method is useful for scenarios where mutable content is
+     * accessed through Ssk but needs to be managed or referenced as Usk
+     * for updates or versioning purposes.
+     *
+     * Implementation of FreenetURI.uskForSSK().
+     *
+     * @return A Usk object if the conversion is successful, or a nullptr if the
+     * document name does not include an edition number or does not follow the
+     * expected format.
+     */
+    template<typename T, typename Usk_type>
+    concept Has_To_Usk = requires(const T t) {
+        { t.to_usk() } -> std::same_as<std::unique_ptr<Usk_type>>;
+    };
+
 } // namespace concepts
 
 class LIBHYPHANET_EXPORT Any_key {
@@ -1003,6 +1024,11 @@ class Usk;
  */
 class LIBHYPHANET_EXPORT Ssk : public Subspace_key {
 public:
+    template<concepts::Client Client_key, node::concepts::Key Node_key>
+    requires concepts::Has_Get_Node_Key<Client_key, Node_key>
+    friend LIBHYPHANET_EXPORT std::unique_ptr<Node_key>
+    get_node_key(Client_key& client);
+
     /**
      * @brief The character to separate the site name from the edition
      * number in its SSK form.
@@ -1074,6 +1100,8 @@ public:
      * should always publish only the request URI. Never give away the
      * insert URI, this allows anyone to insert under your URI!
      *
+     * Implementation of FreenetURI.deriveRequestURIFromInsertURI().
+     *
      * @return Uri The request URI for this SSK.
      */
     [[nodiscard]] virtual Uri to_request_uri() const;
@@ -1096,13 +1124,13 @@ public:
      * accessed through Ssk but needs to be managed or referenced as Usk
      * for updates or versioning purposes.
      *
+     * Implementation of FreenetURI.uskForSSK().
+     *
      * @return A Usk object if the conversion is successful, or a nullptr if
      * the document name does not include an edition number or does not
      * follow the expected format.
      */
     [[nodiscard]] std::unique_ptr<Usk> to_usk() const;
-
-    [[nodiscard]] std::unique_ptr<node::Key> get_node_key() const;
 
     [[nodiscard]] std::vector<std::byte> get_pub_key() const
     {
@@ -1114,6 +1142,8 @@ protected:
     void set_pub_key(const std::vector<std::byte>& pub_key);
 
 private:
+    [[nodiscard]] std::unique_ptr<node::Ssk> get_node_key() const;
+
     /**
      * @brief Calculates and stores the encrypted and hashed version of
      * the document name.
@@ -1156,7 +1186,7 @@ private:
     std::vector<std::byte> pub_key_;
 };
 
-static_assert(concepts::Ssk<Ssk, Usk>);
+static_assert(concepts::Ssk<Ssk>);
 
 /**
  * @brief An insertable version of an Ssk, containing a private key for
@@ -1169,6 +1199,11 @@ static_assert(concepts::Ssk<Ssk, Usk>);
  */
 class LIBHYPHANET_EXPORT Insertable_ssk : public Ssk, public Insertable {
 public:
+    template<concepts::Client Client_key, node::concepts::Key Node_key>
+    requires concepts::Has_Get_Node_Key<Client_key, Node_key>
+    friend LIBHYPHANET_EXPORT std::unique_ptr<Node_key>
+    get_node_key(Client_key& client);
+
     /**
      * @brief Constructs an Insertable_ssk object with specified key
      * parameters, document name, and private key.
@@ -1237,7 +1272,7 @@ protected:
     [[nodiscard]] std::vector<std::byte> get_extra_bytes() const override;
 };
 
-static_assert(concepts::Insertable_Ssk<Insertable_ssk, Usk>);
+static_assert(concepts::Insertable_Ssk<Insertable_ssk>);
 
 /**
  * @brief Represents an **Updatable Subspace %Key** (USK) for dynamic
@@ -1265,6 +1300,10 @@ static_assert(concepts::Insertable_Ssk<Insertable_ssk, Usk>);
  */
 class LIBHYPHANET_EXPORT Usk : public Subspace_key {
 public:
+    template<concepts::Usk Usk_type, concepts::Ssk Ssk_type>
+    friend std::shared_ptr<Ssk_type>
+    to_ssk(Usk_type& usk, std::string_view docname);
+
     Usk(Key_params key, std::string_view docname, long suggested_edition = -1)
         : Subspace_key{std::move(key), docname},
           suggested_edition_(suggested_edition)
@@ -1303,10 +1342,16 @@ public:
      * should always publish only the request URI. Never give away the
      * insert URI, this allows anyone to insert under your URI!
      *
+     * Implementation of FreenetURI.deriveRequestURIFromInsertURI().
+     *
      * @return Uri The request URI for this Subspace Key.
      */
     [[nodiscard]] virtual Uri to_request_uri() const;
 
+protected:
+    void init_from_uri(const Uri& uri) override;
+
+private:
     /**
      * @brief Converts a Usk (Updatable Subspace Key) to an Ssk (Signed
      * Subspace Key).
@@ -1324,15 +1369,13 @@ public:
      * referencing a specific version of mutable content within the
      * network.
      *
+     * Implementation of FreenetURI.getSSK().
+     *
      * @return An Ssk object representing a specific edition of the
      * content identified by the current Usk.
      */
-    [[nodiscard]] std::unique_ptr<Ssk> to_ssk() const;
+    [[nodiscard]] std::unique_ptr<Ssk> to_ssk(std::string_view docname) const;
 
-protected:
-    void init_from_uri(const Uri& uri) override;
-
-private:
     /**
      * @brief Suggestion edition.
      *
@@ -1364,7 +1407,7 @@ private:
     long suggested_edition_{-1};
 };
 
-static_assert(concepts::Usk<Usk, Ssk>);
+static_assert(concepts::Usk<Usk>);
 
 /**
  * @brief An insertable version of a Usk, containing a private key for
@@ -1413,7 +1456,7 @@ protected:
     [[nodiscard]] std::vector<std::byte> get_extra_bytes() const override;
 };
 
-static_assert(concepts::Insertable_Usk<Insertable_usk, Ssk>);
+static_assert(concepts::Insertable_Usk<Insertable_usk>);
 
 /**
  * @brief Represents a **Keyword Signed %Key** (KSK) in the Hyphanet
@@ -1456,7 +1499,7 @@ private:
     std::string keyword_;
 };
 
-static_assert(concepts::Ksk<Ksk, Usk>);
+static_assert(concepts::Ksk<Ksk>);
 
 /**
  * @brief Represents a **Content Hash %Key** (CHK) in the Hyphanet
@@ -1470,6 +1513,11 @@ static_assert(concepts::Ksk<Ksk, Usk>);
  */
 class LIBHYPHANET_EXPORT Chk : public Key {
 public:
+    template<concepts::Client Client_key, node::concepts::Key Node_key>
+    requires concepts::Has_Get_Node_Key<Client_key, Node_key>
+    friend LIBHYPHANET_EXPORT std::unique_ptr<Node_key>
+    get_node_key(Client_key& client);
+
     /**
      * @brief Construct a new **Content Hash %Key** (CHK) object.
      *
@@ -1516,17 +1564,6 @@ public:
      */
     [[nodiscard]] Uri to_request_uri() const;
 
-    /**
-     * @brief Returns the node key associated with this CHK.
-     *
-     * @details
-     * Generates a node key based on the routing key. This key is used
-     * at the node level to locate and retrieve the content.
-     *
-     * @return The node::Node_key associated with this CHK.
-     */
-    [[nodiscard]] std::unique_ptr<node::Key> get_node_key() const;
-
     [[nodiscard]] bool get_control_document() const
     {
         return control_document_;
@@ -1569,6 +1606,17 @@ protected:
     void init_from_uri(const Uri& uri) override;
 
 private:
+    /**
+     * @brief Returns the node key associated with this CHK.
+     *
+     * @details
+     * Generates a node key based on the routing key. This key is used
+     * at the node level to locate and retrieve the content.
+     *
+     * @return The node::Node_key associated with this CHK.
+     */
+    [[nodiscard]] std::unique_ptr<node::Chk> get_node_key() const;
+
     /**
      * @brief Parses and sets the encryption algorithm from a byte.
      *
@@ -1695,6 +1743,48 @@ template<concepts::Key T>
 }
 
 const auto create_key = create<Any_key>;
+
+/**
+ * @brief Returns the node key corresponding to this key.
+ *
+ * @return The node key as a `node::Node_key` object.
+ */
+template<concepts::Client Client_key, node::concepts::Key Node_key>
+requires concepts::Has_Get_Node_Key<Client_key, Node_key>
+[[nodiscard]] LIBHYPHANET_EXPORT std::unique_ptr<Node_key>
+get_node_key(Client_key& client)
+{
+    return client.get_node_key();
+}
+
+template<concepts::Usk Usk_type, concepts::Ssk Ssk_type>
+[[nodiscard]] LIBHYPHANET_EXPORT std::shared_ptr<Ssk_type>
+to_ssk(Usk_type& usk, std::string_view docname)
+{
+    static_assert(concepts::Has_To_Ssk<Usk_type, Ssk_type>);
+    return usk.to_ssk(docname);
+}
+
+template<concepts::Usk Usk_type, concepts::Ssk Ssk_type>
+[[nodiscard]] LIBHYPHANET_EXPORT std::shared_ptr<Ssk_type>
+to_ssk(Usk_type& usk, long edition)
+{
+    return to_ssk<Usk_type, Ssk_type>(
+        usk, fmt::format("{}-{}", usk.get_docname(), edition)
+    );
+}
+
+template<concepts::Usk Usk_type, concepts::Ssk Ssk_type>
+[[nodiscard]] LIBHYPHANET_EXPORT std::shared_ptr<Ssk_type> to_ssk(Usk_type& usk)
+{
+    const long min_val = std::numeric_limits<long>::min();
+    const long max_val = std::numeric_limits<long>::max();
+    long edition = std::abs(usk.get_suggested_edition());
+
+    if (edition == min_val) { edition = max_val; }
+
+    return to_ssk<Usk_type, Ssk_type>(usk, edition);
+}
 
 } // namespace key::user
 
