@@ -378,10 +378,9 @@ namespace concepts {
      */
     template<typename T, typename Ssk_type>
     concept Has_To_Ssk =
-        Ssk<Ssk_type>
-        && requires(const T t, std::string_view docname, long edition) {
-               { t.to_ssk(docname) } -> std::same_as<std::unique_ptr<Ssk_type>>;
-           };
+        Ssk<Ssk_type> && requires(const T t, std::string_view docname) {
+            { t.to_ssk(docname) } -> std::same_as<std::unique_ptr<Ssk_type>>;
+        };
 
     /**
      * @brief Converts an Ssk (Signed Subspace Key) to a Usk (Updatable
