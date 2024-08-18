@@ -69,12 +69,10 @@ namespace concepts {
 namespace exception {
     class Unsupported_operation : public std::logic_error {
     public:
+        using logic_error::logic_error;
+
         Unsupported_operation()
             : std::logic_error("Operation not supported")
-        {}
-
-        explicit Unsupported_operation(const std::string& message)
-            : std::logic_error(message)
         {}
     };
 } // namespace exception
