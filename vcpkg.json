@@ -4,7 +4,7 @@
   "dependencies": [
     {
       "name": "fmt",
-      "version>=": "10.2.1"
+      "version>=": "11.0.2"
     },
     {
       "name": "ms-gsl",
@@ -51,5 +51,5 @@
       ]
     }
   },
-  "builtin-baseline": "afa12e7292fb47771e619675d7915645fe0adb1b"
+  "builtin-baseline": "2f210a9c13fcf2b0c36b1f2187366feec37e3390"
 }

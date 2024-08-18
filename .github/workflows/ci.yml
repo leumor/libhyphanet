@@ -10,7 +10,7 @@ on:
       - master
 
 env:
-  VCPKG_COMMIT: "afa12e7292fb47771e619675d7915645fe0adb1b"
+  VCPKG_COMMIT: "2f210a9c13fcf2b0c36b1f2187366feec37e3390"
 
 jobs:
   lint:
@@ -34,6 +34,8 @@ jobs:
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           echo -ne '\n' | sudo ./llvm.sh 18 all
+
+      - uses: lukka/get-cmake@latest
 
       - name: Lint
         run: cmake -D FORMAT_COMMAND=clang-format-18 -P cmake/lint.cmake
@@ -73,9 +75,12 @@ jobs:
           sudo apt-get update -q
           sudo apt-get install autoconf-archive
 
+      - uses: lukka/get-cmake@latest
+
       - name: Install vcpkg
-        uses: friendlyanon/setup-vcpkg@v1
-        with: { committish: "${{ env.VCPKG_COMMIT }}" }
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: "${{ env.VCPKG_COMMIT }}"
 
       - name: Configure
         run: cmake --preset=ci-coverage
@@ -121,9 +126,12 @@ jobs:
           sudo apt update
           sudo apt install autoconf-archive
 
+      - uses: lukka/get-cmake@latest
+
       - name: Install vcpkg
-        uses: friendlyanon/setup-vcpkg@v1
-        with: { committish: "${{ env.VCPKG_COMMIT }}" }
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: "${{ env.VCPKG_COMMIT }}"
 
       - name: Configure
         run: cmake --preset=ci-sanitize
@@ -190,9 +198,12 @@ jobs:
           brew update
           brew install automake autoconf-archive pkg-config libtool
 
+      - uses: lukka/get-cmake@latest
+
       - name: Install vcpkg
-        uses: friendlyanon/setup-vcpkg@v1
-        with: { committish: "${{ env.VCPKG_COMMIT }}" }
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: "${{ env.VCPKG_COMMIT }}"
 
       - name: Setup MultiToolTask
         if: matrix.os == 'windows-2022'
