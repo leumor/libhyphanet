@@ -2,6 +2,7 @@
 #define LIBHYPHANET_KEY_NODE_H
 
 #include "libhyphanet/key.h"
+#include "libhyphanet/support.h"
 
 #include <cstddef>
 #include <gsl/assert>
@@ -268,6 +269,8 @@ public:
     [[nodiscard]] std::vector<std::byte> get_key_bytes() const override;
     virtual void set_pub_key(const std::vector<std::byte>& pub_key);
 
+    // TODO: grabPubkey()
+
     [[nodiscard]] std::array<std::byte, 32> get_encrypted_hashed_docname() const
     {
         return encrypted_hashed_docname_;
@@ -307,6 +310,13 @@ public:
     )
         : Ssk{user_routing_key, encrypted_hashed_docname, algo}
     {}
+
+    void set_pub_key(const std::vector<std::byte>& /*pub_key*/) override
+    {
+        throw support::exception::Unsupported_operation();
+    }
+
+    // TODO: grabPubkey()
 };
 
 static_assert(concepts::Ssk<Ssk> && concepts::Archive_Ssk<Archive_ssk>);

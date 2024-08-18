@@ -66,6 +66,19 @@ namespace concepts {
     concept Derived_From_Base = std::is_base_of_v<Base, Derived>;
 } // namespace concepts
 
+namespace exception {
+    class Unsupported_operation : public std::logic_error {
+    public:
+        Unsupported_operation()
+            : std::logic_error("Operation not supported")
+        {}
+
+        explicit Unsupported_operation(const std::string& message)
+            : std::logic_error(message)
+        {}
+    };
+} // namespace exception
+
 namespace util {
     /**
      * @brief Trims the specified whitespace characters from the beginning of a
