@@ -1001,10 +1001,7 @@ class Usk;
  */
 class LIBHYPHANET_EXPORT Ssk : public Subspace_key {
 public:
-    template<concepts::Client Client_key, node::concepts::Key Node_key>
-    requires concepts::Has_Get_Node_Key<Client_key, Node_key>
-    friend LIBHYPHANET_EXPORT std::unique_ptr<Node_key>
-    get_node_key(Client_key& client);
+    friend LIBHYPHANET_EXPORT auto get_node_key(concepts::Client auto& client);
 
     /**
      * @brief The character to separate the site name from the edition
@@ -1115,12 +1112,12 @@ public:
     }
 
 protected:
+    [[nodiscard]] virtual std::unique_ptr<node::Ssk> get_node_key() const;
+
     void init_from_uri(const Uri& uri) override;
     void set_pub_key(const std::vector<std::byte>& pub_key);
 
 private:
-    [[nodiscard]] std::unique_ptr<node::Ssk> get_node_key() const;
-
     /**
      * @brief Calculates and stores the encrypted and hashed version of
      * the document name.
@@ -1176,10 +1173,7 @@ static_assert(concepts::Ssk<Ssk>);
  */
 class LIBHYPHANET_EXPORT Insertable_ssk : public Ssk, public Insertable {
 public:
-    template<concepts::Client Client_key, node::concepts::Key Node_key>
-    requires concepts::Has_Get_Node_Key<Client_key, Node_key>
-    friend LIBHYPHANET_EXPORT std::unique_ptr<Node_key>
-    get_node_key(Client_key& client);
+    friend LIBHYPHANET_EXPORT auto get_node_key(concepts::Client auto& client);
 
     /**
      * @brief Constructs an Insertable_ssk object with specified key
@@ -1277,9 +1271,8 @@ static_assert(concepts::Insertable_Ssk<Insertable_ssk>);
  */
 class LIBHYPHANET_EXPORT Usk : public Subspace_key {
 public:
-    template<concepts::Usk Usk_type>
     friend LIBHYPHANET_EXPORT auto
-    to_ssk(Usk_type& usk, std::string_view docname);
+    to_ssk(concepts::Usk auto& usk, std::string_view docname);
 
     Usk(Key_params key, std::string_view docname, long suggested_edition = -1)
         : Subspace_key{std::move(key), docname},
@@ -1490,10 +1483,7 @@ static_assert(concepts::Ksk<Ksk>);
  */
 class LIBHYPHANET_EXPORT Chk : public Key {
 public:
-    template<concepts::Client Client_key, node::concepts::Key Node_key>
-    requires concepts::Has_Get_Node_Key<Client_key, Node_key>
-    friend LIBHYPHANET_EXPORT std::unique_ptr<Node_key>
-    get_node_key(Client_key& client);
+    friend LIBHYPHANET_EXPORT auto get_node_key(concepts::Client auto& client);
 
     /**
      * @brief Construct a new **Content Hash %Key** (CHK) object.
@@ -1726,12 +1716,14 @@ const auto create_key = create<Any_key>;
  *
  * @return The node key as a `node::Node_key` object.
  */
-template<concepts::Client Client_key, node::concepts::Key Node_key>
-requires concepts::Has_Get_Node_Key<Client_key, Node_key>
-[[nodiscard]] LIBHYPHANET_EXPORT std::unique_ptr<Node_key>
-get_node_key(Client_key& client)
+[[nodiscard]] LIBHYPHANET_EXPORT auto get_node_key(concepts::Client auto& client
+)
 {
-    return client.get_node_key();
+    auto node_key = client.get_node_key();
+    using result_type = decltype(node_key)::element_type;
+    static_assert(node::concepts::Key<result_type>);
+
+    return node_key;
 }
 
 /**
@@ -1754,9 +1746,8 @@ get_node_key(Client_key& client)
  * @return An Ssk object representing a specific edition of the
  * content identified by the current Usk.
  */
-template<concepts::Usk Usk_type>
 [[nodiscard]] LIBHYPHANET_EXPORT auto
-to_ssk(Usk_type& usk, std::string_view docname)
+to_ssk(concepts::Usk auto& usk, std::string_view docname)
 {
     auto result = usk.to_ssk(docname);
     using result_type = decltype(result)::element_type;
@@ -1765,16 +1756,13 @@ to_ssk(Usk_type& usk, std::string_view docname)
     return result;
 }
 
-template<concepts::Usk Usk_type>
-[[nodiscard]] LIBHYPHANET_EXPORT auto to_ssk(Usk_type& usk, long edition)
+[[nodiscard]] LIBHYPHANET_EXPORT auto
+to_ssk(concepts::Usk auto& usk, long edition)
 {
-    return to_ssk<Usk_type>(
-        usk, fmt::format("{}-{}", usk.get_docname(), edition)
-    );
+    return to_ssk(usk, fmt::format("{}-{}", usk.get_docname(), edition));
 }
 
-template<concepts::Usk Usk_type>
-[[nodiscard]] LIBHYPHANET_EXPORT auto to_ssk(Usk_type& usk)
+[[nodiscard]] LIBHYPHANET_EXPORT auto to_ssk(concepts::Usk auto& usk)
 {
     const long min_val = std::numeric_limits<long>::min();
     const long max_val = std::numeric_limits<long>::max();
@@ -1782,7 +1770,7 @@ template<concepts::Usk Usk_type>
 
     if (edition == min_val) { edition = max_val; }
 
-    return to_ssk<Usk_type>(usk, edition);
+    return to_ssk(usk, edition);
 }
 
 } // namespace key::user

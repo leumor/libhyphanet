@@ -113,39 +113,36 @@ namespace concepts {
     };
 
     template<typename T>
+    concept Has_Set_Pub_Key =
+        requires(T t, const std::vector<std::byte>& pub_key) {
+            { t.set_pub_key(pub_key) } -> std::same_as<void>;
+        };
+
+    template<typename T>
     concept Has_Ssk_Version = requires {
         { T::ssk_version } -> std::same_as<const std::byte&>;
     };
 
     template<typename T>
-    concept Ssk =
-        Key<T> && Has_Get_Encrypted_Hashed_Docname<T> && Has_Get_Pub_Key<T>
-        && Has_Ssk_Version<T> && Has_Base_Type<T> && Has_Full_Key_Length<T>;
+    concept Ssk = Key<T> && Has_Get_Encrypted_Hashed_Docname<T>
+               && Has_Get_Pub_Key<T> && Has_Set_Pub_Key<T> && Has_Ssk_Version<T>
+               && Has_Base_Type<T> && Has_Full_Key_Length<T>;
 
     template<typename T>
     concept Archive_Ssk = Ssk<T>;
 
-    /**
-     * @brief Get a copy of the key with any unnecessary information
-     * stripped, for long-term in-memory storage.
-     *
-     * @details
-     * E.g. for SSKs, strips the DSAPublicKey. Copies it whether
-     * we need to copy it because the original might pick up a pubkey after
-     * this call. And the returned key will not accidentally pick up extra
-     * data.
-     *
-     * @return Key the copy of the key.
-     */
-    template<typename T, typename Archival_key>
-    concept Has_Archival_Copy =
-        Key<T> && Key<Archival_key> && requires(const T t) {
-            {
-                t.archival_copy()
-            } -> std::same_as<std::unique_ptr<Archival_key>>;
-        };
-
 } // namespace concepts
+
+namespace exception {
+    /**
+     * @brief Thrown when an SSK fails to verify at the node level.
+     */
+    class LIBHYPHANET_EXPORT Ssk_verify_failed : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
+} // namespace exception
 
 /**
  * @brief Base class for node keys.
@@ -236,17 +233,21 @@ private:
 
 class LIBHYPHANET_EXPORT Chk : public Key {
 public:
+    friend LIBHYPHANET_EXPORT auto archival_copy(concepts::Key auto& key);
+
     Chk(const std::vector<std::byte>& node_routing_key, Crypto_algorithm algo)
         : Key{node_routing_key, algo}
     {}
 
     [[nodiscard]] std::vector<std::byte> get_full_key() const override;
-    [[nodiscard]] std::unique_ptr<Chk> archival_copy() const;
     [[nodiscard]] short get_type() const override;
 
     static const std::byte base_type = std::byte{1};
     static const size_t key_length = 32;
     static const size_t full_key_length = 34;
+
+private:
+    [[nodiscard]] std::unique_ptr<Chk> archival_copy() const;
 };
 
 static_assert(concepts::Chk<Chk>);
@@ -255,15 +256,17 @@ class Archive_ssk;
 
 class LIBHYPHANET_EXPORT Ssk : public Key {
 public:
+    friend LIBHYPHANET_EXPORT auto archival_copy(concepts::Key auto& key);
+
     Ssk(const std::vector<std::byte>& user_routing_key,
         const std::array<std::byte, 32>& encrypted_hashed_docname,
         Crypto_algorithm algo = Crypto_algorithm::algo_aes_ctr_256_sha_256,
         std::vector<std::byte> pub_key = {});
 
     [[nodiscard]] std::vector<std::byte> get_full_key() const override;
-    [[nodiscard]] virtual std::unique_ptr<Archive_ssk> archival_copy() const;
     [[nodiscard]] short get_type() const override;
     [[nodiscard]] std::vector<std::byte> get_key_bytes() const override;
+    virtual void set_pub_key(const std::vector<std::byte>& pub_key);
 
     [[nodiscard]] std::array<std::byte, 32> get_encrypted_hashed_docname() const
     {
@@ -279,6 +282,9 @@ public:
     static const std::byte base_type = std::byte{2};
     static const size_t full_key_length = 66;
 
+protected:
+    [[nodiscard]] virtual std::unique_ptr<Archive_ssk> archival_copy() const;
+
 private:
     [[nodiscard]] static std::vector<std::byte> make_routing_key(
         const std::vector<std::byte>& user_routing_key,
@@ -292,6 +298,8 @@ private:
 
 class LIBHYPHANET_EXPORT Archive_ssk : public Ssk {
 public:
+    friend LIBHYPHANET_EXPORT auto archival_copy(concepts::Key auto& key);
+
     Archive_ssk(
         const std::vector<std::byte>& user_routing_key,
         const std::array<std::byte, 32>& encrypted_hashed_docname,
@@ -302,6 +310,27 @@ public:
 };
 
 static_assert(concepts::Ssk<Ssk> && concepts::Archive_Ssk<Archive_ssk>);
+
+/**
+ * @brief Get a copy of the key with any unnecessary information
+ * stripped, for long-term in-memory storage.
+ *
+ * @details
+ * E.g. for SSKs, strips the DSAPublicKey. Copies it whether
+ * we need to copy it because the original might pick up a pubkey after
+ * this call. And the returned key will not accidentally pick up extra
+ * data.
+ *
+ * @return Key the copy of the key.
+ */
+[[nodiscard]] LIBHYPHANET_EXPORT auto archival_copy(concepts::Key auto& key)
+{
+    auto result = key.archival_copy();
+    using result_type = decltype(result)::element_type;
+    static_assert(concepts::Key<result_type>);
+
+    return result;
+}
 
 } // namespace key::node
 

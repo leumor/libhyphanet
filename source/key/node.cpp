@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <fmt/format.h>
 #include <gsl/assert>
 #include <gsl/util>
 #include <iterator>
@@ -147,6 +148,31 @@ short Ssk::get_type() const
 std::vector<std::byte> Ssk::get_key_bytes() const
 {
     return support::util::array_to_vector(encrypted_hashed_docname_);
+}
+
+void Ssk::set_pub_key(const std::vector<std::byte>& pub_key)
+{
+    if (pub_key.empty()) { return; }
+    if (pub_key_ == pub_key) { return; }
+    if (pub_key_.empty() || pub_key != pub_key_) {
+        auto sha256 = crypto::Sha256();
+        sha256.update(pub_key);
+        auto new_pub_key_hash = sha256.digest();
+
+        if (user_routing_key_ == new_pub_key_hash) {
+            if (!pub_key_.empty()) {
+                throw exception::Ssk_verify_failed(
+                    "Invalid new pub_key. Possibly found SHA-256 collision."
+                );
+            }
+            // Valid key, assign.
+        }
+        else {
+            throw exception::Ssk_verify_failed("New pub_key has invalid hash");
+        }
+    }
+
+    pub_key_ = pub_key;
 }
 
 } // namespace key::node
