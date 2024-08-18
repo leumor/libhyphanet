@@ -13,16 +13,17 @@
 #include <fmt/core.h>
 #include <gsl/assert>
 #include <gsl/util>
-#include <limits>
 #include <memory>
 #include <optional>
 #include <regex>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 namespace key::user {
+using std::string_view;
 
 // =============================================================================
 // class Key
@@ -345,7 +346,7 @@ Uri Usk::to_request_uri() const
     return this->to_uri();
 }
 
-[[nodiscard]] std::unique_ptr<Ssk> Usk::to_ssk(std::string_view docname) const
+[[nodiscard]] std::unique_ptr<Ssk> Usk::to_ssk(string_view docname) const
 {
     Key_params params;
     params.routing_key = Key::get_routing_key();

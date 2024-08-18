@@ -357,32 +357,6 @@ namespace concepts {
         };
 
     /**
-     * @brief Converts a Usk (Updatable Subspace Key) to an Ssk (Signed
-     * Subspace Key).
-     *
-     * @details
-     * This method converts the current Usk object into an Ssk object.
-     * The conversion involves creating a new Ssk object with the same
-     * routing key, cryptographic key, cryptographic algorithm, and meta
-     * strings as the Usk, but with the document name and edition number
-     * formatted according to the Ssk's requirements.
-     *
-     * The Ssk created by this method represents a specific edition of
-     * the content identified by the Usk, allowing for direct access to
-     * that edition. This is particularly useful for retrieving or
-     * referencing a specific version of mutable content within the
-     * network.
-     *
-     * @return An Ssk object representing a specific edition of the
-     * content identified by the current Usk.
-     */
-    template<typename T, typename Ssk_type>
-    concept Has_To_Ssk =
-        Ssk<Ssk_type> && requires(const T t, std::string_view docname) {
-            { t.to_ssk(docname) } -> std::same_as<std::unique_ptr<Ssk_type>>;
-        };
-
-    /**
      * @brief Converts an Ssk (Signed Subspace Key) to a Usk (Updatable
      * Subspace Key) if possible.
      *
@@ -633,6 +607,10 @@ public:
     explicit Key(Token /*unused*/) {}
 
     Key() = delete;
+    Key(const Key& other) = default;
+    Key(Key&& other) noexcept = default;
+    Key& operator=(const Key& other) = default;
+    Key& operator=(Key&& other) noexcept = default;
     virtual ~Key() = default;
 
     /**
@@ -1300,7 +1278,8 @@ static_assert(concepts::Insertable_Ssk<Insertable_ssk>);
 class LIBHYPHANET_EXPORT Usk : public Subspace_key {
 public:
     template<concepts::Usk Usk_type>
-    friend auto to_ssk(Usk_type& usk, std::string_view docname);
+    friend LIBHYPHANET_EXPORT auto
+    to_ssk(Usk_type& usk, std::string_view docname);
 
     Usk(Key_params key, std::string_view docname, long suggested_edition = -1)
         : Subspace_key{std::move(key), docname},
@@ -1755,13 +1734,33 @@ get_node_key(Client_key& client)
     return client.get_node_key();
 }
 
+/**
+ * @brief Converts a Usk (Updatable Subspace Key) to an Ssk (Signed
+ * Subspace Key).
+ *
+ * @details
+ * This method converts the current Usk object into an Ssk object.
+ * The conversion involves creating a new Ssk object with the same
+ * routing key, cryptographic key, cryptographic algorithm, and meta
+ * strings as the Usk, but with the document name and edition number
+ * formatted according to the Ssk's requirements.
+ *
+ * The Ssk created by this method represents a specific edition of
+ * the content identified by the Usk, allowing for direct access to
+ * that edition. This is particularly useful for retrieving or
+ * referencing a specific version of mutable content within the
+ * network.
+ *
+ * @return An Ssk object representing a specific edition of the
+ * content identified by the current Usk.
+ */
 template<concepts::Usk Usk_type>
 [[nodiscard]] LIBHYPHANET_EXPORT auto
 to_ssk(Usk_type& usk, std::string_view docname)
 {
     auto result = usk.to_ssk(docname);
     using result_type = decltype(result)::element_type;
-    static_assert(concepts::Has_To_Ssk<Usk_type, result_type>);
+    static_assert(concepts::Ssk<result_type>);
 
     return result;
 }
