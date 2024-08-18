@@ -10,6 +10,7 @@
 #include <gsl/assert>
 #include <iterator>
 #include <libhyphanet/libhyphanet_export.h>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <string_view>
