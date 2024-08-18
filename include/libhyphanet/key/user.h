@@ -1299,9 +1299,8 @@ static_assert(concepts::Insertable_Ssk<Insertable_ssk>);
  */
 class LIBHYPHANET_EXPORT Usk : public Subspace_key {
 public:
-    template<concepts::Usk Usk_type, concepts::Ssk Ssk_type>
-    friend std::shared_ptr<Ssk_type>
-    to_ssk(Usk_type& usk, std::string_view docname);
+    template<concepts::Usk Usk_type>
+    friend auto to_ssk(Usk_type& usk, std::string_view docname);
 
     Usk(Key_params key, std::string_view docname, long suggested_edition = -1)
         : Subspace_key{std::move(key), docname},
@@ -1756,25 +1755,27 @@ get_node_key(Client_key& client)
     return client.get_node_key();
 }
 
-template<concepts::Usk Usk_type, concepts::Ssk Ssk_type>
-[[nodiscard]] LIBHYPHANET_EXPORT std::shared_ptr<Ssk_type>
+template<concepts::Usk Usk_type>
+[[nodiscard]] LIBHYPHANET_EXPORT auto
 to_ssk(Usk_type& usk, std::string_view docname)
 {
-    static_assert(concepts::Has_To_Ssk<Usk_type, Ssk_type>);
-    return usk.to_ssk(docname);
+    auto result = usk.to_ssk(docname);
+    using result_type = decltype(result)::element_type;
+    static_assert(concepts::Has_To_Ssk<Usk_type, result_type>);
+
+    return result;
 }
 
-template<concepts::Usk Usk_type, concepts::Ssk Ssk_type>
-[[nodiscard]] LIBHYPHANET_EXPORT std::shared_ptr<Ssk_type>
-to_ssk(Usk_type& usk, long edition)
+template<concepts::Usk Usk_type>
+[[nodiscard]] LIBHYPHANET_EXPORT auto to_ssk(Usk_type& usk, long edition)
 {
-    return to_ssk<Usk_type, Ssk_type>(
+    return to_ssk<Usk_type>(
         usk, fmt::format("{}-{}", usk.get_docname(), edition)
     );
 }
 
-template<concepts::Usk Usk_type, concepts::Ssk Ssk_type>
-[[nodiscard]] LIBHYPHANET_EXPORT std::shared_ptr<Ssk_type> to_ssk(Usk_type& usk)
+template<concepts::Usk Usk_type>
+[[nodiscard]] LIBHYPHANET_EXPORT auto to_ssk(Usk_type& usk)
 {
     const long min_val = std::numeric_limits<long>::min();
     const long max_val = std::numeric_limits<long>::max();
@@ -1782,7 +1783,7 @@ template<concepts::Usk Usk_type, concepts::Ssk Ssk_type>
 
     if (edition == min_val) { edition = max_val; }
 
-    return to_ssk<Usk_type, Ssk_type>(usk, edition);
+    return to_ssk<Usk_type>(usk, edition);
 }
 
 } // namespace key::user
