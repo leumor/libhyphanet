@@ -83,6 +83,10 @@ namespace concepts {
                && Has_Get_Crypto_Algorithm<T>;
 
     template<typename T>
+    concept Key_Unique_Ptr =
+        support::concepts::Unique_Ptr<T> && Key<typename T::element_type>;
+
+    template<typename T>
     concept Has_Base_Type = requires {
         { T::base_type } -> std::same_as<const std::byte&>;
     };

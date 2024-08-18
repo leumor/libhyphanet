@@ -64,6 +64,21 @@ namespace concepts {
 
     template<typename Derived, typename Base>
     concept Derived_From_Base = std::is_base_of_v<Base, Derived>;
+
+    template<typename T>
+    concept Shared_Ptr = requires(T t) {
+        typename T::element_type;
+        typename std::enable_if_t<
+            std::is_same_v<T, std::shared_ptr<typename T::element_type>>>;
+    };
+
+    template<typename T>
+    concept Unique_Ptr = requires(T t) {
+        typename T::element_type;
+        typename std::enable_if_t<
+            std::is_same_v<T, std::unique_ptr<typename T::element_type>>>;
+    };
+
 } // namespace concepts
 
 namespace exception {
