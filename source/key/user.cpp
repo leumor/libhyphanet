@@ -11,6 +11,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <gsl/assert>
 #include <gsl/util>
 #include <memory>

@@ -8,7 +8,9 @@
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <cstddef>
+#include <fmt/base.h>
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <string>
 #include <string_view>
 #include <unicode/unistr.h>

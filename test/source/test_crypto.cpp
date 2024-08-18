@@ -12,7 +12,7 @@
 #include <cryptopp/integer.h>
 #include <cstddef>
 #include <fmt/core.h>
-#include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <gmp.h>
 #include <string>
 #include <vector>

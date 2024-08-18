@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdlib>
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <gsl/util>
 #include <iterator>
 #include <limits>
