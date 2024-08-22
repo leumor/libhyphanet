@@ -32,7 +32,7 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
 
         REQUIRE(wanna_ssk_1 == user::to_ssk(*usk)->to_uri().to_string());
 
-        auto usk_2 = ssk->to_usk();
+        auto usk_2 = user::to_usk(*ssk);
         REQUIRE(usk_2 != nullptr);
         REQUIRE(wanna_usk_1 == usk_2->to_uri().to_string()); // NOLINT
 
@@ -41,14 +41,14 @@ TEST_CASE("freenet keys are functional", "[library][keys]") // NOLINT
             "WraQtU54x4H~871Sho9Hz6hC-0RA,AQACAAE/Search-17XXXX/index_d51.xml"
         );
         ssk = user::create<user::Ssk>(*uri_ssk);
-        REQUIRE_NOTHROW(dynamic_cast<user::Ssk*>(ssk.get())->to_usk());
+        REQUIRE_NOTHROW(user::to_usk(*ssk));
 
         uri_ssk = Uri::create(
             "SSK@5hH~39FtjA7A9~VXWtBKI~prUDTuJZURudDG0xFn3KA,GDgRGt5f6xqbmo-"
             "WraQtU54x4H~871Sho9Hz6hC-0RA,AQACAAE/Search17/index_d51.xml"
         );
         ssk = user::create<user::Ssk>(*uri_ssk);
-        REQUIRE(dynamic_cast<user::Ssk*>(ssk.get())->to_usk() == nullptr);
+        REQUIRE(user::to_usk(*ssk) == nullptr);
     }
 
     SECTION("broken keys")

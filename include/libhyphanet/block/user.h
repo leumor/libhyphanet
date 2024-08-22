@@ -4,7 +4,9 @@
 #include "libhyphanet/block/node.h"
 #include "libhyphanet/bucket.h"
 #include "libhyphanet/bucket/random.h"
+#include "libhyphanet/key/node.h"
 #include "libhyphanet/key/user.h"
+#include "libhyphanet/support.h"
 
 #include <cstddef>
 #include <memory>
@@ -22,7 +24,7 @@ namespace concepts {
     };
 
     template<typename T>
-    concept Has_Memory_Decode = requires(T t) {
+    concept Has_Memory_Decode = requires(const T t) {
         { t.memory_decode() } -> std::same_as<std::vector<std::byte>>;
     };
 
@@ -80,45 +82,67 @@ namespace concepts {
      * not equals too. Hence it's really a different kind of object, so not a
      * child.
      */
-    template<typename T, typename Bucket, typename Bucket_factory>
-    concept Key =
-        Has_Is_Metadata<T> && Has_Memory_Decode<T> && Has_Get_User_Key<T>
-        && Has_Get_Node_Block<T> && Has_Decode<T, Bucket, Bucket_factory>;
+    template<typename T>
+    concept Key = Has_Is_Metadata<T> && Has_Memory_Decode<T>;
 
-    template<typename T, typename Bucket, typename Bucket_factory>
-    concept Chk = Key<T, Bucket, Bucket_factory>;
+    template<typename T>
+    concept Chk = Key<T>;
 
     template<typename T>
     concept Has_Max_Decompressed_Data_Length = requires {
         { T::max_decompressed_data_length } -> std::convertible_to<size_t>;
     };
 
-    template<typename T, typename Bucket, typename Bucket_factory>
-    concept Ssk =
-        Key<T, Bucket, Bucket_factory> && Has_Max_Decompressed_Data_Length<T>;
+    template<typename T>
+    concept Ssk = Key<T> && Has_Max_Decompressed_Data_Length<T>;
 
 } // namespace concepts
 
-/**
- * @brief A Key Block with a key::user::Key. Can be decoded. Not a child of
- * data::block::node::Key because of issues with equals.
- *
- * @details
- * Two user key blocks with the same content but different keys are not
- * equals, therefore a user key block and its node key block have to be
- * not equals too. Hence it's really a different kind of object, so not a
- * child.
- */
-class Key {
-public:
-    virtual ~Key() = default;
+[[nodiscard]] LIBHYPHANET_EXPORT key::user::concepts::Key_Shared_Ptr auto
+get_user_key(concepts::Key auto& block_key)
+{
+    return block_key.get_user_key();
+}
 
+[[nodiscard]] LIBHYPHANET_EXPORT node::concepts::Key_Shared_Ptr auto
+get_node_block(concepts::Key auto& block_key)
+{
+    return block_key.get_node_block();
+}
+
+[[nodiscard]] LIBHYPHANET_EXPORT key::node::concepts::Key_Shared_Ptr auto
+get_node_key(concepts::Key auto& block_key)
+{
+    return block_key.get_node_key();
+}
+
+class Chk {
+public:
+    friend LIBHYPHANET_EXPORT key::user::concepts::Key auto
+    get_user_key(concepts::Key auto& block_key);
+
+    friend LIBHYPHANET_EXPORT node::concepts::Key_Shared_Ptr auto
+    get_node_block(concepts::Key auto& block_key);
+
+    friend LIBHYPHANET_EXPORT key::node::concepts::Key_Shared_Ptr auto
+    get_node_key(concepts::Key auto& block_key);
+
+    /**
+     * @brief Decode the key into RAM, if short.
+     *
+     * @return std::vector<std::byte>
+     */
+    [[nodiscard]] std::vector<std::byte> memory_decode() const;
+
+    [[nodiscard]] static bool is_metadata() { return false; }
+
+private:
     /**
      * @brief Get the key::user::Key for this block.
      *
      * @return std::shared_ptr<key::user::Key> The key::user::Key object
      */
-    [[nodiscard]] virtual std::shared_ptr<key::user::Key> get_user_key() const
+    [[nodiscard]] std::shared_ptr<key::user::Chk> get_user_key() const
     {
         return user_key_;
     }
@@ -128,8 +152,7 @@ public:
      *
      * @return std::shared_ptr<block::node::Key> The node key block
      */
-    [[nodiscard]] virtual std::shared_ptr<block::node::Key>
-    get_node_block() const
+    [[nodiscard]] std::shared_ptr<block::node::Chk> get_node_block() const
     {
         return node_block_;
     }
@@ -139,28 +162,73 @@ public:
      *
      * @return std::shared_ptr<key::node::Key> The node key
      */
-    [[nodiscard]] virtual std::shared_ptr<key::node::Key> get_node_key() const
+    [[nodiscard]] std::shared_ptr<key::node::Chk> get_node_key() const
     {
-        return node_block_->get_node_key();
+        return node::get_node_key(*node_block_);
     }
 
-private:
-    std::shared_ptr<key::user::Key> user_key_;
-    std::shared_ptr<block::node::Key> node_block_;
+    std::shared_ptr<key::user::Chk> user_key_;
+    std::shared_ptr<block::node::Chk> node_block_;
 };
 
-class Chk : public Key {
-public:
-    [[nodiscard]] virtual bool is_metadata() { return false; }
-};
+static_assert(concepts::Key<Chk>);
 
-// TODO: Assert concpet for Chk
-
-class Ssk : public Key {
+class Ssk {
 public:
+    friend LIBHYPHANET_EXPORT key::user::concepts::Key auto
+    get_user_key(concepts::Key auto& block_key);
+
+    friend LIBHYPHANET_EXPORT node::concepts::Key_Shared_Ptr auto
+    get_node_block(concepts::Key auto& block_key);
+
+    friend LIBHYPHANET_EXPORT key::node::concepts::Key_Shared_Ptr auto
+    get_node_key(concepts::Key auto& block_key);
+
+    /**
+     * @brief Decode the key into RAM, if short.
+     *
+     * @return std::vector<std::byte>
+     */
+    [[nodiscard]] std::vector<std::byte> memory_decode() const;
+
+    [[nodiscard]] static bool is_metadata() { return false; }
+
     static const size_t max_decompressed_data_length = 32768;
 
 private:
+    /**
+     * @brief Get the key::user::Key for this block.
+     *
+     * @return std::shared_ptr<key::user::Key> The key::user::Key object
+     */
+    [[nodiscard]] std::shared_ptr<key::user::Ssk> get_user_key() const
+    {
+        return user_key_;
+    }
+
+    /**
+     * @brief Get the node key block for this block.
+     *
+     * @return std::shared_ptr<block::node::Key> The node key block
+     */
+    [[nodiscard]] std::shared_ptr<block::node::Ssk> get_node_block() const
+    {
+        return node_block_;
+    }
+
+    /**
+     * @brief Get the node key for this block.
+     *
+     * @return std::shared_ptr<key::node::Key> The node key
+     */
+    [[nodiscard]] std::shared_ptr<key::node::Ssk> get_node_key() const
+    {
+        return node::get_node_key(*node_block_);
+    }
+
+    std::shared_ptr<key::user::Ssk> user_key_;
+    std::shared_ptr<block::node::Ssk> node_block_;
+
     /**
      * @brief Is metadata. Set on decode.
      */
@@ -174,7 +242,7 @@ private:
     support::compressor::Compressor_type compression_algorithm_;
 };
 
-// TODO: Assert concpet for Ssk
+static_assert(concepts::Key<Ssk>);
 
 } // namespace block::user
 

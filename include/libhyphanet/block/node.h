@@ -2,6 +2,7 @@
 #define LIBHYPHANET_BLOCK_NODE_H
 
 #include "libhyphanet/key/node.h"
+#include "libhyphanet/support.h"
 
 #include <cstddef>
 #include <libhyphanet/libhyphanet_export.h>
@@ -26,11 +27,6 @@ namespace concepts {
     template<typename T>
     concept Has_Get_Pub_Key = requires(const T t) {
         { t.get_pub_key() } -> std::same_as<std::vector<std::byte>>;
-    };
-
-    template<typename T>
-    concept Has_Get_Node_Key = requires(const T t) {
-        { t.get_node_key() } -> std::same_as<std::shared_ptr<key::node::Key>>;
     };
 
     /**
@@ -72,9 +68,13 @@ namespace concepts {
      * block::Bucket.
      */
     template<typename T>
-    concept Key = Storable<T> && Has_Get_Pub_Key<T> && Has_Get_Node_Key<T>
-               && Has_Get_Raw_Headers<T> && Has_Get_Raw_Data<T>
-               && Has_Get_Hash_Identifier<T> && Has_Hash_Sha_256<T>;
+    concept Key = Storable<T> && Has_Get_Pub_Key<T> && Has_Get_Raw_Headers<T>
+               && Has_Get_Raw_Data<T> && Has_Get_Hash_Identifier<T>
+               && Has_Hash_Sha_256<T>;
+
+    template<typename T>
+    concept Key_Shared_Ptr =
+        support::concepts::Shared_Ptr<T> && Key<typename T::element_type>;
 
     template<typename T>
     concept Has_Total_Headers_Length = requires(const T t) {
@@ -190,6 +190,12 @@ namespace exception {
 
 } // namespace exception
 
+[[nodiscard]] LIBHYPHANET_EXPORT key::node::concepts::Key_Shared_Ptr auto
+get_node_key(concepts::Key auto& block_node_key)
+{
+    return block_node_key.get_node_key();
+}
+
 static const size_t ssk_data_decrypt_key_length = 32;
 
 /**
@@ -203,11 +209,6 @@ static const size_t ssk_data_decrypt_key_length = 32;
 class Key {
 public:
     virtual ~Key() = default;
-
-    [[nodiscard]] virtual std::shared_ptr<key::node::Key> get_node_key() const
-    {
-        return node_key_;
-    }
 
     /**
      * Retrieves the raw headers of the Key.
@@ -238,11 +239,9 @@ public:
 
 protected:
     Key(const std::vector<std::byte>& data,
-        const std::vector<std::byte>& headers,
-        const std::shared_ptr<key::node::Key>& node_key)
+        const std::vector<std::byte>& headers)
         : data_{data},
-          headers_{headers},
-          node_key_{node_key}
+          headers_{headers}
     {}
 
     void set_raw_headers(const std::vector<std::byte>& headers)
@@ -252,17 +251,11 @@ protected:
 
     void set_raw_data(const std::vector<std::byte>& data) { data_ = data; }
 
-    void set_node_key(std::shared_ptr<key::node::Key> node_key)
-    {
-        node_key_ = std::move(node_key);
-    }
-
     void set_hash_identifier(short id) { hash_identifier_ = id; }
 
 private:
     std::vector<std::byte> data_;
     std::vector<std::byte> headers_;
-    std::shared_ptr<key::node::Key> node_key_;
     short hash_identifier_{0};
 };
 
@@ -272,6 +265,9 @@ private:
  */
 class Chk : public Key {
 public:
+    friend LIBHYPHANET_EXPORT key::node::concepts::Key_Shared_Ptr auto
+    get_node_key(concepts::Key auto& block_node_key);
+
     Chk(const std::vector<std::byte>& data,
         const std::vector<std::byte>& headers,
         const std::shared_ptr<key::node::Chk>& node_key = nullptr,
@@ -282,11 +278,24 @@ public:
     [[nodiscard]] std::vector<std::byte> get_node_routing_key() const;
     [[nodiscard]] std::vector<std::byte> get_full_key() const;
 
-    [[nodiscard]] std::vector<std::byte> get_pub_key() const { return {}; }
+    [[nodiscard]] static std::vector<std::byte> get_pub_key() { return {}; }
 
     static const size_t total_headers_length = 36;
     static const size_t data_length = 32768;
     static const size_t max_compressed_data_length = data_length - 4;
+
+private:
+    [[nodiscard]] std::shared_ptr<key::node::Chk> get_node_key() const
+    {
+        return node_key_;
+    }
+
+    void set_node_key(const std::shared_ptr<key::node::Chk>& node_key)
+    {
+        node_key_ = node_key;
+    }
+
+    std::shared_ptr<key::node::Chk> node_key_;
 };
 
 static_assert(concepts::Chk<Chk>);
@@ -321,6 +330,9 @@ static_assert(concepts::Chk<Chk>);
  */
 class Ssk : public Key {
 public:
+    friend LIBHYPHANET_EXPORT key::node::concepts::Key_Shared_Ptr auto
+    get_node_key(concepts::Key auto& block_node_key);
+
     Ssk(const std::vector<std::byte>& data,
         const std::vector<std::byte>& headers,
         const std::shared_ptr<key::node::Ssk>& node_key,
@@ -354,6 +366,18 @@ public:
                                              + ssk_data_decrypt_key_length;
 
 private:
+    [[nodiscard]] std::shared_ptr<key::node::Ssk> get_node_key() const
+    {
+        return node_key_;
+    }
+
+    void set_node_key(const std::shared_ptr<key::node::Ssk>& node_key)
+    {
+        node_key_ = node_key;
+    }
+
+    std::shared_ptr<key::node::Ssk> node_key_;
+
     /**
      * @brief The index of the first byte of encrypted fields in the
      * headers, after E(H(docname)).
