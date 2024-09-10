@@ -28,7 +28,7 @@ Chk::Chk(
     bool verify,
     key::Crypto_algorithm algo
 )
-    : Key(data, headers, node_key)
+    : Key(data, headers)
 {
     if (headers.size() != total_headers_length) {
         throw std::invalid_argument("Invalid header length.");
@@ -85,7 +85,7 @@ Ssk::Ssk(
     const std::shared_ptr<key::node::Ssk>& node_key,
     bool verify
 )
-    : Key(data, headers, node_key)
+    : Key(data, headers)
 {
     if (headers.size() != total_headers_length) {
         throw std::invalid_argument("Invalid header length.");
