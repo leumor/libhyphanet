@@ -75,6 +75,7 @@ std::vector<std::byte> Chk::get_full_key() const
     return get_node_key()->get_full_key();
 }
 
+
 // =========================================================================
 // Ssk
 // =========================================================================
@@ -191,5 +192,10 @@ Ssk::Ssk(
         throw exception::Invalid_e_h_docname("E(H(docname)) wrong - wrong key?"
         );
     }
+}
+
+std::vector<std::byte> Ssk::get_node_routing_key() const
+{
+    return get_node_key()->get_node_routing_key();
 }
 } // namespace block::node
