@@ -28,19 +28,16 @@ namespace key::user {
 namespace concepts {
 
     /**
-     * @brief Generates the URI representation of the Key object.
+     * @brief Concept for types that can be converted to a URI representation.
      *
      * @details
-     * This pure virtual function must be implemented by derived classes
-     * to return the URI representation of the Key object. The URI
-     * includes all necessary information to identify and use the key,
-     * such as the routing key, crypto key, and any meta strings or
-     * extra data associated with the key.
+     * Types satisfying this concept must provide a method to generate a URI
+     * representation of themselves. The URI should include all necessary
+     * information to identify and use the key, such as the routing key,
+     * crypto key, and any meta strings or extra data associated with the key.
      *
-     * If the Key is an insertable key, the routing key of the URI is
-     * the private key.
-     *
-     * @return Uri The URI representation of the Key object.
+     * For insertable keys, the routing key of the URI should be the private
+     * key.
      */
     template<typename T>
     concept Has_To_Uri = requires(T t) {
@@ -48,20 +45,14 @@ namespace concepts {
     };
 
     /**
-     * @brief Generates a request Uri for the Key object.
+     * @brief Concept for types that can generate a request URI.
      *
      * @details
-     * A request URI is a URI that is used to request content from the
-     * network. It does not contain the private key.
-     *
-     * If you want to give people access to content at an URI, you
-     * should always publish only the request URI. Never give away the
-     * insert URI, this allows anyone to insert under your URI!
-     *
-     * This pure virtual function must be implemented by derived classes
-     * to return a request URI.
-     *
-     * @return Uri The request URI for the Key object.
+     * Types satisfying this concept must provide a method to generate a request
+     * URI. A request URI is used to request content from the network and does
+     * not contain the private key. This is important for security, as it allows
+     * sharing of content access without revealing the ability to insert or
+     * modify the content.
      */
     template<typename T>
     concept Has_To_Request_Uri = requires(T t) {
@@ -69,9 +60,12 @@ namespace concepts {
     };
 
     /**
-     * @brief Returns the routing key of the Key object.
+     * @brief Concept for types that have a routing key.
      *
-     * @return The routing key as a vector of bytes.
+     * @details
+     * Types satisfying this concept must provide a method to retrieve their
+     * routing key, which is used to locate and request data blocks on the
+     * network.
      */
     template<typename T>
     concept Has_Get_Routing_Key = requires(const T t) {
@@ -79,9 +73,11 @@ namespace concepts {
     };
 
     /**
-     * @brief Returns the crypto key of the Key object.
+     * @brief Concept for types that have a crypto key.
      *
-     * @return The crypto key as an array of bytes.
+     * @details
+     * Types satisfying this concept must provide a method to retrieve their
+     * crypto key, which is used for encrypting and decrypting data.
      */
     template<typename T>
     concept Has_Get_Crypto_Key = requires(const T t) {
@@ -91,10 +87,11 @@ namespace concepts {
     };
 
     /**
-     * @brief Returns the cryptographic algorithm used by the Key
-     * object.
+     * @brief Concept for types that specify a cryptographic algorithm.
      *
-     * @return The crypto algorithm as an enum value.
+     * @details
+     * Types satisfying this concept must provide a method to retrieve the
+     * cryptographic algorithm they use for encryption and decryption.
      */
     template<typename T>
     concept Has_Get_Crypto_Algorithm = requires(const T t) {
@@ -102,9 +99,12 @@ namespace concepts {
     };
 
     /**
-     * @brief Returns the meta strings associated with the Key object.
+     * @brief Concept for types that have associated meta strings.
      *
-     * @return A constant reference to the vector of meta strings.
+     * @details
+     * Types satisfying this concept must provide a method to retrieve any
+     * meta strings associated with them. These strings may contain additional
+     * information or metadata about the key or its content.
      */
     template<typename T>
     concept Has_Get_Meta_Strings = requires(const T t) {
@@ -113,31 +113,48 @@ namespace concepts {
         } -> std::same_as<const std::vector<std::string>&>;
     };
 
+    /**
+     * @brief Concept defining the complete set of requirements for a Key type.
+     *
+     * @details
+     * This concept combines all the individual key-related concepts to define
+     * a complete Key type in the system. Any type satisfying this concept
+     * can be used as a full-fledged key in the Hyphanet network.
+     */
     template<typename T>
     concept Key = Has_To_Uri<T> && Has_To_Request_Uri<T>
                && Has_Get_Routing_Key<T> && Has_Get_Crypto_Key<T>
                && Has_Get_Crypto_Algorithm<T> && Has_Get_Meta_Strings<T>;
 
+    /**
+     * @brief Concept for a shared pointer to a Key type.
+     *
+     * @details
+     * This concept combines the requirements of being a shared pointer
+     * and pointing to a type that satisfies the Key concept.
+     */
     template<typename T>
     concept Key_Shared_Ptr =
         support::concepts::Shared_Ptr<T> && Key<typename T::element_type>;
 
+    /**
+     * @brief Concept for types that have a document name.
+     *
+     * @details
+     * Types satisfying this concept must provide a method to retrieve
+     * a document name, which can be used as a site name or identifier.
+     */
     template<typename T>
     concept Has_Get_Docname = requires(const T t) {
         { t.get_docname() } -> std::same_as<std::string>;
     };
 
     /**
-     * @brief The fixed length of the extra data segment in the URI for
-     * a Subspace_key object.
+     * @brief Concept for types that specify an extra length for URI encoding.
      *
      * @details
-     * This constant defines the length of the extra data segment that
-     * is appended to the URI of a Subspace_key. The extra data segment
-     * contains additional information necessary for the Subspace_key,
-     * such as the cryptographic algorithm used, control document flag,
-     * and compression algorithm. The length is set to 5 bytes to
-     * accommodate these details.
+     * Types satisfying this concept must provide a static member specifying
+     * the length of extra data to be included in their URI representation.
      */
     template<typename T>
     concept Has_Extra_Length = requires {
@@ -145,16 +162,11 @@ namespace concepts {
     };
 
     /**
-     * @brief The standard length of the routing key used in the URI for
-     * a Subspace_key object.
+     * @brief Concept for types that specify a routing key size.
      *
      * @details
-     * This constant specifies the length of the routing key part of the
-     * URI for a Subspace_key. The routing key is a crucial component
-     * used in the network layer to route requests to the appropriate
-     * node holding the content. For Subspace Keys, the routing key
-     * length is fixed at 32 bytes to ensure consistency and
-     * compatibility across the network.
+     * Types satisfying this concept must provide a static member specifying
+     * the size of their routing key used in URI representations.
      */
     template<typename T>
     concept Has_Routing_Key_Size = requires {
@@ -162,64 +174,67 @@ namespace concepts {
     };
 
     /**
-     * @brief **Subspace %Key** is a subtype of Key that encoded a [document
-     * name](#doc_name_) (can be used as a site name) into it.
+     * @brief Concept defining the requirements for a Subspace Key type.
      *
      * @details
-     * It's usually for sites that are going to change over time. For
-     * example, a website that may need news to be updated or information to
-     * be corrected, added or deleted.
-     *
-     * The [document name](#doc_name_) will later be used to generate a
-     * [routing key](#node::Node_key#routing_key_).
-     *
+     * This concept combines the Key concept with additional requirements
+     * specific to Subspace Keys, including having a document name and
+     * specifying extra length and routing key size for URI encoding.
      */
     template<typename T>
     concept Subspace_Key = Key<T> && Has_Get_Docname<T> && Has_Extra_Length<T>
                         && Has_Routing_Key_Size<T>;
 
     /**
-     * @brief A mixin class for Client Keys.
+     * @brief Concept for Client key types.
      *
      * @details
-     * Client keys are decodable. Node keys are not. When data has been
-     * fetched to a node-level Key Block, it can only be decoded after a
-     * Client Key Block has been constructed from the node-level block and
-     * the client key. The client key generally contains the encryption keys
-     * which the node level does not know about, but which are in the URI -
-     * usually the second part, after the comma.
+     * This concept is currently a placeholder for future requirements
+     * specific to client keys, which are decodable unlike node keys.
      */
     template<typename T>
     concept Client = true;
 
+    /**
+     * @brief Concept for types that have a private key.
+     *
+     * @details
+     * Types satisfying this concept must provide a method to retrieve
+     * their private key, which is used for data insertion.
+     */
     template<typename T>
     concept Has_Get_Priv_Key = requires(const T t) {
         { t.get_priv_key() } -> std::same_as<std::vector<std::byte>>;
     };
 
     /**
-     * @brief A mixin class for Insertable Keys.
+     * @brief Concept for Insertable key types.
      *
      * @details
-     * A Insertable key contains a private key from the [Key](#Key) owner,
-     * so a user can use it to insert new versions of data.
+     * This concept defines the requirements for key types that support
+     * data insertion, which includes having a private key.
      */
     template<typename T>
     concept Insertable = Has_Get_Priv_Key<T>;
 
+    /**
+     * @brief Concept for types that have a public key.
+     *
+     * @details
+     * Types satisfying this concept must provide a method to retrieve
+     * their public key, which is used for content verification.
+     */
     template<typename T>
     concept Has_Get_Pub_Key = requires(const T t) {
         { t.get_pub_key() } -> std::same_as<std::vector<std::byte>>;
     };
 
     /**
-     * @brief The character to separate the site name from the edition
-     * number in its SSK form.
+     * @brief Concept for types that specify a separator character.
      *
      * @details
-     * The reason for choosing '-' is that it makes it ludicrously easy
-     * to go from the **USK** form to the **SSK** form, and we don't
-     * need to go vice versa.
+     * Types satisfying this concept must provide a static member specifying
+     * a separator character, typically used in URI formatting.
      */
     template<typename T>
     concept Has_Separator = requires {
@@ -227,52 +242,70 @@ namespace concepts {
     };
 
     /**
-     * @brief Represents a **Signed Subspace %Key** (SSK) in the Hyphanet
-     * network.
+     * @brief Concept defining the requirements for a Signed Subspace Key (SSK)
+     * type.
      *
      * @details
-     * SSKs are used for mutable content where updates are expected. They
-     * include a public key for verification of content updates. SSKs are a
-     * fundamental part of Hyphanet's data storage and retrieval system,
-     * allowing for secure, anonymous, and verifiable updates to content.
+     * This concept combines the Subspace_Key and Client concepts with
+     * additional requirements specific to SSKs, including having a public key
+     * and a separator.
      */
     template<typename T>
     concept Ssk =
         Subspace_Key<T> && Client<T> && Has_Get_Pub_Key<T> && Has_Separator<T>;
 
+    /**
+     * @brief Concept for a unique pointer to an Ssk type.
+     *
+     * @details
+     * This concept combines the requirements of being a unique pointer
+     * and pointing to a type that satisfies the Ssk concept.
+     */
     template<typename T>
     concept Ssk_Unique_Ptr =
         support::concepts::Unique_Ptr<T> && Ssk<typename T::element_type>;
 
     /**
-     * @brief An insertable version of an Ssk, containing a private key for
-     * data insertion.
+     * @brief Concept defining the requirements for an Insertable SSK type.
      *
      * @details
-     * Insertable SSKs allow users to insert new versions of data into the
-     * Hyphanet network. They are crucial for maintaining mutable content
-     * where the owner wishes to update the content securely.
+     * This concept combines the Ssk concept with the Insertable concept,
+     * representing SSKs that support data insertion.
      */
     template<typename T>
     concept Insertable_Ssk = Ssk<T> && Insertable<T>;
 
     /**
-     * @brief Represents a **Keyword Signed %Key** (KSK) in the Hyphanet
-     * network.
+     * @brief Concept defining the requirements for a Keyword Signed Key (KSK)
+     * type.
      *
      * @details
-     * KSKs are a simple form of keys that are derived directly from a
-     * human-readable string. They are less secure than SSKs or USKs but
-     * offer a straightforward way to share and access static content.
+     * This concept is equivalent to Insertable_Ssk, representing KSKs as a
+     * specific type of insertable SSK derived from a human-readable string.
      */
     template<typename T>
     concept Ksk = Insertable_Ssk<T>;
 
+    /**
+     * @brief Concept for types that specify whether they are a control
+     * document.
+     *
+     * @details
+     * Types satisfying this concept must provide a method to determine if
+     * they represent a control document.
+     */
     template<typename T>
     concept Has_Get_Control_Document = requires(const T t) {
         { t.get_control_document() } -> std::same_as<bool>;
     };
 
+    /**
+     * @brief Concept for types that specify a compressor type.
+     *
+     * @details
+     * Types satisfying this concept must provide a method to retrieve
+     * the compressor type used for their content.
+     */
     template<typename T>
     concept Has_Get_Compressor = requires(const T t) {
         {
@@ -281,90 +314,71 @@ namespace concepts {
     };
 
     /**
-     * @brief Represents a **Content Hash %Key** (CHK) in the Hyphanet
-     * network.
+     * @brief Concept defining the requirements for a Content Hash Key (CHK)
+     * type.
      *
      * @details
-     * CHks are used for immutable content. The key is derived from the
-     * content itself, ensuring that any request for a CHK retrieves the
-     * exact content that was originally inserted. CHks are fundamental to
-     * Hyphanet's goal of censorship-resistant storage.
+     * This concept combines the Key and Client concepts with additional
+     * requirements specific to CHKs, including specifying control document
+     * status and compressor type, as well as extra length and routing key size
+     * for URI encoding.
      */
     template<typename T>
     concept Chk = Key<T> && Client<T> && Has_Get_Control_Document<T>
                && Has_Get_Compressor<T> && Has_Extra_Length<T>
                && Has_Routing_Key_Size<T>;
+    /**
+     * @brief Concept for types that have a suggested edition.
+     *
+     * @details
+     * Types satisfying this concept must provide a method to retrieve
+     * a suggested edition number, typically used for versioning content.
+     */
     template<typename T>
     concept Has_Get_Suggested_Edition = requires(const T t) {
         { t.get_suggested_edition() } -> std::same_as<long>;
     };
 
     /**
-     * @brief Represents an **Updatable Subspace %Key** (USK) for dynamic
-     * content updates.
+     * @brief Concept defining the requirements for an Updatable Subspace Key
+     * (USK) type.
      *
      * @details
-     * USKs facilitate a crude updating mechanism at the client level,
-     * allowing users to request the latest version of a file without
-     * knowing the exact SSK. This is particularly useful for dynamic
-     * content such as blogs or forums.
-     *
-     * Example:
-     *
-     * ```
-     * freenet:USK@~Alice/MyBlog/2024-01-02.html/5
-     * ```
-     *
-     * It isn't really a **Client %Key** as it cannot be directly
-     * requested.
-     *
-     * It contains:
-     * - Enough information to produce a real SSK.
-     * - [Document name](#Subspace_key#docname_).
-     * - [Document edition number](#suggested_edition_).
+     * This concept combines the Subspace_Key concept with the requirement
+     * to have a suggested edition, representing USKs used for dynamic content
+     * updates.
      */
     template<typename T>
     concept Usk = Subspace_Key<T> && Has_Get_Suggested_Edition<T>;
 
+    /**
+     * @brief Concept for a unique pointer to a Usk type.
+     *
+     * @details
+     * This concept combines the requirements of being a unique pointer
+     * and pointing to a type that satisfies the Usk concept.
+     */
     template<typename T>
     concept Usk_Unique_Ptr =
         support::concepts::Unique_Ptr<T> && Usk<typename T::element_type>;
 
     /**
-     * @brief An insertable version of a Usk, containing a private key for
-     * data insertion.
+     * @brief Concept defining the requirements for an Insertable USK type.
      *
      * @details
-     * Similar to Insertable SSKs, Insertable USKs allow for the insertion
-     * of new data versions but with the added functionality of USKs for
-     * dynamic content updates.
+     * This concept combines the Usk concept with the Insertable concept,
+     * representing USKs that support data insertion for dynamic content
+     * updates.
      */
     template<typename T>
     concept Insertable_Usk = Usk<T> && Insertable<T>;
 
     /**
-     * @brief Converts an Ssk (Signed Subspace Key) to a Usk (Updatable
-     * Subspace Key) if possible.
+     * @brief Concept for SSK types that can be converted to USK.
      *
      * @details
-     * This method attempts to convert the current Ssk object into a Usk
-     * object. The conversion is based on parsing the document name of
-     * the Ssk to extract a site name and an edition number. If the
-     * document name follows the expected format that includes an
-     * edition number, a Usk object is created with the same routing
-     * key, crypto key, cryptographic algorithm, and meta strings as the
-     * Ssk, but with the addition of the extracted site name and edition
-     * number.
-     *
-     * The method is useful for scenarios where mutable content is
-     * accessed through Ssk but needs to be managed or referenced as Usk
-     * for updates or versioning purposes.
-     *
-     * Implementation of FreenetURI.uskForSSK().
-     *
-     * @return A Usk object if the conversion is successful, or a nullptr if the
-     * document name does not include an edition number or does not follow the
-     * expected format.
+     * Types satisfying this concept must provide a method to convert
+     * themselves to a USK type, typically used for managing versioned content.
      */
     template<typename T, typename Usk_type>
     concept Has_To_Usk = requires(const T t) {
