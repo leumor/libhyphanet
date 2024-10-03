@@ -229,10 +229,10 @@ std::unique_ptr<key::user::Usk> Ssk::to_usk() const
     return nullptr;
 }
 
-std::unique_ptr<node::Ssk> Ssk::get_node_key() const
+std::shared_ptr<node::Ssk> Ssk::get_node_key() const
 {
     // TODO Cache node key
-    return std::make_unique<node::Ssk>(
+    return std::make_shared<node::Ssk>(
         Key::get_routing_key(),
         encrypted_hashed_docname_,
         Key::get_crypto_algorithm(),
@@ -541,10 +541,10 @@ Uri Chk::to_request_uri() const
     return this->to_uri();
 }
 
-std::unique_ptr<node::Chk> Chk::get_node_key() const
+std::shared_ptr<node::Chk> Chk::get_node_key() const
 {
     // TODO Cache node key
-    return std::make_unique<node::Chk>(
+    return std::make_shared<node::Chk>(
         get_routing_key(), get_crypto_algorithm()
     );
 }
