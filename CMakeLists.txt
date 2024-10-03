@@ -13,7 +13,7 @@ project(
 include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)
 
-set(CMAKE_OSX_DEPLOYMENT_TARGET 14.3)
+set(CMAKE_OSX_DEPLOYMENT_TARGET 15.0)
 
 if(BUILD_SHARED_LIBS)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
