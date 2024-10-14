@@ -5,6 +5,7 @@
 #include "libhyphanet/support.h"
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <gsl/util>
 #include <memory>
@@ -197,4 +198,5 @@ std::vector<std::byte> Ssk::get_node_routing_key() const
 {
     return get_node_key()->get_node_routing_key();
 }
+
 } // namespace block::node
